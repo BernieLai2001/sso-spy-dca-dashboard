@@ -147,12 +147,11 @@
     font: inherit; color: var(--text-primary); background: transparent; width: 120px;
     border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px 5px 20px;
   }
-  .pf-slider { flex: 1; min-width: 320px; display: flex; align-items: center; gap: 16px; }
-  .pf-side { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--text-secondary); min-width: 150px; }
-  .pf-right { justify-content: flex-end; }
+  .pf-slider { flex: 1 1 0; min-width: 320px; }
+  .pf-labels { display: flex; justify-content: space-between; gap: 16px; }
+  .pf-side { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--text-secondary); }
   .pf-side b { color: var(--text-primary); font-size: 16px; font-variant-numeric: tabular-nums; }
   .pf-side span:last-child { color: var(--text-muted); font-variant-numeric: tabular-nums; }
-  .pf-range-wrap { flex: 1; }
   #pfW {
     -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; margin: 8px 0 4px;
     background: linear-gradient(to right, var(--series-2) var(--p), var(--series-1) var(--p)); cursor: pointer;
@@ -173,7 +172,7 @@
   .pf-fr-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .pf-readout { font-size: 12.5px; color: var(--text-primary); font-variant-numeric: tabular-nums; margin-top: 16px; }
   .pf-frontier svg { cursor: pointer; }
-  @media (max-width: 860px) { .pf-frontier { grid-template-columns: 1fr; } .pf-slider { min-width: 100%; } .pf-side { min-width: 0; } }
+  @media (max-width: 860px) { .pf-frontier { grid-template-columns: 1fr; } .pf-slider { min-width: 100%; } }
   .ctrl-break { flex-basis: 100%; height: 0; }
   .proj-toggle { color: var(--text-primary) !important; font-weight: 600; }
   .proj-card { margin-top: 16px; }
@@ -313,13 +312,14 @@
       <label class="pf-total">每月总投入
         <span class="money"><span>$</span><input type="number" id="pfTotal" value="1000" min="0" step="100"></span>
       </label>
+      <!-- 标签放在滑块上方单独一行：文字宽度变化不会影响滑块轨道宽度（否则拖动时会来回跳） -->
       <div class="pf-slider">
-        <div class="pf-side pf-left"><span class="kpi-key" style="background:var(--series-2)"></span>SPY <b id="pfSpyPct"></b><span id="pfSpyAmt"></span></div>
-        <div class="pf-range-wrap">
-          <input type="range" id="pfW" min="0" max="100" step="5" value="50" aria-label="SPY 占每月定投的比例（其余为 SSO）">
-          <div class="pf-ticks"><span>SPY 0 : SSO 100</span><span>25 : 75</span><span>50 : 50</span><span>75 : 25</span><span>SPY 100 : SSO 0</span></div>
+        <div class="pf-labels">
+          <div class="pf-side"><span class="kpi-key" style="background:var(--series-2)"></span>SPY <b id="pfSpyPct"></b><span id="pfSpyAmt"></span></div>
+          <div class="pf-side"><span class="kpi-key" style="background:var(--series-1)"></span>SSO <b id="pfSsoPct"></b><span id="pfSsoAmt"></span></div>
         </div>
-        <div class="pf-side pf-right"><span class="kpi-key" style="background:var(--series-1)"></span>SSO <b id="pfSsoPct"></b><span id="pfSsoAmt"></span></div>
+        <input type="range" id="pfW" min="0" max="100" step="5" value="50" aria-label="SPY 占每月定投的比例（其余为 SSO）">
+        <div class="pf-ticks"><span>SPY 0 : SSO 100</span><span>25 : 75</span><span>50 : 50</span><span>75 : 25</span><span>SPY 100 : SSO 0</span></div>
       </div>
     </div>
     <div class="pf-kpis" id="pfKpis"></div>
