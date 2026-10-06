@@ -84,8 +84,9 @@
   .money { position: relative; }
   .money span { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
   .money input { padding-left: 20px !important; }
+  .top-btns { margin-left: auto; display: inline-flex; gap: 8px; }
   .theme-btn {
-    margin-left: auto; font: inherit; color: var(--text-secondary); background: transparent;
+    font: inherit; color: var(--text-secondary); background: transparent;
     border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer;
   }
 
@@ -190,50 +191,50 @@
   th:first-child, td:first-child { text-align: left; }
   th { color: var(--text-secondary); font-weight: 600; }
 
-  @media (max-width: 860px) { .kpis { grid-template-columns: 1fr; } .theme-btn { margin-left: 0; } }
+  @media (max-width: 860px) { .kpis { grid-template-columns: 1fr; } .top-btns { margin-left: 0; } }
 </style>
 </head>
 <body>
 <div class="viz-root">
 <div class="wrap">
-  <h1>SSO（2倍做多标普500） vs SPY：每月定投价值增长</h1>
+  <h1 data-i18n="h1">SSO（2倍做多标普500） vs SPY：每月定投价值增长</h1>
   <p class="sub" id="subtitle"></p>
 
   <div class="controls">
-    <label>每月定投
+    <label><span data-i18n="cAmount">每月定投</span>
       <span class="money"><span>$</span><input type="number" id="amount" value="500" min="1" step="100"></span>
     </label>
-    <label>起始月份 <input type="month" id="start"></label>
+    <label><span data-i18n="cStart">起始月份</span> <input type="month" id="start"></label>
     <div class="sep"></div>
-    <label><input type="checkbox" id="fee" checked> 扣除管理费</label>
+    <label><input type="checkbox" id="fee" checked> <span data-i18n="cFee">扣除管理费</span></label>
     <label>SSO <input class="fee" type="number" id="erSSO" value="0.89" step="0.01" min="0">%</label>
     <label>SPY <input class="fee" type="number" id="erSPY" value="0.0945" step="0.01" min="0">%</label>
     <div class="sep"></div>
-    <label><input type="checkbox" id="div" checked> 添加股息红利（再投资）</label>
+    <label><input type="checkbox" id="div" checked> <span data-i18n="cDiv">添加股息红利（再投资）</span></label>
     <div class="sep"></div>
-    <label><input type="checkbox" id="dip" checked> 下跌加倍：开盘价较上月开盘跌幅</label>
+    <label><input type="checkbox" id="dip" checked> <span data-i18n="cDip">下跌加倍：开盘价较上月开盘跌幅</span></label>
     <label>SSO ≥ <input class="fee" type="number" id="thSSO" value="10" step="1" min="0">%</label>
     <label>SPY ≥ <input class="fee" type="number" id="thSPY" value="5" step="1" min="0">%</label>
-    <label>买入 <input class="fee" type="number" id="mult" value="2" step="0.5" min="1">倍</label>
+    <label><span data-i18n="cBuy">买入</span> <input class="fee" type="number" id="mult" value="2" step="0.5" min="1"><span data-i18n="cTimes">倍</span></label>
     <div class="sep"></div>
-    <label><input type="checkbox" id="log"> 对数坐标</label>
+    <label><input type="checkbox" id="log"> <span data-i18n="cLog">对数坐标</span></label>
     <div class="ctrl-break"></div>
-    <label class="proj-toggle"><input type="checkbox" id="proj"> 测算未来一年下跌</label>
-    <label>S&amp;P500 一年跌幅 <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
-    <label title="真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌">年化波动率 <input class="fee" type="number" id="projVol" value="0" step="5" min="0" max="150">%</label>
-    <label><input type="checkbox" id="projBuy" checked> 测算期间继续定投</label>
-    <button class="theme-btn" id="themeBtn" type="button">切换深色/浅色</button>
+    <label class="proj-toggle"><input type="checkbox" id="proj"> <span data-i18n="cProj">测算未来一年下跌</span></label>
+    <label><span data-i18n="cProjDrop">S&amp;P500 一年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
+    <label data-i18n-title="cProjVolTip" title="真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌"><span data-i18n="cProjVol">年化波动率</span> <input class="fee" type="number" id="projVol" value="0" step="5" min="0" max="150">%</label>
+    <label><input type="checkbox" id="projBuy" checked> <span data-i18n="cProjBuy">测算期间继续定投</span></label>
+    <span class="top-btns"><button class="theme-btn" id="langBtn" type="button" data-i18n="langBtn">English</button><button class="theme-btn" id="themeBtn" type="button" data-i18n="themeBtn">切换深色/浅色</button></span>
   </div>
 
   <div class="kpis">
     <div class="card">
-      <div class="kpi-head"><span class="kpi-key" style="background:var(--principal)"></span>计划投入（每月定投 × 期数）</div>
+      <div class="kpi-head"><span class="kpi-key" style="background:var(--principal)"></span><span data-i18n="kPlan">计划投入（每月定投 × 期数）</span></div>
       <div class="kpi-val" id="kInvested"></div>
       <dl class="kpi-rows">
-        <dt>定投期数</dt><dd id="kMonths"></dd>
-        <dt>SSO / SPY 实际投入</dt><dd id="kActual"></dd>
-        <dt>定投区间</dt><dd id="kRange"></dd>
-        <dt>SSO − SPY 终值差</dt><dd id="kDiff"></dd>
+        <dt data-i18n="kMonths">定投期数</dt><dd id="kMonths"></dd>
+        <dt data-i18n="kActual">SSO / SPY 实际投入</dt><dd id="kActual"></dd>
+        <dt data-i18n="kRange">定投区间</dt><dd id="kRange"></dd>
+        <dt data-i18n="kDiff">SSO − SPY 终值差</dt><dd id="kDiff"></dd>
       </dl>
     </div>
     <div class="card" id="cardSSO"></div>
@@ -242,74 +243,69 @@
 
   <div class="card chart-card">
     <div class="chart-top">
-      <h2>持仓市值（美元）</h2>
+      <h2 data-i18n="chartTitle">持仓市值（美元）</h2>
       <div class="legend">
         <span><i style="border-color:var(--series-1)"></i>SSO</span>
         <span><i style="border-color:var(--series-2)"></i>SPY</span>
-        <span id="legendProj" hidden><i style="border-color:var(--text-secondary);border-top-style:dotted;border-top-width:3px"></i>测算</span>
-        <span id="legendDip"><svg width="12" height="12" style="display:inline-block;vertical-align:middle;margin-right:6px;width:12px"><circle cx="6" cy="6" r="4" fill="var(--surface-1)" stroke="var(--text-secondary)" stroke-width="2"/></svg>下跌加倍买入月</span>
-        <span><i class="dash" style="border-color:var(--series-1)"></i>SSO 实际投入</span>
-        <span><i class="dash" style="border-color:var(--series-2)"></i>SPY 实际投入</span>
+        <span id="legendProj" hidden><i style="border-color:var(--text-secondary);border-top-style:dotted;border-top-width:3px"></i><span data-i18n="lgProj">测算</span></span>
+        <span id="legendDip"><svg width="12" height="12" style="display:inline-block;vertical-align:middle;margin-right:6px;width:12px"><circle cx="6" cy="6" r="4" fill="var(--surface-1)" stroke="var(--text-secondary)" stroke-width="2"/></svg><span data-i18n="lgDip">下跌加倍买入月</span></span>
+        <span><i class="dash" style="border-color:var(--series-1)"></i><span data-i18n="lgSsoInv">SSO 实际投入</span></span>
+        <span><i class="dash" style="border-color:var(--series-2)"></i><span data-i18n="lgSpyInv">SPY 实际投入</span></span>
       </div>
     </div>
     <div class="range-row">
       <div class="range-btns">
-        <button type="button" data-years="0">全部</button>
-        <button type="button" data-years="10">近10年</button>
-        <button type="button" data-years="5">近5年</button>
-        <button type="button" data-years="3">近3年</button>
-        <button type="button" data-years="1">近1年</button>
+        <button type="button" data-years="0" data-i18n="rAll">全部</button>
+        <button type="button" data-years="10" data-i18n="r10">近10年</button>
+        <button type="button" data-years="5" data-i18n="r5">近5年</button>
+        <button type="button" data-years="3" data-i18n="r3">近3年</button>
+        <button type="button" data-years="1" data-i18n="r1">近1年</button>
       </div>
       <span class="range-label" id="rangeLabel"></span>
-      <span class="range-hint">滚轮 / 双指捏合缩放 · 按住拖动平移 · 双击还原</span>
+      <span class="range-hint" data-i18n="rangeHint">滚轮 / 双指捏合缩放 · 按住拖动平移 · 双击还原</span>
     </div>
     <div class="chart-box" id="chartBox">
-      <svg id="chart" role="img" aria-label="SSO 与 SPY 定投市值曲线（可缩放、拖动）"></svg>
+      <svg id="chart" role="img" data-i18n-aria="ariaChart" aria-label="SSO 与 SPY 定投市值曲线（可缩放、拖动）"></svg>
       <div class="tooltip" id="tip"></div>
-      <svg id="nav" class="nav" role="img" aria-label="全区间缩略图，拖动窗口选择显示范围"></svg>
+      <svg id="nav" class="nav" role="img" data-i18n-aria="ariaNav" aria-label="全区间缩略图，拖动窗口选择显示范围"></svg>
     </div>
   </div>
 
   <div class="card chart-card proj-card" id="projCard" hidden>
     <div class="chart-top">
-      <h2 id="projTitle">未来一年下跌测算</h2>
+      <h2 id="projTitle" data-i18n="projTitle0">未来一年下跌测算</h2>
       <div class="legend">
-        <span><i class="dash" style="border-color:var(--principal)"></i>S&amp;P500 指数</span>
+        <span><i class="dash" style="border-color:var(--principal)"></i><span data-i18n="lgSpx">S&amp;P500 指数</span></span>
         <span><i style="border-color:var(--series-2)"></i>SPY</span>
         <span><i style="border-color:var(--series-1)"></i>SSO</span>
       </div>
     </div>
     <div class="proj-stats" id="projStats"></div>
-    <h3 class="proj-sub">价格累计涨跌（相对当前）</h3>
+    <h3 class="proj-sub" data-i18n="projSub">价格累计涨跌（相对当前）</h3>
     <div class="chart-box" id="projBox">
-      <svg id="projChart" role="img" aria-label="未来一年 S&P500、SPY、SSO 价格累计涨跌测算"></svg>
+      <svg id="projChart" role="img" data-i18n-aria="ariaProj" aria-label="未来一年 S&P500、SPY、SSO 价格累计涨跌测算"></svg>
       <div class="tooltip" id="projTip"></div>
     </div>
     <table class="proj-table">
-      <thead><tr><th>月份</th><th>S&amp;P500 当月</th><th>SPY 当月</th><th>SSO 当月</th>
-        <th>SPY 当月投入</th><th>SPY 市值</th><th>SSO 当月投入</th><th>SSO 市值</th></tr></thead>
+      <thead><tr><th data-i18n="thMonth">月份</th><th data-i18n="thSpxMo">S&amp;P500 当月</th><th data-i18n="thSpyMo">SPY 当月</th><th data-i18n="thSsoMo">SSO 当月</th>
+        <th data-i18n="thSpyInvMo">SPY 当月投入</th><th data-i18n="thSpyVal">SPY 市值</th><th data-i18n="thSsoInvMo">SSO 当月投入</th><th data-i18n="thSsoVal">SSO 市值</th></tr></thead>
       <tbody id="projBody"></tbody>
     </table>
-    <p class="note" style="margin-top:10px">
-      <b>测算方法：</b>把 S&amp;P500 的全年跌幅按指数（几何）路径平均分摊到每个交易日：每日 d = (1−跌幅)^(1/252) − 1，
-      所以每月跌幅相同，都是 (1−跌幅)^(1/12) − 1，而不是简单的「跌幅 ÷ 12」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。
-      「年化波动率」大于 0 时，SSO 每月额外乘以 e^(−σ²/12)，这是 2 倍杠杆在日内震荡中的波动损耗（σ 为年化波动率，真实熊市常见 30%–60%）。
-      测算期间沿用上方的定投、整数股和下跌加倍规则；不计分红，不计 SSO 的融资成本。这只是假设情景，不是预测。
-    </p>
+    <p data-i18n-html="projNote" class="note" style="margin-top:10px"></p>
   </div>
 
   <div class="card chart-card pf-card">
     <div class="chart-top">
-      <h2>组合配置：每月定投按比例分给 SPY 和 SSO</h2>
+      <h2 data-i18n="pfTitle">组合配置：每月定投按比例分给 SPY 和 SSO</h2>
       <div class="legend">
-        <span><i class="sw" style="background:var(--series-2)"></i>SPY 部分</span>
-        <span><i class="sw" style="background:var(--series-1)"></i>SSO 部分</span>
-        <span><i class="dash" style="border-color:var(--text-secondary)"></i>累计投入</span>
-        <span id="pfLegendProj" hidden><i style="border-color:var(--text-secondary);border-top-style:dotted;border-top-width:3px"></i>测算</span>
+        <span><i class="sw" style="background:var(--series-2)"></i><span data-i18n="lgSpyPart">SPY 部分</span></span>
+        <span><i class="sw" style="background:var(--series-1)"></i><span data-i18n="lgSsoPart">SSO 部分</span></span>
+        <span><i class="dash" style="border-color:var(--text-secondary)"></i><span data-i18n="lgInvested">累计投入</span></span>
+        <span id="pfLegendProj" hidden><i style="border-color:var(--text-secondary);border-top-style:dotted;border-top-width:3px"></i><span data-i18n="lgProj">测算</span></span>
       </div>
     </div>
     <div class="pf-controls">
-      <label class="pf-total">每月总投入
+      <label class="pf-total"><span data-i18n="pfTotalLbl">每月总投入</span>
         <span class="money"><span>$</span><input type="number" id="pfTotal" value="1000" min="0" step="100"></span>
       </label>
       <!-- 标签放在滑块上方单独一行：文字宽度变化不会影响滑块轨道宽度（否则拖动时会来回跳） -->
@@ -318,49 +314,34 @@
           <div class="pf-side"><span class="kpi-key" style="background:var(--series-2)"></span>SPY <b id="pfSpyPct"></b><span id="pfSpyAmt"></span></div>
           <div class="pf-side"><span class="kpi-key" style="background:var(--series-1)"></span>SSO <b id="pfSsoPct"></b><span id="pfSsoAmt"></span></div>
         </div>
-        <input type="range" id="pfW" min="0" max="100" step="5" value="50" aria-label="SPY 占每月定投的比例（其余为 SSO）">
+        <input type="range" id="pfW" min="0" max="100" step="5" value="50" data-i18n-aria="ariaSlider" aria-label="SPY 占每月定投的比例（其余为 SSO）">
         <div class="pf-ticks"><span>SPY 0 : SSO 100</span><span>25 : 75</span><span>50 : 50</span><span>75 : 25</span><span>SPY 100 : SSO 0</span></div>
       </div>
     </div>
     <div class="pf-kpis" id="pfKpis"></div>
     <div class="chart-box" id="pfBox">
-      <svg id="pfChart" role="img" aria-label="组合市值构成（SPY 部分 + SSO 部分）"></svg>
+      <svg id="pfChart" role="img" data-i18n-aria="ariaPf" aria-label="组合市值构成（SPY 部分 + SSO 部分）"></svg>
       <div class="tooltip" id="pfTip"></div>
     </div>
     <div class="pf-frontier">
       <div>
         <div class="pf-fr-head"><h3 class="proj-sub" id="pfIrrTitle">不同 SPY : SSO 比例的年化收益（IRR）</h3><span class="pf-readout" id="pfIrrRead"></span></div>
-        <svg id="pfIrr" role="img" aria-label="SSO 比例与年化收益的关系"></svg>
+        <svg id="pfIrr" role="img" data-i18n-aria="ariaFrIrr" aria-label="SSO 比例与年化收益的关系"></svg>
       </div>
       <div>
         <div class="pf-fr-head"><h3 class="proj-sub" id="pfDdTitle">不同 SPY : SSO 比例的组合最大回撤</h3><span class="pf-readout" id="pfDdRead"></span></div>
-        <svg id="pfDd" role="img" aria-label="SSO 比例与组合最大回撤的关系"></svg>
+        <svg id="pfDd" role="img" data-i18n-aria="ariaFrDd" aria-label="SSO 比例与组合最大回撤的关系"></svg>
       </div>
     </div>
-    <p class="note" style="margin-top:10px">
-      每月总投入按滑块比例拆成两笔，分别按上方同样的规则定投（开盘价、整数股、价格高于金额时买 1 股、下跌加倍、管理费、分红），各自持有，不做再平衡。
-      金额较小时，「至少买 1 股」会让实际投入高于计划。<b>组合最大回撤</b>按时间加权净值计算（扣除每月新投入的影响），反映组合本身最多跌过多少。
-      滑块位置代表 SPY 占比（左侧橙色段长度 = SPY 比例，右侧蓝色段 = SSO 比例）。下方两张小图横轴方向与滑块一致，展示 SPY : SSO 从 0 : 100 到 100 : 0（每 5%）的结果，圆环标出当前比例，点击任意点可直接切换到该比例。开启「测算未来一年下跌」时，组合图会接上测算的 12 个月，收益倍数、IRR、最大回撤和两张小图都改为按「历史 + 测算一年」计算（副标题给出当前值作对照）。
-    </p>
+    <p data-i18n-html="pfNote" class="note" style="margin-top:10px"></p>
   </div>
 
-  <p class="note">
-    <b>买入规则：</b>每月按月K<b>开盘价</b>买入<b>整数股</b>：股数 = ⌊定投金额 ÷ 开盘价⌋，花不完的零头不投入（例：定投 $100、价格 $28 → 买 3 股，实际投入 $84）；
-    若开盘价高于定投金额，则当月买 1 股，实际投入 = 1 股的价格。<br>
-    <b>下跌加倍：</b>若本月开盘价较上月开盘价下跌 ≥ 设定阈值（默认 SSO 10%、SPY 5%），本月按「定投金额 × 倍数」买入整数股（至少买「倍数」股）；
-    跌幅用拆股调整后的价格计算，避免把拆股误判为暴跌。卡片中的「较普通定投」是与不加倍的同条件定投对比。因此两只 ETF 的「实际投入」各不相同，收益倍数与 IRR 均按实际投入计算。<br>
-    <b>拆股还原：</b>Yahoo 价格是拆股调整后的，这里用拆股记录还原成当时的真实成交价（SSO 于 2015-05、2020-08、2022-01、2025-11 各 1 拆 2），拆股当月持股数随之翻倍。<br>
-    <b>扣除管理费：</b>ETF 的管理费每天从基金净值中扣除，所以市场价格本身已经是扣费后的结果。勾选时＝真实价格；
-    取消勾选时，每月把「费率 ÷ 12」累计加回价格，模拟“如果没有管理费”的假设情形。<br>
-    <b>添加股息红利：</b>勾选时，分红先计入现金账户，下个月开盘时与定投一起、同样按整数股再投资，剩余零钱留在现金里（计入市值）；取消勾选时只计算价格涨跌（分红不计入）。<br>
-    <b>市值</b> = 持股数 × 月收盘价 + 现金余额。<b>平均持仓成本价</b> = 所有买入花费（定投 + 分红再投资）÷ 当前持股数，已按拆股后的股数折算，可直接与现价比较。<b>年化收益（IRR）</b>是按每笔实际投入时点计算的资金加权年化收益率；<b>最大回撤</b>是该 ETF 净值（按当前选项计算）在区间内的最大跌幅。
-    最后一个月数据截至下载当日，并非完整月份。本页仅作历史回测演示，不构成投资建议。
-  </p>
+  <p data-i18n-html="mainNote" class="note"></p>
 
   <details class="card">
-    <summary>查看逐年数据表（每年末）</summary>
+    <summary data-i18n="yearTable">查看逐年数据表（每年末）</summary>
     <table>
-      <thead><tr><th>年末</th><th>SSO 持股</th><th>SSO 实际投入</th><th>SSO 市值</th><th>SSO 倍数</th><th>SPY 持股</th><th>SPY 实际投入</th><th>SPY 市值</th><th>SPY 倍数</th></tr></thead>
+      <thead><tr><th data-i18n="thYearEnd">年末</th><th data-i18n="thSsoSh">SSO 持股</th><th data-i18n="thSsoInv">SSO 实际投入</th><th data-i18n="thSsoV">SSO 市值</th><th data-i18n="thSsoX">SSO 倍数</th><th data-i18n="thSpySh">SPY 持股</th><th data-i18n="thSpyInv">SPY 实际投入</th><th data-i18n="thSpyV">SPY 市值</th><th data-i18n="thSpyX">SPY 倍数</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </details>
@@ -374,8 +355,169 @@
 (function () {
   const RAW = window.ETF_DATA;
   const $ = (id) => document.getElementById(id);
+  // ---------- 中英文 ----------
+  // 静态文字：HTML 元素上的 data-i18n（textContent）/ data-i18n-html（含 <b> 等标记）/
+  // data-i18n-title / data-i18n-aria；动态文字：T(key, ...参数)。
+  const I18N = {
+    zh: {
+      pageTitle: "SSO vs SPY 定投复合收益仪表盘",
+      h1: "SSO（2倍做多标普500） vs SPY：每月定投价值增长",
+      langBtn: "English",
+      themeBtn: "切换深色/浅色",
+      cAmount: "每月定投", cStart: "起始月份", cFee: "扣除管理费", cDiv: "添加股息红利（再投资）",
+      cDip: "下跌加倍：开盘价较上月开盘跌幅", cBuy: "买入", cTimes: "倍", cLog: "对数坐标",
+      cProj: "测算未来一年下跌", cProjDrop: "S&P500 一年跌幅", cProjVol: "年化波动率",
+      cProjVolTip: "真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌",
+      cProjBuy: "测算期间继续定投",
+      kPlan: "计划投入（每月定投 × 期数）", kMonths: "定投期数", kActual: "SSO / SPY 实际投入",
+      kRange: "定投区间", kDiff: "SSO − SPY 终值差",
+      chartTitle: "持仓市值（美元）", lgProj: "测算", lgDip: "下跌加倍买入月",
+      lgSsoInv: "SSO 实际投入", lgSpyInv: "SPY 实际投入",
+      rAll: "全部", r10: "近10年", r5: "近5年", r3: "近3年", r1: "近1年",
+      rangeHint: "滚轮 / 双指捏合缩放 · 按住拖动平移 · 双击还原",
+      ariaChart: "SSO 与 SPY 定投市值曲线（可缩放、拖动）", ariaNav: "全区间缩略图，拖动窗口选择显示范围",
+      projTitle0: "未来一年下跌测算", lgSpx: "S&P500 指数", projSub: "价格累计涨跌（相对当前）",
+      ariaProj: "未来一年 S&P500、SPY、SSO 价格累计涨跌测算",
+      thMonth: "月份", thSpxMo: "S&P500 当月", thSpyMo: "SPY 当月", thSsoMo: "SSO 当月",
+      thSpyInvMo: "SPY 当月投入", thSpyVal: "SPY 市值", thSsoInvMo: "SSO 当月投入", thSsoVal: "SSO 市值",
+      projNote: "<b>测算方法：</b>把 S&amp;P500 的全年跌幅按指数（几何）路径平均分摊到每个交易日：每日 d = (1−跌幅)^(1/252) − 1，" +
+        "所以每月跌幅相同，都是 (1−跌幅)^(1/12) − 1，而不是简单的「跌幅 ÷ 12」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。" +
+        "「年化波动率」大于 0 时，SSO 每月额外乘以 e^(−σ²/12)，这是 2 倍杠杆在日内震荡中的波动损耗（σ 为年化波动率，真实熊市常见 30%–60%）。" +
+        "测算期间沿用上方的定投、整数股和下跌加倍规则；不计分红，不计 SSO 的融资成本。这只是假设情景，不是预测。",
+      pfTitle: "组合配置：每月定投按比例分给 SPY 和 SSO", lgSpyPart: "SPY 部分", lgSsoPart: "SSO 部分",
+      lgInvested: "累计投入", pfTotalLbl: "每月总投入", ariaSlider: "SPY 占每月定投的比例（其余为 SSO）",
+      ariaPf: "组合市值构成（SPY 部分 + SSO 部分）", ariaFrIrr: "SPY : SSO 比例与年化收益的关系",
+      ariaFrDd: "SPY : SSO 比例与组合最大回撤的关系",
+      pfNote: "每月总投入按滑块比例拆成两笔，分别按上方同样的规则定投（开盘价、整数股、价格高于金额时买 1 股、下跌加倍、管理费、分红），各自持有，不做再平衡。" +
+        "金额较小时，「至少买 1 股」会让实际投入高于计划。<b>组合最大回撤</b>按时间加权净值计算（扣除每月新投入的影响），反映组合本身最多跌过多少。" +
+        "滑块位置代表 SPY 占比（左侧橙色段长度 = SPY 比例，右侧蓝色段 = SSO 比例）。下方两张小图横轴方向与滑块一致，展示 SPY : SSO 从 0 : 100 到 100 : 0（每 5%）的结果，圆环标出当前比例，点击任意点可直接切换到该比例。" +
+        "开启「测算未来一年下跌」时，组合图会接上测算的 12 个月，收益倍数、IRR、最大回撤和两张小图都改为按「历史 + 测算一年」计算（副标题给出当前值作对照）。",
+      mainNote: "<b>买入规则：</b>每月按月K<b>开盘价</b>买入<b>整数股</b>：股数 = ⌊定投金额 ÷ 开盘价⌋，花不完的零头不投入（例：定投 $100、价格 $28 → 买 3 股，实际投入 $84）；" +
+        "若开盘价高于定投金额，则当月买 1 股，实际投入 = 1 股的价格。因此两只 ETF 的「实际投入」各不相同，收益倍数与 IRR 均按实际投入计算。<br>" +
+        "<b>下跌加倍：</b>若本月开盘价较上月开盘价下跌 ≥ 设定阈值（默认 SSO 10%、SPY 5%），本月按「定投金额 × 倍数」买入整数股（至少买「倍数」股）；" +
+        "跌幅用拆股调整后的价格计算，避免把拆股误判为暴跌。卡片中的「较普通定投」是与不加倍的同条件定投对比。<br>" +
+        "<b>拆股还原：</b>Yahoo 价格是拆股调整后的，这里用拆股记录还原成当时的真实成交价（SSO 于 2015-05、2020-08、2022-01、2025-11 各 1 拆 2），拆股当月持股数随之翻倍。<br>" +
+        "<b>扣除管理费：</b>ETF 的管理费每天从基金净值中扣除，所以市场价格本身已经是扣费后的结果。勾选时＝真实价格；取消勾选时，每月把「费率 ÷ 12」累计加回价格，模拟“如果没有管理费”的假设情形。<br>" +
+        "<b>添加股息红利：</b>勾选时，分红先计入现金账户，下个月开盘时与定投一起、同样按整数股再投资，剩余零钱留在现金里（计入市值）；取消勾选时只计算价格涨跌（分红不计入）。<br>" +
+        "<b>市值</b> = 持股数 × 月收盘价 + 现金余额。<b>平均持仓成本价</b> = 所有买入花费（定投 + 分红再投资）÷ 当前持股数，已按拆股后的股数折算，可直接与现价比较。" +
+        "<b>年化收益（IRR）</b>是按每笔实际投入时点计算的资金加权年化收益率；<b>最大回撤</b>是该 ETF 净值（按当前选项计算）在区间内的最大跌幅。" +
+        "最后一个月数据截至下载当日，并非完整月份。本页仅作历史回测演示，不构成投资建议。",
+      yearTable: "查看逐年数据表（每年末）",
+      thYearEnd: "年末", thSsoSh: "SSO 持股", thSsoInv: "SSO 实际投入", thSsoV: "SSO 市值", thSsoX: "SSO 倍数",
+      thSpySh: "SPY 持股", thSpyInv: "SPY 实际投入", thSpyV: "SPY 市值", thSpyX: "SPY 倍数",
+      // 动态文字
+      noData: "页面中还没有嵌入数据，请先运行：python3 build_dashboard.py",
+      subtitle: (a, b, u) => `数据：Yahoo Finance 月K线，SSO 成立于 ${a}，数据截至 ${b}（当月未完结）` + (u ? `，最近更新：${u}` : ""),
+      projZone: "测算区间", ttProj: "（测算）", ttPartial: "（当月未完结）", ttBoost: "（本月加倍买入）",
+      dipCount: "下跌加倍触发", times: (n) => n + " 次", vsBaseValue: "较普通定投：市值", vsBaseIrr: "较普通定投：IRR", pp: " 个百分点",
+      curValue: (n) => n + " 当前市值", investedPrincipal: "实际投入本金", sharesCash: "持股数 / 现金余额",
+      sharesUnit: (s, c) => s + " 股 / " + c, avgCost: "平均持仓成本价", lastVsCost: "最新收盘价（较成本）",
+      pnlTotal: "累计盈亏", multipleFull: "收益倍数（市值/实际投入）", irr: "年化收益（IRR）", etfDD: "ETF 最大回撤",
+      projTitle: (a, b) => `未来一年下跌测算（${a} ~ ${b}）`, spxSet: "S&P500 指数（设定）", fullYear: (p) => "全年 " + p,
+      monthlyGeo: "每月涨跌（几何平均）", linearMonthly: "若按线性每月", daily: "每日涨跌", simName: (n) => n + "（测算）",
+      monthly: "每月涨跌", nowToYear: "当前市值 → 一年后", newInv: "期间新增投入", holdPnl: "持仓盈亏（不含新投入）",
+      yearVsInv: "一年后 vs 累计投入", boosted: "（加倍）", nowTag: "（当前）", now: "当前", cumChg: " · 累计涨跌",
+      perMonth: (v) => "每月 " + v,
+      pfInvested: "实际投入", plan: (v) => "计划 " + v, pfValueNow: "组合当前市值", pfMultiple: "收益倍数",
+      pnlShort: (v) => "盈亏 " + v, moneyWeighted: "资金加权", pfDD: "组合最大回撤", twr: "时间加权净值",
+      pfInvestedProj: "实际投入（测算后）", nowV: (v) => "当前 " + v, addNew: (v) => " · 新增 " + v,
+      pfYearValue: "测算一年后市值", vsNow: (p) => "较当前 " + p, pfMultProj: "收益倍数（测算后）",
+      pfIrrProj: "年化收益 IRR（测算后）", pfDDProj: "组合最大回撤（含测算）",
+      frIrrTitle: "不同 SPY : SSO 比例的年化收益（IRR）", frDdTitle: "不同 SPY : SSO 比例的组合最大回撤",
+      frSuffixProj: (d) => `（含测算：S&P 一年 −${d}%）`, frSuffixHist: "（历史至今）",
+      stackTotal: "组合 ", stackInv: "投入 ", ttPf: "组合市值", ttSsoPart: "SSO 部分", ttSpyPart: "SPY 部分", ttInv: "累计投入",
+      readout: (cur, spy, sso, v) => (cur ? "当前 " : "") + `SPY ${spy}% / SSO ${sso}%：` + v,
+      monthsN: (n) => n + " 个月", lnSsoV: "SSO 市值", lnSpyV: "SPY 市值", lnSsoInv: "SSO 实际投入", lnSpyInv: "SPY 实际投入",
+      latest: "（最新）",
+    },
+    en: {
+      pageTitle: "SSO vs SPY DCA Dashboard",
+      h1: "SSO (2× Long S&P 500) vs SPY: Monthly DCA Growth",
+      langBtn: "中文",
+      themeBtn: "Dark / Light",
+      cAmount: "Monthly amount", cStart: "Start month", cFee: "Deduct expense ratio", cDiv: "Reinvest dividends",
+      cDip: "Buy the dip: open vs. last month's open down", cBuy: "Buy", cTimes: "×", cLog: "Log scale",
+      cProj: "Simulate a 1-year decline", cProjDrop: "S&P 500 1-yr drop", cProjVol: "Annual volatility",
+      cProjVolTip: "Real declines swing up and down daily, which costs a 2× leveraged ETF extra; 0 means a smooth decline",
+      cProjBuy: "Keep investing during simulation",
+      kPlan: "Planned investment (monthly × months)", kMonths: "Months invested", kActual: "SSO / SPY actually invested",
+      kRange: "Period", kDiff: "SSO − SPY value gap",
+      chartTitle: "Portfolio value (USD)", lgProj: "Simulated", lgDip: "Dip-buy month",
+      lgSsoInv: "SSO invested", lgSpyInv: "SPY invested",
+      rAll: "All", r10: "10Y", r5: "5Y", r3: "3Y", r1: "1Y",
+      rangeHint: "Scroll / pinch to zoom · drag to pan · double-click to reset",
+      ariaChart: "SSO and SPY DCA value over time (zoomable, draggable)", ariaNav: "Full-range overview; drag the window to choose the visible range",
+      projTitle0: "1-year decline simulation", lgSpx: "S&P 500 index", projSub: "Cumulative price change (vs. now)",
+      ariaProj: "Simulated cumulative price change of S&P 500, SPY and SSO over the next year",
+      thMonth: "Month", thSpxMo: "S&P 500 (mo)", thSpyMo: "SPY (mo)", thSsoMo: "SSO (mo)",
+      thSpyInvMo: "SPY invested", thSpyVal: "SPY value", thSsoInvMo: "SSO invested", thSsoVal: "SSO value",
+      projNote: "<b>Method:</b> the S&amp;P 500's full-year decline is spread evenly across trading days along a geometric path: daily d = (1−drop)^(1/252) − 1, " +
+        "so every month falls by the same (1−drop)^(1/12) − 1 — not simply drop ÷ 12. SPY tracks 1× daily and SSO 2× daily; each compounds over 21 trading days per month, then the expense ratio is deducted. " +
+        "When annual volatility is above 0, SSO is further multiplied by e^(−σ²/12) each month — the volatility decay of 2× leverage in choppy markets (σ = annual volatility; real bear markets often run 30%–60%). " +
+        "The DCA, whole-share and buy-the-dip rules above still apply; dividends and SSO's financing cost are not included. This is a hypothetical scenario, not a forecast.",
+      pfTitle: "Portfolio: split each month's investment between SPY and SSO", lgSpyPart: "SPY part", lgSsoPart: "SSO part",
+      lgInvested: "Total invested", pfTotalLbl: "Monthly total", ariaSlider: "SPY share of each month's investment (the rest goes to SSO)",
+      ariaPf: "Portfolio value breakdown (SPY part + SSO part)", ariaFrIrr: "IRR by SPY : SSO mix", ariaFrDd: "Max drawdown by SPY : SSO mix",
+      pfNote: "Each month's total is split by the slider into two purchases, each following the rules above (open price, whole shares, at least 1 share if the price exceeds the amount, buy the dip, expense ratio, dividends). Both are held separately with no rebalancing. " +
+        "With small amounts, the 1-share minimum can push actual investment above plan. <b>Max drawdown</b> uses a time-weighted NAV (removing the effect of new monthly money), showing how far the portfolio itself fell. " +
+        "The slider position is the SPY share (orange segment on the left = SPY, blue segment on the right = SSO). The two small charts below use the same direction, showing SPY : SSO from 0 : 100 to 100 : 0 in 5% steps; the ring marks the current mix and clicking a point switches to it. " +
+        "With the 1-year decline simulation on, the chart extends 12 simulated months, and the multiple, IRR, max drawdown and both small charts use history + the simulated year (subtitles show today's values for comparison).",
+      mainNote: "<b>Buying rule:</b> each month buys <b>whole shares</b> at the monthly bar's <b>open</b>: shares = ⌊amount ÷ open⌋, and leftover cash is not invested (e.g. $100 at $28 → 3 shares, $84 invested). " +
+        "If the open is above the amount, 1 share is bought and its price counts as invested. So SSO and SPY end up with different actual investment, and multiples and IRR use actual investment.<br>" +
+        "<b>Buy the dip:</b> if this month's open is down ≥ the threshold vs. last month's open (default SSO 10%, SPY 5%), this month buys whole shares worth amount × multiplier (at least that many shares). " +
+        "Drops use split-adjusted prices so a split isn't mistaken for a crash. \"vs. plain DCA\" on the cards compares against the same DCA without doubling.<br>" +
+        "<b>Split restoration:</b> Yahoo prices are split-adjusted; they are restored to the actual traded prices using the split history (SSO split 2-for-1 in 2015-05, 2020-08, 2022-01 and 2025-11), and share counts double in the split month.<br>" +
+        "<b>Expense ratio:</b> fees are deducted from the fund's NAV daily, so market prices are already net of fees. Checked = actual prices; unchecked adds back fee ÷ 12 each month to model a hypothetical no-fee fund.<br>" +
+        "<b>Dividends:</b> when checked, dividends go to a cash account and are reinvested in whole shares at the next month's open along with the DCA; leftover cash stays in the account (counted in value). Unchecked = price return only.<br>" +
+        "<b>Value</b> = shares × monthly close + cash. <b>Average cost</b> = all purchase spending (DCA + reinvested dividends) ÷ current shares, on a post-split basis, so it compares directly with today's price. " +
+        "<b>IRR</b> is the money-weighted annualized return based on when each purchase was made; <b>max drawdown</b> is the ETF NAV's largest fall over the period (under the current options). " +
+        "The latest month is incomplete (data as of the download date). For historical backtesting only — not investment advice.",
+      yearTable: "Year-end table",
+      thYearEnd: "Year end", thSsoSh: "SSO shares", thSsoInv: "SSO invested", thSsoV: "SSO value", thSsoX: "SSO multiple",
+      thSpySh: "SPY shares", thSpyInv: "SPY invested", thSpyV: "SPY value", thSpyX: "SPY multiple",
+      noData: "No data embedded yet. Run: python3 build_dashboard.py",
+      subtitle: (a, b, u) => `Data: Yahoo Finance monthly bars · SSO launched ${a} · data through ${b} (month in progress)` + (u ? ` · last updated ${u}` : ""),
+      projZone: "Simulated", ttProj: " (simulated)", ttPartial: " (month in progress)", ttBoost: " (dip buy this month)",
+      dipCount: "Dip buys", times: (n) => n + (n === 1 ? " time" : " times"), vsBaseValue: "vs. plain DCA: value", vsBaseIrr: "vs. plain DCA: IRR", pp: " pp",
+      curValue: (n) => n + " current value", investedPrincipal: "Actually invested", sharesCash: "Shares / cash",
+      sharesUnit: (s, c) => s + " sh / " + c, avgCost: "Average cost", lastVsCost: "Last close (vs. cost)",
+      pnlTotal: "Total gain / loss", multipleFull: "Multiple (value / invested)", irr: "Annualized return (IRR)", etfDD: "ETF max drawdown",
+      projTitle: (a, b) => `1-year decline simulation (${a} – ${b})`, spxSet: "S&P 500 index (input)", fullYear: (p) => "Full year " + p,
+      monthlyGeo: "Monthly change (geometric)", linearMonthly: "If linear, per month", daily: "Daily change", simName: (n) => n + " (simulated)",
+      monthly: "Monthly change", nowToYear: "Value now → in 1 year", newInv: "New money invested", holdPnl: "Holding P&L (excl. new money)",
+      yearVsInv: "In 1 year vs. invested", boosted: " (dip)", nowTag: " (now)", now: "Now", cumChg: " · cumulative change",
+      perMonth: (v) => v + " / mo",
+      pfInvested: "Actually invested", plan: (v) => "Plan " + v, pfValueNow: "Current value", pfMultiple: "Multiple",
+      pnlShort: (v) => "P&L " + v, moneyWeighted: "Money-weighted", pfDD: "Max drawdown", twr: "Time-weighted NAV",
+      pfInvestedProj: "Invested (after sim.)", nowV: (v) => "Now " + v, addNew: (v) => " · new " + v,
+      pfYearValue: "Value in 1 year (sim.)", vsNow: (p) => "vs. now " + p, pfMultProj: "Multiple (after sim.)",
+      pfIrrProj: "IRR (after sim.)", pfDDProj: "Max drawdown (incl. sim.)",
+      frIrrTitle: "IRR by SPY : SSO mix", frDdTitle: "Max drawdown by SPY : SSO mix",
+      frSuffixProj: (d) => ` (incl. sim.: S&P −${d}% in 1 yr)`, frSuffixHist: " (history to date)",
+      stackTotal: "Total ", stackInv: "Invested ", ttPf: "Portfolio", ttSsoPart: "SSO part", ttSpyPart: "SPY part", ttInv: "Invested",
+      readout: (cur, spy, sso, v) => (cur ? "Current " : "") + `SPY ${spy}% / SSO ${sso}%: ` + v,
+      monthsN: (n) => n + " months", lnSsoV: "SSO value", lnSpyV: "SPY value", lnSsoInv: "SSO invested", lnSpyInv: "SPY invested",
+      latest: " (latest)",
+    },
+  };
+  let LANG = "zh";
+  try { const saved = localStorage.getItem("dashLang"); if (saved === "en" || saved === "zh") LANG = saved; } catch (e) {}
+  function T(key, ...args) {
+    const v = (I18N[LANG] && key in I18N[LANG]) ? I18N[LANG][key] : I18N.zh[key];
+    return typeof v === "function" ? v(...args) : v;
+  }
+  function applyStatic() {
+    document.documentElement.lang = LANG === "en" ? "en" : "zh-CN";
+    document.title = T("pageTitle");
+    document.querySelectorAll("[data-i18n]").forEach((e) => { e.textContent = T(e.dataset.i18n); });
+    // data-i18n-html 的内容只来自上面的固定词典，不含外部数据
+    document.querySelectorAll("[data-i18n-html]").forEach((e) => { e.innerHTML = T(e.dataset.i18nHtml); });
+    document.querySelectorAll("[data-i18n-title]").forEach((e) => { e.title = T(e.dataset.i18nTitle); });
+    document.querySelectorAll("[data-i18n-aria]").forEach((e) => { e.setAttribute("aria-label", T(e.dataset.i18nAria)); });
+  }
+  applyStatic();
   if (!RAW) {
-    document.querySelector(".wrap").textContent = "页面中还没有嵌入数据，请先运行：python3 build_dashboard.py";
+    document.querySelector(".wrap").textContent = T("noData");
     return;
   }
 
@@ -409,9 +551,8 @@
   startInput.max = months[months.length - 1];
   startInput.value = months[0];
 
-  $("subtitle").textContent =
-    `数据：Yahoo Finance 月K线，SSO 成立于 ${months[0]}，数据截至 ${months[months.length - 1]}（当月未完结）` +
-    (RAW.updated ? `，最近更新：${RAW.updated}` : "");
+  const setSubtitle = () => { $("subtitle").textContent = T("subtitle", months[0], months[months.length - 1], RAW.updated); };
+  setSubtitle();
 
   const fmtUSD = (v) => "$" + Math.round(v).toLocaleString("en-US");
   const fmtShort = (v) => {
@@ -632,7 +773,7 @@
       if (xe > xs) {
         el("rect", { x: xs, y: m.t, width: xe - xs, height: ih, fill: "var(--critical)", "fill-opacity": 0.07 }, g);
         el("line", { x1: xs, x2: xs, y1: m.t, y2: m.t + ih, stroke: "var(--critical)", "stroke-width": 1, "stroke-dasharray": "3 3", opacity: 0.7 }, g);
-        if (xe - xs > 60) { const t = el("text", { x: xs + 8, y: m.t + 14 }, g); t.textContent = "测算区间"; }
+        if (xe - xs > 60) { const t = el("text", { x: xs + 8, y: m.t + 14 }, g); t.textContent = T("projZone"); }
       }
     }
 
@@ -688,7 +829,7 @@
     lines.forEach((l, k) => { const d = state.dots[k]; d.setAttribute("cx", xx); d.setAttribute("cy", y(l.values[i])); d.setAttribute("opacity", 1); });
     tip.replaceChildren();
     const ps = state.projStart;
-    const suffix = ps != null && i >= ps ? "（测算）" : i === (ps != null ? ps - 1 : n - 1) ? "（当月未完结）" : "";
+    const suffix = ps != null && i >= ps ? T("ttProj") : i === (ps != null ? ps - 1 : n - 1) ? T("ttPartial") : "";
     const dd = document.createElement("div"); dd.className = "tt-date"; dd.textContent = dates[i] + suffix;
     tip.appendChild(dd);
     for (const l of lines) {
@@ -696,7 +837,7 @@
       const key = document.createElement("i"); key.style.borderColor = l.color; if (l.dash) key.className = "dash";
       const name = document.createElement("span"); name.textContent = l.name;
       const val = document.createElement("b"); val.textContent = fmtUSD(l.values[i]);
-      if (l.marks && l.marks[i]) name.textContent += "（本月加倍买入）";
+      if (l.marks && l.marks[i]) name.textContent += T("ttBoost");
       row.append(key, name, val); tip.appendChild(row);
     }
     tip.style.opacity = 1;
@@ -872,27 +1013,27 @@
     if (base) {
       const rb = irr(base.flows, base.values[last]), dv = V - base.values[last], dr = r - rb;
       extra.push(
-        ["下跌加倍触发", sim.boosted.filter(Boolean).length + " 次", ""],
-        ["较普通定投：市值", (dv >= 0 ? "+" : "−") + fmtUSD(Math.abs(dv)), dv >= 0 ? "pos" : "neg"],
-        ["较普通定投：IRR", (dr >= 0 ? "+" : "−") + Math.abs(dr * 100).toFixed(2) + " 个百分点", dr >= 0 ? "pos" : "neg"],
+        [T("dipCount"), T("times", sim.boosted.filter(Boolean).length), ""],
+        [T("vsBaseValue"), (dv >= 0 ? "+" : "−") + fmtUSD(Math.abs(dv)), dv >= 0 ? "pos" : "neg"],
+        [T("vsBaseIrr"), (dr >= 0 ? "+" : "−") + Math.abs(dr * 100).toFixed(2) + T("pp"), dr >= 0 ? "pos" : "neg"],
       );
     }
     card.replaceChildren();
     const head = document.createElement("div"); head.className = "kpi-head";
     const key = document.createElement("span"); key.className = "kpi-key"; key.style.background = colorVar;
-    head.append(key, document.createTextNode(name + " 当前市值"));
+    head.append(key, document.createTextNode(T("curValue", name)));
     const val = document.createElement("div"); val.className = "kpi-val"; val.textContent = fmtUSD(V);
     const dl = document.createElement("dl"); dl.className = "kpi-rows";
     const rows = [
-      ["实际投入本金", fmtUSD(invested), ""],
-      ["持股数 / 现金余额", Math.round(sim.shares[last]).toLocaleString("en-US") + " 股 / " + fmtUSD(sim.cash), ""],
-      ["平均持仓成本价", fmtPrice(sim.avgCost), ""],
-      ["最新收盘价（较成本）", fmtPrice(sim.lastClose) + "（" + fmtPct(sim.lastClose / sim.avgCost - 1) + "）",
+      [T("investedPrincipal"), fmtUSD(invested), ""],
+      [T("sharesCash"), T("sharesUnit", Math.round(sim.shares[last]).toLocaleString("en-US"), fmtUSD(sim.cash)), ""],
+      [T("avgCost"), fmtPrice(sim.avgCost), ""],
+      [T("lastVsCost"), fmtPrice(sim.lastClose) + " (" + fmtPct(sim.lastClose / sim.avgCost - 1) + ")",
         sim.lastClose >= sim.avgCost ? "pos" : "neg"],
-      ["累计盈亏", (gain >= 0 ? "+" : "−") + fmtUSD(Math.abs(gain)), gain >= 0 ? "pos" : "neg"],
-      ["收益倍数（市值/实际投入）", (V / invested).toFixed(2) + "×", ""],
-      ["年化收益（IRR）", isNaN(r) ? "—" : fmtPct(r), r >= 0 ? "pos" : "neg"],
-      ["ETF 最大回撤", (maxDD * 100).toFixed(1) + "%", "neg"],
+      [T("pnlTotal"), (gain >= 0 ? "+" : "−") + fmtUSD(Math.abs(gain)), gain >= 0 ? "pos" : "neg"],
+      [T("multipleFull"), (V / invested).toFixed(2) + "×", ""],
+      [T("irr"), isNaN(r) ? "—" : fmtPct(r), r >= 0 ? "pos" : "neg"],
+      [T("etfDD"), (maxDD * 100).toFixed(1) + "%", "neg"],
       ...extra,
     ];
     for (const [k, v, cls] of rows) {
@@ -915,7 +1056,7 @@
     projState = null;
     if (!P) return;
     const pd = P.dates;
-    $("projTitle").textContent = `未来一年下跌测算（${pd[0]} ~ ${pd[pd.length - 1]}）`;
+    $("projTitle").textContent = T("projTitle", pd[0], pd[pd.length - 1]);
 
     // 顶部三块摘要
     const stats = $("projStats"); stats.replaceChildren();
@@ -934,22 +1075,22 @@
       b.append(head, v, dl); stats.appendChild(b);
     };
     const yearIdx = Math.pow(P.fIdx, 12) - 1;
-    block("S&P500 指数（设定）", "var(--principal)", "全年 " + signPct(yearIdx), [
-      ["每月涨跌（几何平均）", signPct(P.fIdx - 1, 2), "neg"],
-      ["若按线性每月", signPct(-P.D / 12, 2), ""],
-      ["每日涨跌", signPct(Math.pow(1 - P.D, 1 / 252) - 1, 3), "neg"],
+    block(T("spxSet"), "var(--principal)", T("fullYear", signPct(yearIdx)), [
+      [T("monthlyGeo"), signPct(P.fIdx - 1, 2), "neg"],
+      [T("linearMonthly"), signPct(-P.D / 12, 2), ""],
+      [T("daily"), signPct(Math.pow(1 - P.D, 1 / 252) - 1, 3), "neg"],
     ]);
     const fundBlock = (name, color, f, sim, histSim) => {
       const endV = sim.values[sim.values.length - 1], nowV = histSim.values[histSim.values.length - 1];
       const newInv = sim.invested[sim.invested.length - 1] - histSim.invested[histSim.invested.length - 1];
       const holdLoss = endV - nowV - newInv; // 持仓本身的盈亏（扣掉新投入的钱）
       const totInv = sim.invested[sim.invested.length - 1];
-      block(name + "（测算）", color, "全年 " + signPct(Math.pow(f, 12) - 1), [
-        ["每月涨跌", signPct(f - 1, 2), "neg"],
-        ["当前市值 → 一年后", fmtShort(nowV) + " → " + fmtShort(endV), ""],
-        ["期间新增投入", fmtUSD(newInv), ""],
-        ["持仓盈亏（不含新投入）", signUSD(holdLoss), holdLoss >= 0 ? "pos" : "neg"],
-        ["一年后 vs 累计投入", signUSD(endV - totInv) + "（" + signPct(endV / totInv - 1) + "）", endV >= totInv ? "pos" : "neg"],
+      block(T("simName", name), color, T("fullYear", signPct(Math.pow(f, 12) - 1)), [
+        [T("monthly"), signPct(f - 1, 2), "neg"],
+        [T("nowToYear"), fmtShort(nowV) + " → " + fmtShort(endV), ""],
+        [T("newInv"), fmtUSD(newInv), ""],
+        [T("holdPnl"), signUSD(holdLoss), holdLoss >= 0 ? "pos" : "neg"],
+        [T("yearVsInv"), signUSD(endV - totInv) + " (" + signPct(endV / totInv - 1) + ")", endV >= totInv ? "pos" : "neg"],
       ]);
     };
     fundBlock("SPY", "var(--series-2)", P.fSPY, P.spy, spyH);
@@ -962,8 +1103,8 @@
       const i = off + k;
       const tr = document.createElement("tr");
       const cells = [pd[k], signPct(P.fIdx - 1, 2), signPct(P.fSPY - 1, 2), signPct(P.fSSO - 1, 2),
-        fmtUSD(P.spy.flows[i]) + (P.spy.boosted[i] ? "（加倍）" : ""), fmtUSD(P.spy.values[i]),
-        fmtUSD(P.sso.flows[i]) + (P.sso.boosted[i] ? "（加倍）" : ""), fmtUSD(P.sso.values[i])];
+        fmtUSD(P.spy.flows[i]) + (P.spy.boosted[i] ? T("boosted") : ""), fmtUSD(P.spy.values[i]),
+        fmtUSD(P.sso.flows[i]) + (P.sso.boosted[i] ? T("boosted") : ""), fmtUSD(P.sso.values[i])];
       for (const c of cells) { const td = document.createElement("td"); td.textContent = c; tr.appendChild(td); }
       tb.appendChild(tr);
     }
@@ -971,7 +1112,7 @@
     // 累计涨跌曲线：第 0 点 = 当前（最新收盘）
     const cum = (f) => Array.from({ length: PROJ_MONTHS + 1 }, (_, k) => Math.pow(f, k) - 1);
     projState = {
-      labels: [months[months.length - 1] + "（当前）"].concat(pd),
+      labels: [months[months.length - 1] + T("nowTag")].concat(pd),
       lines: [
         { name: "S&P500", color: "var(--principal)", values: cum(P.fIdx), dash: true }, // 与 SPY 几乎重合，用虚线区分
         { name: "SPY", color: "var(--series-2)", values: cum(P.fSPY) },
@@ -1001,7 +1142,7 @@
     labels.forEach((lb, i) => {
       if (i % 2 && i !== n - 1) return;
       const t = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, projSvg);
-      t.textContent = i === 0 ? "当前" : lb;
+      t.textContent = i === 0 ? T("now") : lb;
     });
     for (const l of lines) {
       el("path", { d: l.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(""),
@@ -1027,7 +1168,7 @@
       hair.setAttribute("x1", xx); hair.setAttribute("x2", xx); hair.setAttribute("opacity", 0.6);
       lines.forEach((l, k) => { dots[k].setAttribute("cx", xx); dots[k].setAttribute("cy", y(l.values[i])); dots[k].setAttribute("opacity", 1); });
       projTip.replaceChildren();
-      const dd = document.createElement("div"); dd.className = "tt-date"; dd.textContent = labels[i] + " · 累计涨跌";
+      const dd = document.createElement("div"); dd.className = "tt-date"; dd.textContent = labels[i] + T("cumChg");
       projTip.appendChild(dd);
       for (const l of lines) {
         const row = document.createElement("div"); row.className = "tt-row";
@@ -1077,8 +1218,8 @@
     const spyPct = +$("pfW").value, wPct = 100 - spyPct, w = wPct / 100;
     $("pfW").style.setProperty("--p", spyPct + "%");
     $("pfSpyPct").textContent = (100 - wPct) + "%"; $("pfSsoPct").textContent = wPct + "%";
-    $("pfSpyAmt").textContent = "每月 " + fmtUSD(total * (1 - w));
-    $("pfSsoAmt").textContent = "每月 " + fmtUSD(total * w);
+    $("pfSpyAmt").textContent = T("perMonth", fmtUSD(total * (1 - w)));
+    $("pfSsoAmt").textContent = T("perMonth", fmtUSD(total * w));
     $("pfLegendProj").hidden = !c.P;
 
     // 历史结果（截至最新）与图表数据（开启测算时含未来 12 个月）
@@ -1098,21 +1239,21 @@
     const fmtIrr = (x) => (isNaN(x) ? "—" : fmtPct(x));
     const fmtDD = (x) => (x * 100).toFixed(1) + "%";
     if (!c.P) {
-      tile("实际投入", fmtUSD(inv), "计划 " + fmtUSD(total * n));
-      tile("组合当前市值", fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
-      tile("收益倍数", inv > 0 ? (V / inv).toFixed(2) + "×" : "—", "盈亏 " + signUSD(V - inv), V >= inv ? "pos" : "neg");
-      tile("年化收益（IRR）", fmtIrr(r), "资金加权", r >= 0 ? "pos" : "neg");
-      tile("组合最大回撤", fmtDD(hist.maxDD), "时间加权净值", "neg");
+      tile(T("pfInvested"), fmtUSD(inv), T("plan", fmtUSD(total * n)));
+      tile(T("pfValueNow"), fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
+      tile(T("pfMultiple"), inv > 0 ? (V / inv).toFixed(2) + "×" : "—", T("pnlShort", signUSD(V - inv)), V >= inv ? "pos" : "neg");
+      tile(T("irr"), fmtIrr(r), T("moneyWeighted"), r >= 0 ? "pos" : "neg");
+      tile(T("pfDD"), fmtDD(hist.maxDD), T("twr"), "neg");
     } else {
       // 开启下跌测算：收益倍数、IRR、回撤都按「历史 + 测算一年」计算，副标题给出当前值作对照
       const L = chart.values.length - 1;
       const Ve = chart.values[L], invE = chart.invested[L], rE = irr(chart.flows, Ve);
-      tile("实际投入（测算后）", fmtUSD(invE), "当前 " + fmtUSD(inv) + " · 新增 " + fmtShort(invE - inv));
-      tile("组合当前市值", fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
-      tile("测算一年后市值", fmtUSD(Ve), "较当前 " + signPct(Ve / V - 1) + " · 盈亏 " + signUSD(Ve - invE), Ve >= V ? "pos" : "neg");
-      tile("收益倍数（测算后）", invE > 0 ? (Ve / invE).toFixed(2) + "×" : "—", "当前 " + (inv > 0 ? (V / inv).toFixed(2) + "×" : "—"), Ve >= invE ? "pos" : "neg");
-      tile("年化收益 IRR（测算后）", fmtIrr(rE), "当前 " + fmtIrr(r), rE >= 0 ? "pos" : "neg");
-      tile("组合最大回撤（含测算）", fmtDD(chart.maxDD), "当前 " + fmtDD(hist.maxDD), "neg");
+      tile(T("pfInvestedProj"), fmtUSD(invE), T("nowV", fmtUSD(inv)) + T("addNew", fmtShort(invE - inv)));
+      tile(T("pfValueNow"), fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
+      tile(T("pfYearValue"), fmtUSD(Ve), T("vsNow", signPct(Ve / V - 1)) + " · " + T("pnlShort", signUSD(Ve - invE)), Ve >= V ? "pos" : "neg");
+      tile(T("pfMultProj"), invE > 0 ? (Ve / invE).toFixed(2) + "×" : "—", T("nowV", inv > 0 ? (V / inv).toFixed(2) + "×" : "—"), Ve >= invE ? "pos" : "neg");
+      tile(T("pfIrrProj"), fmtIrr(rE), T("nowV", fmtIrr(r)), rE >= 0 ? "pos" : "neg");
+      tile(T("pfDDProj"), fmtDD(chart.maxDD), T("nowV", fmtDD(hist.maxDD)), "neg");
     }
 
     // 不同 SPY : SSO 比例的结果（每 5% 一个点）；开启测算时按「历史 + 测算一年」计算
@@ -1124,9 +1265,9 @@
       const v = sim.values[sim.values.length - 1];
       frontier.push({ p, irr: irr(sim.flows, v), dd: sim.maxDD, value: v });
     }
-    const suffix = useP ? `（含测算：S&P 一年 −${Math.round(c.P.D * 100)}%）` : "（历史至今）";
-    $("pfIrrTitle").textContent = "不同 SPY : SSO 比例的年化收益（IRR）" + suffix;
-    $("pfDdTitle").textContent = "不同 SPY : SSO 比例的组合最大回撤" + suffix;
+    const suffix = useP ? T("frSuffixProj", Math.round(c.P.D * 100)) : T("frSuffixHist");
+    $("pfIrrTitle").textContent = T("frIrrTitle") + suffix;
+    $("pfDdTitle").textContent = T("frDdTitle") + suffix;
 
     const xs = chart.values.length;
     pfState = {
@@ -1188,7 +1329,7 @@
     el("path", { d: linePath(S.invested), fill: "none", stroke: "var(--text-secondary)", "stroke-width": 2, "stroke-dasharray": "5 4" }, pfSvg);
     // 右侧标注：总市值、累计投入
     const labels = [
-      { v: S.total[n - 1], name: "组合 " }, { v: S.invested[n - 1], name: "投入 " },
+      { v: S.total[n - 1], name: T("stackTotal") }, { v: S.invested[n - 1], name: T("stackInv") },
     ].map((o) => ({ ...o, yy: y(o.v) })).sort((p, q) => p.yy - q.yy);
     if (labels[1].yy - labels[0].yy < 16) labels[1].yy = labels[0].yy + 16;
     for (const o of labels) { const t = el("text", { x: m.l + iw + 10, y: o.yy + 4, class: "dlabel" }, pfSvg); t.textContent = o.name + fmtShort(o.v); }
@@ -1206,13 +1347,13 @@
       dot.setAttribute("cx", xx); dot.setAttribute("cy", y(S.total[i])); dot.setAttribute("opacity", 1);
       pfTip.replaceChildren();
       const dd = document.createElement("div"); dd.className = "tt-date";
-      dd.textContent = S.dates[i] + (ps != null && i >= ps ? "（测算）" : "");
+      dd.textContent = S.dates[i] + (ps != null && i >= ps ? T("ttProj") : "");
       pfTip.appendChild(dd);
       const rows = [
-        ["组合市值", "var(--text-primary)", S.total[i], false],
-        ["SSO 部分", "var(--series-1)", S.sso[i], false],
-        ["SPY 部分", "var(--series-2)", S.spy[i], false],
-        ["累计投入", "var(--text-secondary)", S.invested[i], true],
+        [T("ttPf"), "var(--text-primary)", S.total[i], false],
+        [T("ttSsoPart"), "var(--series-1)", S.sso[i], false],
+        [T("ttSpyPart"), "var(--series-2)", S.spy[i], false],
+        [T("ttInv"), "var(--text-secondary)", S.invested[i], true],
       ];
       for (const [nm, col, v, dash] of rows) {
         const row = document.createElement("div"); row.className = "tt-row";
@@ -1258,7 +1399,7 @@
     el("path", { d: pts.map((f, i) => (i ? "L" : "M") + x(f.p).toFixed(1) + "," + y(f[key]).toFixed(1)).join(""),
       fill: "none", stroke: "var(--text-secondary)", "stroke-width": 2, "stroke-linejoin": "round" }, svgEl);
     const setRead = (f, hover) => {
-      readEl.textContent = (hover ? "" : "当前 ") + "SPY " + (100 - f.p) + "% / SSO " + f.p + "%：" + fmt(f[key]);
+      readEl.textContent = T("readout", !hover, 100 - f.p, f.p, fmt(f[key]));
     };
     const curF = F.find((f) => f.p === cur) || F[0];
     for (const f of pts) {
@@ -1309,7 +1450,7 @@
     }
 
     $("kInvested").textContent = fmtUSD(amount * n);
-    $("kMonths").textContent = n + " 个月";
+    $("kMonths").textContent = T("monthsN", n);
     $("kActual").textContent = fmtUSD(sso.invested[n - 1]) + " / " + fmtUSD(spy.invested[n - 1]);
     $("kRange").textContent = dates[0] + " ~ " + dates[n - 1];
     const diff = sso.values[n - 1] - spy.values[n - 1];
@@ -1330,10 +1471,10 @@
       dates: cDates, useLog: $("log").checked, hover: null, view: keepView,
       projStart: P ? n : null,
       lines: [
-        { name: "SSO 市值", color: "var(--series-1)", values: cs.values, marks: dip ? cs.boosted : null },
-        { name: "SPY 市值", color: "var(--series-2)", values: cp.values, marks: dip ? cp.boosted : null },
-        { name: "SSO 实际投入", color: "var(--series-1)", values: cs.invested, dash: true },
-        { name: "SPY 实际投入", color: "var(--series-2)", values: cp.invested, dash: true },
+        { name: T("lnSsoV"), color: "var(--series-1)", values: cs.values, marks: dip ? cs.boosted : null },
+        { name: T("lnSpyV"), color: "var(--series-2)", values: cp.values, marks: dip ? cp.boosted : null },
+        { name: T("lnSsoInv"), color: "var(--series-1)", values: cs.invested, dash: true },
+        { name: T("lnSpyInv"), color: "var(--series-2)", values: cp.invested, dash: true },
       ],
     };
     renderProjection(P, n, sso, spy);
@@ -1350,7 +1491,7 @@
     dates.forEach((d, i) => {
       if (!(d.endsWith("-12") || i === n - 1)) return;
       const tr = document.createElement("tr");
-      const cells = [d + (i === n - 1 && !d.endsWith("-12") ? "（最新）" : ""),
+      const cells = [d + (i === n - 1 && !d.endsWith("-12") ? T("latest") : ""),
         sh(sso.shares[i]), fmtUSD(sso.invested[i]), fmtUSD(sso.values[i]), (sso.values[i] / sso.invested[i]).toFixed(2) + "×",
         sh(spy.shares[i]), fmtUSD(spy.invested[i]), fmtUSD(spy.values[i]), (spy.values[i] / spy.invested[i]).toFixed(2) + "×"];
       for (const c of cells) { const td = document.createElement("td"); td.textContent = c; tr.appendChild(td); }
@@ -1362,6 +1503,11 @@
   // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
   for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
   window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); });
+  $("langBtn").addEventListener("click", () => {
+    LANG = LANG === "zh" ? "en" : "zh";
+    try { localStorage.setItem("dashLang", LANG); } catch (e) {}
+    applyStatic(); setSubtitle(); update();
+  });
   $("themeBtn").addEventListener("click", () => {
     const root = document.documentElement;
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
