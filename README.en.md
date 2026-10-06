@@ -23,27 +23,39 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 | `dashboard.html` | The dashboard (data embedded, works offline) |
 | `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance into `data/`; keeps the old data if a download fails |
 | `build_dashboard.py` | Embeds the CSVs in `data/` into `dashboard.html` |
-| `update.sh` | Runs the two scripts above in order and logs to `logs/update.log` |
+| `update.sh` | Runs the two scripts above in order and logs to `logs/update.log`; finds a Python with the dependencies installed (or set `PYTHON`) |
+| `requirements.txt` | Python dependencies (yfinance, pandas) |
+| `install_autoupdate.sh` | Installs / uninstalls the macOS monthly auto-update, filling in local paths |
+| `launchd/etf-dashboard-update.plist.template` | Scheduled-job template: runs `update.sh` at 09:00 on the 1st of every month |
 | `data/*.csv` | SSO and SPY monthly bars |
-| `launchd/com.laikaiyuan.etf-dashboard-update.plist` | macOS scheduled job: runs `update.sh` at 09:00 on the 1st of every month |
 
-## Usage
+## Quick start
+
+### 1. Just view the dashboard (nothing to install)
+
+Download or clone the repo and open `dashboard.html` in a browser (Windows / macOS / Linux). The data is embedded, so it works offline.
+
+### 2. Update to the latest data (Python 3.9+)
 
 ```bash
-pip install yfinance pandas
-python3 download_data.py      # download the latest data
+git clone https://github.com/BernieLai2001/sso-spy-dca-dashboard.git
+cd sso-spy-dca-dashboard
+pip install -r requirements.txt
+python3 download_data.py      # download the latest data (use `python` on Windows)
 python3 build_dashboard.py    # embed it into the dashboard
-open dashboard.html
 ```
 
-### Monthly auto-update (macOS)
+On macOS / Linux you can also run `./update.sh`, which does both steps and writes a log.
 
-The Python path in `update.sh` and the project path in the plist are set for this machine; change them on another computer. Don't keep the project in Desktop / Documents / Downloads — macOS blocks background jobs from accessing those folders.
+### 3. Monthly auto-update (macOS only)
 
 ```bash
-cp launchd/com.laikaiyuan.etf-dashboard-update.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.laikaiyuan.etf-dashboard-update.plist
+./install_autoupdate.sh               # install: runs update.sh at 09:00 on the 1st of each month
+./install_autoupdate.sh --uninstall   # uninstall
 ```
+
+The installer fills in the paths for your machine. Don't keep the project in Desktop / Documents / Downloads — macOS blocks background jobs there (the installer checks and warns).
+On Windows use Task Scheduler, on Linux use cron, to run `download_data.py` and `build_dashboard.py` on a schedule.
 
 ## Disclaimer
 

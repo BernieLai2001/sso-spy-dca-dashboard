@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 模板：由 install_autoupdate.sh 填入本机路径后安装 / Template: install_autoupdate.sh fills in local paths -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.laikaiyuan.etf-dashboard-update</string>
+  <string>__LABEL__</string>
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/laikaiyuan/Projects/指数基金和杠杆ETF的复合收益率计算/update.sh</string>
+    <string>__UPDATE_SH__</string>
   </array>
-  <!-- 每月 1 日 09:00 运行；若当时电脑在睡眠，唤醒后会补跑 -->
+  <!-- 每月 1 日 09:00 运行；若当时电脑在睡眠，唤醒后会补跑 / 09:00 on the 1st of each month; runs on wake if asleep -->
   <key>StartCalendarInterval</key>
   <dict>
     <key>Day</key>

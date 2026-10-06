@@ -23,27 +23,39 @@
 | `dashboard.html` | 仪表盘（数据已嵌入，可离线打开） |
 | `download_data.py` | 从 Yahoo Finance 下载 SSO、SPY 月K数据到 `data/`；失败时不覆盖旧数据 |
 | `build_dashboard.py` | 把 `data/` 里的 CSV 嵌入 `dashboard.html` |
-| `update.sh` | 依次运行以上两个脚本，日志写入 `logs/update.log` |
+| `update.sh` | 依次运行以上两个脚本，日志写入 `logs/update.log`；会自动找到装有依赖的 Python（也可用环境变量 `PYTHON` 指定） |
+| `requirements.txt` | Python 依赖（yfinance、pandas） |
+| `install_autoupdate.sh` | 安装 / 卸载 macOS 每月自动更新，自动填入本机路径 |
+| `launchd/etf-dashboard-update.plist.template` | 定时任务模板：每月 1 日 09:00 运行 `update.sh` |
 | `data/*.csv` | SSO、SPY 月K数据 |
-| `launchd/com.laikaiyuan.etf-dashboard-update.plist` | macOS 定时任务配置：每月 1 日 09:00 运行 `update.sh` |
 
-## 使用
+## 快速开始
+
+### 1. 只看仪表盘（不用装任何东西）
+
+下载或克隆仓库后，用浏览器打开 `dashboard.html` 即可（Windows / macOS / Linux 都可以）。数据已嵌入页面，离线可用。
+
+### 2. 更新到最新数据（需要 Python 3.9+）
 
 ```bash
-pip install yfinance pandas
-python3 download_data.py      # 下载最新数据
+git clone https://github.com/BernieLai2001/sso-spy-dca-dashboard.git
+cd sso-spy-dca-dashboard
+pip install -r requirements.txt
+python3 download_data.py      # 下载最新数据（Windows 用 python）
 python3 build_dashboard.py    # 嵌入仪表盘
-open dashboard.html
 ```
 
-### 每月自动更新（macOS）
+macOS / Linux 也可以直接运行 `./update.sh`，它会依次执行以上两步并写日志。
 
-`update.sh` 里的 Python 路径和 plist 里的项目路径按本机设置，换电脑时需要修改。项目不要放在「桌面 / 文稿 / 下载」里，macOS 不允许后台任务访问这些文件夹。
+### 3. 每月自动更新（仅 macOS）
 
 ```bash
-cp launchd/com.laikaiyuan.etf-dashboard-update.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.laikaiyuan.etf-dashboard-update.plist
+./install_autoupdate.sh               # 安装：每月 1 日 09:00 自动运行 update.sh
+./install_autoupdate.sh --uninstall   # 卸载
 ```
+
+安装脚本会自动填入你电脑上的路径。项目不要放在「桌面 / 文稿 / 下载」里，macOS 不允许后台任务访问这些文件夹（脚本会检查并提示）。
+Windows 可用「任务计划程序」、Linux 可用 cron 定时运行 `download_data.py` 和 `build_dashboard.py`。
 
 ## 说明
 
