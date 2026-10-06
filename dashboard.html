@@ -110,8 +110,8 @@
   .legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
   .legend i.dash { border-top-style: dashed; }
   .chart-box { position: relative; margin-top: 8px; }
-  #chart { cursor: grab; touch-action: none; user-select: none; outline: none; }
-  #chart.dragging { cursor: grabbing; }
+  #chart, .zoomable { cursor: grab; touch-action: none; user-select: none; outline: none; }
+  #chart.dragging, .zoomable.dragging { cursor: grabbing; }
   .nav { margin-top: 6px; cursor: ew-resize; touch-action: none; user-select: none; }
   .range-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; }
   .range-btns { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
@@ -253,7 +253,7 @@
         <span><i class="dash" style="border-color:var(--series-2)"></i><span data-i18n="lgSpyInv">SPY 实际投入</span></span>
       </div>
     </div>
-    <div class="range-row">
+    <div class="range-row" id="mainRange">
       <div class="range-btns">
         <button type="button" data-years="0" data-i18n="rAll">全部</button>
         <button type="button" data-years="10" data-i18n="r10">近10年</button>
@@ -319,9 +319,21 @@
       </div>
     </div>
     <div class="pf-kpis" id="pfKpis"></div>
+    <div class="range-row" id="pfRange">
+      <div class="range-btns">
+        <button type="button" data-years="0" data-i18n="rAll">全部</button>
+        <button type="button" data-years="10" data-i18n="r10">近10年</button>
+        <button type="button" data-years="5" data-i18n="r5">近5年</button>
+        <button type="button" data-years="3" data-i18n="r3">近3年</button>
+        <button type="button" data-years="1" data-i18n="r1">近1年</button>
+      </div>
+      <span class="range-label" id="pfRangeLabel"></span>
+      <span class="range-hint" data-i18n="rangeHint">滚轮 / 双指捏合缩放 · 按住拖动平移 · 双击还原</span>
+    </div>
     <div class="chart-box" id="pfBox">
-      <svg id="pfChart" role="img" data-i18n-aria="ariaPf" aria-label="组合市值构成（SPY 部分 + SSO 部分）"></svg>
+      <svg id="pfChart" class="zoomable" role="img" data-i18n-aria="ariaPf" aria-label="组合市值构成（SPY 部分 + SSO 部分）"></svg>
       <div class="tooltip" id="pfTip"></div>
+      <svg id="pfNav" class="nav" role="img" data-i18n-aria="ariaNav" aria-label="全区间缩略图，拖动窗口选择显示范围"></svg>
     </div>
     <div class="pf-frontier">
       <div>
@@ -985,7 +997,7 @@
   nav.addEventListener("dblclick", () => state && resetView());
 
   // ---------- 区间快捷按钮 ----------
-  document.querySelectorAll(".range-btns button").forEach((btn) => {
+  document.querySelectorAll("#mainRange .range-btns button").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (!state) return;
       const n = state.dates.length, yrs = +btn.dataset.years;
@@ -997,7 +1009,7 @@
     const { a, b } = state.view, n = state.dates.length;
     const i0 = Math.round(a), i1 = Math.round(b);
     $("rangeLabel").textContent = state.dates[i0] + " ~ " + state.dates[i1];
-    document.querySelectorAll(".range-btns button").forEach((btn) => {
+    document.querySelectorAll("#mainRange .range-btns button").forEach((btn) => {
       const yrs = +btn.dataset.years;
       const on = yrs ? (i1 === n - 1 && Math.abs((b - a) - Math.min(n - 1, yrs * 12)) < 0.5) : (a < 0.5 && b > n - 1.5);
       btn.classList.toggle("on", on);
@@ -1279,94 +1291,273 @@
   }
 
   function drawPortfolio() {
-    drawPfStack();
+    // 期数不变（只改比例或金额）时保留当前缩放区间；开启测算时默认看最近 3 年 + 测算年
+    const N = pfState.len;
+    pfZoom.setData(pfState.dates, pfState.projStart != null ? { a: Math.max(0, N - 1 - 48), b: N - 1 } : null);
+    pfZoom.draw();
     drawFrontier($("pfIrr"), "irr", $("pfIrrRead"), (v) => (isNaN(v) ? "—" : fmtPct(v)));
     drawFrontier($("pfDd"), "dd", $("pfDdRead"), (v) => (v * 100).toFixed(1) + "%");
   }
 
-  // 堆叠面积图：SPY 部分在下，SSO 部分在上，顶边 = 组合总市值
+  // ---------- 通用缩放控制器：滚轮/捏合缩放、拖动平移、双击还原、区间按钮、缩略导航条 ----------
+  // onDraw(z) 负责按 z.view 画图，并把绘图区几何写入 z.geom = { W, m, iw, x }；
+  // onHover(z, i) / onLeave(z) 负责十字线和提示框；navLines() 返回导航条要画的 [{ values, color }]。
+  function createZoom({ svg, nav, rangeWrap, label, onDraw, onHover, onLeave, navLines }) {
+    const z = { view: null, dates: [], geom: null, drag: null, navDrag: null, hover: null, navGeom: null };
+    const n = () => z.dates.length;
+    let raf = 0;
+    z.schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; z.draw(); }); };
+    z.draw = () => { if (!n()) return; onDraw(z); drawNav(); updateUI(); if (z.hover != null && !z.drag) z.show(z.hover); };
+    // 数据变化：期数相同就保留当前区间，否则用默认区间
+    z.setData = (dates, defaultView) => {
+      const same = z.view && z.dates.length === dates.length;
+      z.dates = dates;
+      if (!same) z.view = defaultView || { a: 0, b: dates.length - 1 };
+    };
+    z.setView = (a, b, pan) => {
+      const maxI = n() - 1, minSpan = Math.min(MIN_SPAN, maxI);
+      if (pan) { const span = b - a; a = Math.max(0, Math.min(a, maxI - span)); b = a + span; }
+      else {
+        a = Math.max(0, a); b = Math.min(maxI, b);
+        if (b - a < minSpan) { const c = (a + b) / 2; a = Math.max(0, Math.min(c - minSpan / 2, maxI - minSpan)); b = a + minSpan; }
+      }
+      z.view = { a, b };
+      z.schedule();
+    };
+    z.reset = () => z.setView(0, n() - 1);
+    z.show = (i) => {
+      if (!z.geom || i < z.view.a - 0.5 || i > z.view.b + 0.5) return z.hide();
+      z.hover = i; onHover(z, i);
+    };
+    z.hide = () => { z.hover = null; onLeave(z); };
+
+    const idxAt = (e) => {
+      const r = svg.getBoundingClientRect(), { W, m, iw } = z.geom, { a, b } = z.view;
+      const px = (e.clientX - r.left) * (W / r.width);
+      return { idx: a + ((px - m.l) / iw) * (b - a), inPlot: px >= m.l && px <= m.l + iw, px };
+    };
+    svg.setAttribute("tabindex", 0);
+    svg.addEventListener("wheel", (e) => {
+      if (!z.geom) return;
+      e.preventDefault();
+      const { a, b } = z.view, span = b - a;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && !e.ctrlKey) {
+        const shift = (e.deltaX / z.geom.iw) * span; z.setView(a + shift, b + shift, true);
+      } else {
+        const k = Math.exp(e.deltaY * (e.ctrlKey ? 0.01 : 0.0015));
+        const c = Math.max(a, Math.min(b, idxAt(e).idx));
+        z.setView(c - (c - a) * k, c + (b - c) * k);
+      }
+    }, { passive: false });
+    svg.addEventListener("pointerdown", (e) => {
+      if (!z.geom || e.button !== 0 || !idxAt(e).inPlot) return;
+      svg.setPointerCapture(e.pointerId);
+      z.drag = { x0: e.clientX, a0: z.view.a, b0: z.view.b, moved: false };
+      svg.classList.add("dragging");
+    });
+    svg.addEventListener("pointermove", (e) => {
+      if (!z.geom) return;
+      const dr = z.drag;
+      if (dr) {
+        const r = svg.getBoundingClientRect(), dx = (e.clientX - dr.x0) * (z.geom.W / r.width);
+        if (Math.abs(dx) > 3) dr.moved = true;
+        if (dr.moved) { z.hide(); const sh = -(dx / z.geom.iw) * (dr.b0 - dr.a0); z.setView(dr.a0 + sh, dr.b0 + sh, true); return; }
+      }
+      const { idx, inPlot } = idxAt(e);
+      if (!inPlot) return z.hide();
+      z.show(Math.max(0, Math.min(n() - 1, Math.round(idx))));
+    });
+    const endDrag = () => { z.drag = null; svg.classList.remove("dragging"); };
+    svg.addEventListener("pointerup", endDrag);
+    svg.addEventListener("pointercancel", endDrag);
+    svg.addEventListener("pointerleave", () => { if (!z.drag) z.hide(); });
+    svg.addEventListener("dblclick", () => z.reset());
+    svg.addEventListener("blur", () => z.hide());
+    svg.addEventListener("keydown", (e) => {
+      const { a, b } = z.view, span = b - a;
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const nx = Math.max(0, Math.min(n() - 1, (z.hover ?? Math.round(b)) + (e.key === "ArrowRight" ? 1 : -1)));
+        if (nx < a) z.setView(nx, nx + span, true); else if (nx > b) z.setView(nx - span, nx, true);
+        z.show(nx);
+      } else if (e.key === "+" || e.key === "=" || e.key === "-") {
+        e.preventDefault();
+        const c = (a + b) / 2, k = e.key === "-" ? 1.25 : 0.8;
+        z.setView(c - (c - a) * k, c + (b - c) * k);
+      } else if (e.key === "0") { e.preventDefault(); z.reset(); }
+    });
+
+    // 缩略导航条
+    function drawNav() {
+      const N = n(), { m } = z.geom, W = z.geom.W, H = 56, pad = 6;
+      const iw = W - m.l - m.r, ih = H - pad * 2;
+      nav.setAttribute("viewBox", `0 0 ${W} ${H}`); nav.setAttribute("height", H);
+      nav.replaceChildren();
+      const x = (i) => m.l + (i / Math.max(1, N - 1)) * iw;
+      const lines = navLines();
+      const maxV = Math.max(1, ...lines.flatMap((l) => l.values));
+      const y = (v) => pad + ih - (v / maxV) * ih;
+      el("rect", { x: m.l, y: pad, width: iw, height: ih, fill: "none", stroke: "var(--border)", rx: 4 }, nav);
+      for (const l of lines)
+        el("path", { d: l.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(""),
+          fill: "none", stroke: l.color, "stroke-width": 1.5, opacity: 0.8 }, nav);
+      const xa = x(z.view.a), xb = x(z.view.b);
+      el("rect", { x: m.l, y: pad, width: Math.max(0, xa - m.l), height: ih, fill: "var(--page)", opacity: 0.65 }, nav);
+      el("rect", { x: xb, y: pad, width: Math.max(0, m.l + iw - xb), height: ih, fill: "var(--page)", opacity: 0.65 }, nav);
+      el("rect", { x: xa, y: pad, width: Math.max(2, xb - xa), height: ih, fill: "var(--text-muted)", "fill-opacity": 0.12,
+        stroke: "var(--text-secondary)", "stroke-width": 1.5, rx: 3 }, nav);
+      for (const hx of [xa, xb]) el("rect", { x: hx - 3, y: pad + ih / 2 - 9, width: 6, height: 18, rx: 2, fill: "var(--text-secondary)" }, nav);
+      z.navGeom = { W, m, iw, N };
+    }
+    const navIdx = (e) => {
+      const r = nav.getBoundingClientRect(), { W, m, iw, N } = z.navGeom;
+      return (((e.clientX - r.left) * (W / r.width) - m.l) / iw) * (N - 1);
+    };
+    nav.addEventListener("pointerdown", (e) => {
+      if (!z.navGeom || e.button !== 0) return;
+      nav.setPointerCapture(e.pointerId);
+      const idx = navIdx(e), { a, b } = z.view, span = b - a;
+      const tol = (8 / z.navGeom.iw) * (z.navGeom.N - 1);
+      let mode = "move";
+      if (Math.abs(idx - a) <= tol) mode = "left";
+      else if (Math.abs(idx - b) <= tol) mode = "right";
+      else if (idx < a || idx > b) z.setView(idx - span / 2, idx + span / 2, true);
+      z.navDrag = { mode, i0: idx, a0: z.view.a, b0: z.view.b };
+    });
+    nav.addEventListener("pointermove", (e) => {
+      const nd = z.navDrag; if (!nd) return;
+      const d = navIdx(e) - nd.i0;
+      if (nd.mode === "move") z.setView(nd.a0 + d, nd.b0 + d, true);
+      else if (nd.mode === "left") z.setView(Math.min(nd.a0 + d, nd.b0 - MIN_SPAN), nd.b0);
+      else z.setView(nd.a0, Math.max(nd.b0 + d, nd.a0 + MIN_SPAN));
+    });
+    const endNav = () => { z.navDrag = null; };
+    nav.addEventListener("pointerup", endNav);
+    nav.addEventListener("pointercancel", endNav);
+    nav.addEventListener("dblclick", () => z.reset());
+
+    // 区间按钮与当前区间文字
+    const btns = [...rangeWrap.querySelectorAll(".range-btns button")];
+    btns.forEach((btn) => btn.addEventListener("click", () => {
+      const yrs = +btn.dataset.years;
+      if (!yrs) return z.reset();
+      z.setView(n() - 1 - yrs * 12, n() - 1);
+    }));
+    function updateUI() {
+      const { a, b } = z.view, N = n();
+      label.textContent = z.dates[Math.round(a)] + " ~ " + z.dates[Math.round(b)];
+      btns.forEach((btn) => {
+        const yrs = +btn.dataset.years;
+        const on = yrs ? (Math.round(b) === N - 1 && Math.abs((b - a) - Math.min(N - 1, yrs * 12)) < 0.5) : (a < 0.5 && b > N - 1.5);
+        btn.classList.toggle("on", on);
+      });
+    }
+    return z;
+  }
+
+  // 堆叠面积图：SPY 部分在下，SSO 部分在上，顶边 = 组合总市值；支持缩放和拖动
   const pfSvg = $("pfChart"), pfBox = $("pfBox"), pfTip = $("pfTip");
-  function drawPfStack() {
-    const S = pfState, n = S.len;
+  const pfZoom = createZoom({
+    svg: pfSvg, nav: $("pfNav"), rangeWrap: $("pfRange"), label: $("pfRangeLabel"),
+    onDraw: drawPfStack,
+    onHover: pfHover,
+    onLeave: (z) => { if (z.hair) { z.hair.setAttribute("opacity", 0); z.dot.setAttribute("opacity", 0); } pfTip.style.opacity = 0; },
+    navLines: () => [{ values: pfState.total, color: "var(--series-1)" }, { values: pfState.spy, color: "var(--series-2)" }],
+  });
+
+  function drawPfStack(z) {
+    const S = pfState, n = S.len, { a, b } = z.view;
     const W = pfBox.clientWidth, H = Math.max(300, Math.min(420, W * 0.38));
     const m = { l: 64, r: 92, t: 16, b: 30 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     pfSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); pfSvg.setAttribute("height", H);
     pfSvg.replaceChildren();
-    const maxV = Math.max(...S.total, ...S.invested, 1);
+    const x = (i) => m.l + (b === a ? iw / 2 : ((i - a) / (b - a)) * iw);
+    const i0 = Math.max(0, Math.floor(a)), i1 = Math.min(n - 1, Math.ceil(b));
+    const j0 = Math.max(0, i0 - 1), j1 = Math.min(n - 1, i1 + 1); // 多取一个点，让面积连到边缘
+    // Y 轴按可见区间自适应
+    const maxV = Math.max(1, ...S.total.slice(i0, i1 + 1), ...S.invested.slice(i0, i1 + 1));
     const ticks = niceTicks(maxV, 5), top = ticks[ticks.length - 1];
-    const x = (i) => m.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
     const y = (v) => m.t + ih - (v / top) * ih;
+    z.geom = { W, m, iw, ih, x, y };
+
+    const defs = el("defs", {}, pfSvg);
+    const clip = el("clipPath", { id: "pfClip" }, defs);
+    el("rect", { x: m.l, y: m.t - 2, width: iw, height: ih + 4 }, clip);
+
     for (const t of ticks) {
       el("line", { x1: m.l, x2: m.l + iw, y1: y(t), y2: y(t), stroke: "var(--grid)", "stroke-width": 1 }, pfSvg);
       const tx = el("text", { x: m.l - 10, y: y(t) + 4, "text-anchor": "end" }, pfSvg); tx.textContent = fmtShort(t);
     }
-    const step = monthStep(n - 1, iw);
-    S.dates.forEach((d, i) => {
-      if (monthIndex(d) % step) return;
-      const tx = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, pfSvg);
+    const step = monthStep(b - a, iw);
+    for (let i = i0; i <= i1; i++) {
+      const d = S.dates[i];
+      if (monthIndex(d) % step) continue;
+      const xx = x(i);
+      if (xx < m.l - 1 || xx > m.l + iw + 1) continue;
+      const tx = el("text", { x: xx, y: m.t + ih + 20, "text-anchor": "middle" }, pfSvg);
       tx.textContent = step >= 12 ? d.slice(0, 4) : d;
-    });
+    }
+    const plot = el("g", { "clip-path": "url(#pfClip)" }, pfSvg);
     const ps = S.projStart;
     if (ps != null) {
-      const xs = x(ps - 1);
-      el("rect", { x: xs, y: m.t, width: m.l + iw - xs, height: ih, fill: "var(--critical)", "fill-opacity": 0.07 }, pfSvg);
-      el("line", { x1: xs, x2: xs, y1: m.t, y2: m.t + ih, stroke: "var(--critical)", "stroke-dasharray": "3 3", opacity: 0.7 }, pfSvg);
+      const xs = Math.max(m.l, x(ps - 1)), xe = m.l + iw;
+      if (xe > xs) {
+        el("rect", { x: xs, y: m.t, width: xe - xs, height: ih, fill: "var(--critical)", "fill-opacity": 0.07 }, plot);
+        el("line", { x1: xs, x2: xs, y1: m.t, y2: m.t + ih, stroke: "var(--critical)", "stroke-dasharray": "3 3", opacity: 0.7 }, plot);
+      }
     }
-    // 面积
     const area = (lo, hi) => {
-      let d = "M" + x(0) + "," + y(hi[0]);
-      for (let i = 1; i < n; i++) d += "L" + x(i).toFixed(1) + "," + y(hi[i]).toFixed(1);
-      for (let i = n - 1; i >= 0; i--) d += "L" + x(i).toFixed(1) + "," + y(lo ? lo[i] : 0).toFixed(1);
+      let d = "M" + x(j0).toFixed(1) + "," + y(hi[j0]).toFixed(1);
+      for (let i = j0 + 1; i <= j1; i++) d += "L" + x(i).toFixed(1) + "," + y(hi[i]).toFixed(1);
+      for (let i = j1; i >= j0; i--) d += "L" + x(i).toFixed(1) + "," + y(lo ? lo[i] : 0).toFixed(1);
       return d + "Z";
     };
-    const linePath = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
-    el("path", { d: area(null, S.spy), fill: "var(--series-2)", "fill-opacity": 0.55 }, pfSvg);
-    el("path", { d: area(S.spy, S.total), fill: "var(--series-1)", "fill-opacity": 0.55 }, pfSvg);
+    const linePath = (arr) => { let d = ""; for (let i = j0; i <= j1; i++) d += (i > j0 ? "L" : "M") + x(i).toFixed(1) + "," + y(arr[i]).toFixed(1); return d; };
+    el("path", { d: area(null, S.spy), fill: "var(--series-2)", "fill-opacity": 0.55 }, plot);
+    el("path", { d: area(S.spy, S.total), fill: "var(--series-1)", "fill-opacity": 0.55 }, plot);
     // 两块面积之间留 2px 表面色缝隙；顶边描线
-    el("path", { d: linePath(S.spy), fill: "none", stroke: "var(--surface-1)", "stroke-width": 2 }, pfSvg);
-    el("path", { d: linePath(S.total), fill: "none", stroke: "var(--series-1)", "stroke-width": 2, "stroke-linejoin": "round" }, pfSvg);
-    el("path", { d: linePath(S.invested), fill: "none", stroke: "var(--text-secondary)", "stroke-width": 2, "stroke-dasharray": "5 4" }, pfSvg);
-    // 右侧标注：总市值、累计投入
+    el("path", { d: linePath(S.spy), fill: "none", stroke: "var(--surface-1)", "stroke-width": 2 }, plot);
+    el("path", { d: linePath(S.total), fill: "none", stroke: "var(--series-1)", "stroke-width": 2, "stroke-linejoin": "round" }, plot);
+    el("path", { d: linePath(S.invested), fill: "none", stroke: "var(--text-secondary)", "stroke-width": 2, "stroke-dasharray": "5 4" }, plot);
+    // 右侧标注：可见区间最后一个月的总市值、累计投入
+    const last = Math.min(n - 1, Math.floor(b + 1e-9));
     const labels = [
-      { v: S.total[n - 1], name: T("stackTotal") }, { v: S.invested[n - 1], name: T("stackInv") },
+      { v: S.total[last], name: T("stackTotal") }, { v: S.invested[last], name: T("stackInv") },
     ].map((o) => ({ ...o, yy: y(o.v) })).sort((p, q) => p.yy - q.yy);
     if (labels[1].yy - labels[0].yy < 16) labels[1].yy = labels[0].yy + 16;
     for (const o of labels) { const t = el("text", { x: m.l + iw + 10, y: o.yy + 4, class: "dlabel" }, pfSvg); t.textContent = o.name + fmtShort(o.v); }
     el("line", { x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih, stroke: "var(--border)" }, pfSvg);
+    // 悬停元素（事件由缩放控制器统一处理）
+    z.hair = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-muted)", "stroke-width": 1, opacity: 0 }, pfSvg);
+    z.dot = el("circle", { r: 4, fill: "var(--series-1)", stroke: "var(--surface-1)", "stroke-width": 2, opacity: 0 }, pfSvg);
+  }
 
-    // 悬停
-    const hair = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-muted)", "stroke-width": 1, opacity: 0 }, pfSvg);
-    const dot = el("circle", { r: 4, fill: "var(--series-1)", stroke: "var(--surface-1)", "stroke-width": 2, opacity: 0 }, pfSvg);
-    const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, pfSvg);
-    hit.addEventListener("pointermove", (e) => {
-      const r = pfSvg.getBoundingClientRect();
-      const i = Math.max(0, Math.min(n - 1, Math.round((((e.clientX - r.left) * (W / r.width) - m.l) / iw) * (n - 1))));
-      const xx = x(i);
-      hair.setAttribute("x1", xx); hair.setAttribute("x2", xx); hair.setAttribute("opacity", 0.6);
-      dot.setAttribute("cx", xx); dot.setAttribute("cy", y(S.total[i])); dot.setAttribute("opacity", 1);
-      pfTip.replaceChildren();
-      const dd = document.createElement("div"); dd.className = "tt-date";
-      dd.textContent = S.dates[i] + (ps != null && i >= ps ? T("ttProj") : "");
-      pfTip.appendChild(dd);
-      const rows = [
-        [T("ttPf"), "var(--text-primary)", S.total[i], false],
-        [T("ttSsoPart"), "var(--series-1)", S.sso[i], false],
-        [T("ttSpyPart"), "var(--series-2)", S.spy[i], false],
-        [T("ttInv"), "var(--text-secondary)", S.invested[i], true],
-      ];
-      for (const [nm, col, v, dash] of rows) {
-        const row = document.createElement("div"); row.className = "tt-row";
-        const key = document.createElement("i"); key.style.borderColor = col; if (dash) key.className = "dash";
-        const s = document.createElement("span"); s.textContent = nm;
-        const b = document.createElement("b"); b.textContent = fmtUSD(v);
-        row.append(key, s, b); pfTip.appendChild(row);
-      }
-      pfTip.style.opacity = 1;
-      const tw = pfTip.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
-      pfTip.style.left = Math.max(0, left) + "px"; pfTip.style.top = m.t + 8 + "px";
-    });
-    hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); pfTip.style.opacity = 0; });
+  function pfHover(z, i) {
+    const S = pfState, { x, y, m, W } = z.geom, ps = S.projStart;
+    const xx = x(i);
+    z.hair.setAttribute("x1", xx); z.hair.setAttribute("x2", xx); z.hair.setAttribute("opacity", 0.6);
+    z.dot.setAttribute("cx", xx); z.dot.setAttribute("cy", y(S.total[i])); z.dot.setAttribute("opacity", 1);
+    pfTip.replaceChildren();
+    const dd = document.createElement("div"); dd.className = "tt-date";
+    dd.textContent = S.dates[i] + (ps != null && i >= ps ? T("ttProj") : "");
+    pfTip.appendChild(dd);
+    const rows = [
+      [T("ttPf"), "var(--text-primary)", S.total[i], false],
+      [T("ttSsoPart"), "var(--series-1)", S.sso[i], false],
+      [T("ttSpyPart"), "var(--series-2)", S.spy[i], false],
+      [T("ttInv"), "var(--text-secondary)", S.invested[i], true],
+    ];
+    for (const [nm, col, v, dash] of rows) {
+      const row = document.createElement("div"); row.className = "tt-row";
+      const key = document.createElement("i"); key.style.borderColor = col; if (dash) key.className = "dash";
+      const s = document.createElement("span"); s.textContent = nm;
+      const bb = document.createElement("b"); bb.textContent = fmtUSD(v);
+      row.append(key, s, bb); pfTip.appendChild(row);
+    }
+    pfTip.style.opacity = 1;
+    const tw = pfTip.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
+    pfTip.style.left = Math.max(0, left) + "px"; pfTip.style.top = m.t + 8 + "px";
   }
 
   // 比例—结果小图：x = SSO 比例，y = 指标；圆环 = 当前比例；点击切换比例
