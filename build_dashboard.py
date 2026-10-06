@@ -39,6 +39,6 @@ if __name__ == "__main__":
     html = HTML.read_text(encoding="utf-8")
     html, n = re.subn(r"<!-- ETF_DATA_START -->.*?<!-- ETF_DATA_END -->", lambda _: block, html, flags=re.S)
     if n != 1:
-        raise SystemExit("dashboard.html 中未找到数据占位标记")
+        raise SystemExit("dashboard.html 中未找到数据占位标记 / data placeholder not found in dashboard.html")
     HTML.write_text(html, encoding="utf-8")
-    print(f"已将 {', '.join(TICKERS)} 数据嵌入 {HTML}")
+    print(f"已将 {', '.join(TICKERS)} 数据嵌入 / Embedded {', '.join(TICKERS)} data into {HTML}")

@@ -18,7 +18,7 @@ def download_monthly(ticker: str) -> Path:
     df = yf.Ticker(ticker).history(period="max", interval="1mo", auto_adjust=False)
     df = df.dropna(subset=["Close"])
     if df.empty or not set(COLUMNS) <= set(df.columns):
-        raise RuntimeError(f"{ticker}: 下载结果为空或缺少字段")
+        raise RuntimeError(f"{ticker}: 下载结果为空或缺少字段 / download is empty or missing columns")
     df.index = df.index.tz_localize(None).date
     df.index.name = "Date"
     df = df[COLUMNS]
@@ -27,11 +27,12 @@ def download_monthly(ticker: str) -> Path:
     if out.exists():
         old = pd.read_csv(out)
         if len(df) < len(old):
-            raise RuntimeError(f"{ticker}: 新数据只有 {len(df)} 行，少于已有的 {len(old)} 行，放弃覆盖")
+            raise RuntimeError(f"{ticker}: 新数据只有 {len(df)} 行，少于已有的 {len(old)} 行，放弃覆盖 / "
+                               f"only {len(df)} rows, fewer than the existing {len(old)}; not overwriting")
     tmp = out.with_suffix(".csv.tmp")
     df.to_csv(tmp)
     tmp.replace(out)
-    print(f"{ticker}: {len(df)} 条月度数据，{df.index[0]} ~ {df.index[-1]} -> {out}")
+    print(f"{ticker}: {len(df)} 条月度数据 / monthly rows, {df.index[0]} ~ {df.index[-1]} -> {out}")
     return out
 
 
@@ -42,6 +43,6 @@ if __name__ == "__main__":
         try:
             download_monthly(t)
         except Exception as e:  # 单个失败不影响另一个；保留旧文件
-            print(f"[失败] {e}", file=sys.stderr)
+            print(f"[失败 / FAILED] {e}", file=sys.stderr)
             failed = True
     sys.exit(1 if failed else 0)
