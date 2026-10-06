@@ -138,6 +138,42 @@
   .tooltip .tt-row b { font-variant-numeric: tabular-nums; font-weight: 650; text-align: right; }
   .tooltip .tt-row span { color: var(--text-secondary); }
 
+  /* 组合配置 */
+  .pf-card { margin-top: 16px; }
+  .legend i.sw { width: 12px; height: 12px; border: 0; border-radius: 3px; vertical-align: -1px; }
+  .pf-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; margin-top: 14px; }
+  .pf-total { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); white-space: nowrap; }
+  .pf-total input {
+    font: inherit; color: var(--text-primary); background: transparent; width: 120px;
+    border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px 5px 20px;
+  }
+  .pf-slider { flex: 1; min-width: 320px; display: flex; align-items: center; gap: 16px; }
+  .pf-side { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--text-secondary); min-width: 150px; }
+  .pf-right { justify-content: flex-end; }
+  .pf-side b { color: var(--text-primary); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .pf-side span:last-child { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .pf-range-wrap { flex: 1; }
+  #pfW {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 4px; margin: 8px 0 4px;
+    background: linear-gradient(to right, var(--series-2) var(--p), var(--series-1) var(--p)); cursor: pointer;
+  }
+  #pfW::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--surface-1); border: 2px solid var(--text-primary); box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  #pfW::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--surface-1); border: 2px solid var(--text-primary); }
+  #pfW:focus-visible { outline: 2px solid var(--text-secondary); outline-offset: 4px; }
+  .pf-ticks { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .pf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
+  .pf-kpi { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .pf-kpi .t { color: var(--text-muted); font-size: 12.5px; }
+  .pf-kpi .v { font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .pf-kpi .s { color: var(--text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .pf-frontier { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 6px; }
+  .pf-fr-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .pf-readout { font-size: 12.5px; color: var(--text-primary); font-variant-numeric: tabular-nums; margin-top: 16px; }
+  .pf-frontier svg { cursor: pointer; }
+  @media (max-width: 860px) { .pf-frontier { grid-template-columns: 1fr; } .pf-slider { min-width: 100%; } .pf-side { min-width: 0; } }
   .ctrl-break { flex-basis: 100%; height: 0; }
   .proj-toggle { color: var(--text-primary) !important; font-weight: 600; }
   .proj-card { margin-top: 16px; }
@@ -263,6 +299,51 @@
     </p>
   </div>
 
+  <div class="card chart-card pf-card">
+    <div class="chart-top">
+      <h2>组合配置：每月定投按比例分给 SPY 和 SSO</h2>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--series-2)"></i>SPY 部分</span>
+        <span><i class="sw" style="background:var(--series-1)"></i>SSO 部分</span>
+        <span><i class="dash" style="border-color:var(--text-secondary)"></i>累计投入</span>
+        <span id="pfLegendProj" hidden><i style="border-color:var(--text-secondary);border-top-style:dotted;border-top-width:3px"></i>测算</span>
+      </div>
+    </div>
+    <div class="pf-controls">
+      <label class="pf-total">每月总投入
+        <span class="money"><span>$</span><input type="number" id="pfTotal" value="1000" min="0" step="100"></span>
+      </label>
+      <div class="pf-slider">
+        <div class="pf-side pf-left"><span class="kpi-key" style="background:var(--series-2)"></span>SPY <b id="pfSpyPct"></b><span id="pfSpyAmt"></span></div>
+        <div class="pf-range-wrap">
+          <input type="range" id="pfW" min="0" max="100" step="5" value="50" aria-label="SSO 占每月定投的比例">
+          <div class="pf-ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+        </div>
+        <div class="pf-side pf-right"><span class="kpi-key" style="background:var(--series-1)"></span>SSO <b id="pfSsoPct"></b><span id="pfSsoAmt"></span></div>
+      </div>
+    </div>
+    <div class="pf-kpis" id="pfKpis"></div>
+    <div class="chart-box" id="pfBox">
+      <svg id="pfChart" role="img" aria-label="组合市值构成（SPY 部分 + SSO 部分）"></svg>
+      <div class="tooltip" id="pfTip"></div>
+    </div>
+    <div class="pf-frontier">
+      <div>
+        <div class="pf-fr-head"><h3 class="proj-sub">不同 SSO 比例的年化收益（IRR）</h3><span class="pf-readout" id="pfIrrRead"></span></div>
+        <svg id="pfIrr" role="img" aria-label="SSO 比例与年化收益的关系"></svg>
+      </div>
+      <div>
+        <div class="pf-fr-head"><h3 class="proj-sub">不同 SSO 比例的组合最大回撤</h3><span class="pf-readout" id="pfDdRead"></span></div>
+        <svg id="pfDd" role="img" aria-label="SSO 比例与组合最大回撤的关系"></svg>
+      </div>
+    </div>
+    <p class="note" style="margin-top:10px">
+      每月总投入按滑块比例拆成两笔，分别按上方同样的规则定投（开盘价、整数股、价格高于金额时买 1 股、下跌加倍、管理费、分红），各自持有，不做再平衡。
+      金额较小时，「至少买 1 股」会让实际投入高于计划。<b>组合最大回撤</b>按时间加权净值计算（扣除每月新投入的影响），反映组合本身最多跌过多少。
+      下方两张小图展示 SSO 比例从 0% 到 100%（每 5%）的历史结果，圆环标出当前比例，点击任意点可直接切换到该比例。开启「测算未来一年下跌」时，组合图会接上测算的 12 个月。
+    </p>
+  </div>
+
   <p class="note">
     <b>买入规则：</b>每月按月K<b>开盘价</b>买入<b>整数股</b>：股数 = ⌊定投金额 ÷ 开盘价⌋，花不完的零头不投入（例：定投 $100、价格 $28 → 买 3 股，实际投入 $84）；
     若开盘价高于定投金额，则当月买 1 股，实际投入 = 1 股的价格。<br>
@@ -364,7 +445,7 @@
       }
       const open = r.open * feeMul, close = r.close * feeMul;
       // 1) 月初开盘：定投（整数股，至少 1 股；触发下跌加倍时按 mult 倍）
-      const buying = i < buyUntil;
+      const buying = i < buyUntil && amount > 0; // 定投金额为 0（组合中分配 0%）时不买
       const boost = buying && dipTh != null && r.openChg <= -dipTh;
       const m = boost ? mult : 1;
       const q = buying ? Math.max(Math.ceil(m), Math.floor((amount * m) / open)) : 0;
@@ -964,6 +1045,218 @@
     });
   }
 
+  // ---------- 组合配置 ----------
+  let pfCtx = null, pfState = null;
+
+  // 按 SSO 比例 w（0~1）拆分每月 total，两只 ETF 各自定投后合并
+  function simulatePortfolio(total, w, useProj) {
+    const c = pfCtx, P = useProj ? c.P : null;
+    const rowsSSO = P ? P.rowsSSO : SERIES.SSO, rowsSPY = P ? P.rowsSPY : SERIES.SPY;
+    const bu = P ? P.buyUntil : Infinity;
+    const a = simulate(rowsSSO, c.s, total * w, c.withFee, c.withDiv, c.erSSO, c.dip ? c.thSSO : null, c.mult, bu);
+    const b = simulate(rowsSPY, c.s, total * (1 - w), c.withFee, c.withDiv, c.erSPY, c.dip ? c.thSPY : null, c.mult, bu);
+    const len = a.values.length;
+    const values = [], invested = [], flows = [];
+    // 时间加权净值：每月收益 = 月末市值 ÷（上月末市值 + 本月新投入）
+    let nav = 1, peak = 1, maxDD = 0, prevV = 0;
+    for (let i = 0; i < len; i++) {
+      const V = a.values[i] + b.values[i], f = a.flows[i] + b.flows[i];
+      values.push(V); invested.push(a.invested[i] + b.invested[i]); flows.push(f);
+      const base = prevV + f;
+      if (base > 0 && prevV > 0) { nav *= V / base; peak = Math.max(peak, nav); maxDD = Math.min(maxDD, nav / peak - 1); }
+      prevV = V;
+    }
+    return { sso: a, spy: b, values, invested, flows, maxDD };
+  }
+
+  function renderPortfolio() {
+    if (!pfCtx) return;
+    const c = pfCtx, n = c.n;
+    const total = Math.max(0, parseFloat($("pfTotal").value) || 0);
+    const wPct = +$("pfW").value, w = wPct / 100;
+    $("pfW").style.setProperty("--p", wPct + "%");
+    $("pfSpyPct").textContent = (100 - wPct) + "%"; $("pfSsoPct").textContent = wPct + "%";
+    $("pfSpyAmt").textContent = "每月 " + fmtUSD(total * (1 - w));
+    $("pfSsoAmt").textContent = "每月 " + fmtUSD(total * w);
+    $("pfLegendProj").hidden = !c.P;
+
+    // 历史结果（截至最新）与图表数据（开启测算时含未来 12 个月）
+    const hist = simulatePortfolio(total, w, false);
+    const chart = c.P ? simulatePortfolio(total, w, true) : hist;
+    const V = hist.values[n - 1], inv = hist.invested[n - 1], r = irr(hist.flows, V);
+
+    // KPI
+    const k = $("pfKpis"); k.replaceChildren();
+    const tile = (t, v, s, cls) => {
+      const d = document.createElement("div"); d.className = "pf-kpi";
+      const a = document.createElement("div"); a.className = "t"; a.textContent = t;
+      const b = document.createElement("div"); b.className = "v" + (cls ? " " + cls : ""); b.textContent = v;
+      const e = document.createElement("div"); e.className = "s"; e.textContent = s || "";
+      d.append(a, b, e); k.appendChild(d);
+    };
+    tile("实际投入", fmtUSD(inv), "计划 " + fmtUSD(total * n));
+    tile("组合当前市值", fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
+    tile("收益倍数", inv > 0 ? (V / inv).toFixed(2) + "×" : "—", "盈亏 " + signUSD(V - inv), V >= inv ? "pos" : "neg");
+    tile("年化收益（IRR）", isNaN(r) ? "—" : fmtPct(r), "资金加权", r >= 0 ? "pos" : "neg");
+    tile("组合最大回撤", (hist.maxDD * 100).toFixed(1) + "%", "时间加权净值", "neg");
+    if (c.P) {
+      const Ve = chart.values[chart.values.length - 1], newInv = chart.invested[chart.invested.length - 1] - inv;
+      tile("测算一年后市值", fmtUSD(Ve), signPct(Ve / V - 1) + " · 新增投入 " + fmtShort(newInv), Ve >= V ? "pos" : "neg");
+    }
+
+    // 不同 SSO 比例的历史结果（每 5% 一个点）
+    const frontier = [];
+    for (let p = 0; p <= 100; p += 5) {
+      const sim = p === wPct ? hist : simulatePortfolio(total, p / 100, false);
+      const v = sim.values[n - 1];
+      frontier.push({ p, irr: irr(sim.flows, v), dd: sim.maxDD, value: v });
+    }
+
+    const xs = chart.values.length;
+    pfState = {
+      dates: c.P ? c.dates.concat(c.P.dates) : c.dates, projStart: c.P ? n : null,
+      spy: chart.spy.values, sso: chart.sso.values, total: chart.values, invested: chart.invested, len: xs,
+      frontier, wPct,
+    };
+    drawPortfolio();
+  }
+
+  function drawPortfolio() {
+    drawPfStack();
+    drawFrontier($("pfIrr"), "irr", $("pfIrrRead"), (v) => (isNaN(v) ? "—" : fmtPct(v)));
+    drawFrontier($("pfDd"), "dd", $("pfDdRead"), (v) => (v * 100).toFixed(1) + "%");
+  }
+
+  // 堆叠面积图：SPY 部分在下，SSO 部分在上，顶边 = 组合总市值
+  const pfSvg = $("pfChart"), pfBox = $("pfBox"), pfTip = $("pfTip");
+  function drawPfStack() {
+    const S = pfState, n = S.len;
+    const W = pfBox.clientWidth, H = Math.max(300, Math.min(420, W * 0.38));
+    const m = { l: 64, r: 92, t: 16, b: 30 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    pfSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); pfSvg.setAttribute("height", H);
+    pfSvg.replaceChildren();
+    const maxV = Math.max(...S.total, ...S.invested, 1);
+    const ticks = niceTicks(maxV, 5), top = ticks[ticks.length - 1];
+    const x = (i) => m.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
+    const y = (v) => m.t + ih - (v / top) * ih;
+    for (const t of ticks) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(t), y2: y(t), stroke: "var(--grid)", "stroke-width": 1 }, pfSvg);
+      const tx = el("text", { x: m.l - 10, y: y(t) + 4, "text-anchor": "end" }, pfSvg); tx.textContent = fmtShort(t);
+    }
+    const step = monthStep(n - 1, iw);
+    S.dates.forEach((d, i) => {
+      if (monthIndex(d) % step) return;
+      const tx = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, pfSvg);
+      tx.textContent = step >= 12 ? d.slice(0, 4) : d;
+    });
+    const ps = S.projStart;
+    if (ps != null) {
+      const xs = x(ps - 1);
+      el("rect", { x: xs, y: m.t, width: m.l + iw - xs, height: ih, fill: "var(--critical)", "fill-opacity": 0.07 }, pfSvg);
+      el("line", { x1: xs, x2: xs, y1: m.t, y2: m.t + ih, stroke: "var(--critical)", "stroke-dasharray": "3 3", opacity: 0.7 }, pfSvg);
+    }
+    // 面积
+    const area = (lo, hi) => {
+      let d = "M" + x(0) + "," + y(hi[0]);
+      for (let i = 1; i < n; i++) d += "L" + x(i).toFixed(1) + "," + y(hi[i]).toFixed(1);
+      for (let i = n - 1; i >= 0; i--) d += "L" + x(i).toFixed(1) + "," + y(lo ? lo[i] : 0).toFixed(1);
+      return d + "Z";
+    };
+    const linePath = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
+    el("path", { d: area(null, S.spy), fill: "var(--series-2)", "fill-opacity": 0.55 }, pfSvg);
+    el("path", { d: area(S.spy, S.total), fill: "var(--series-1)", "fill-opacity": 0.55 }, pfSvg);
+    // 两块面积之间留 2px 表面色缝隙；顶边描线
+    el("path", { d: linePath(S.spy), fill: "none", stroke: "var(--surface-1)", "stroke-width": 2 }, pfSvg);
+    el("path", { d: linePath(S.total), fill: "none", stroke: "var(--series-1)", "stroke-width": 2, "stroke-linejoin": "round" }, pfSvg);
+    el("path", { d: linePath(S.invested), fill: "none", stroke: "var(--text-secondary)", "stroke-width": 2, "stroke-dasharray": "5 4" }, pfSvg);
+    // 右侧标注：总市值、累计投入
+    const labels = [
+      { v: S.total[n - 1], name: "组合 " }, { v: S.invested[n - 1], name: "投入 " },
+    ].map((o) => ({ ...o, yy: y(o.v) })).sort((p, q) => p.yy - q.yy);
+    if (labels[1].yy - labels[0].yy < 16) labels[1].yy = labels[0].yy + 16;
+    for (const o of labels) { const t = el("text", { x: m.l + iw + 10, y: o.yy + 4, class: "dlabel" }, pfSvg); t.textContent = o.name + fmtShort(o.v); }
+    el("line", { x1: m.l, x2: m.l + iw, y1: m.t + ih, y2: m.t + ih, stroke: "var(--border)" }, pfSvg);
+
+    // 悬停
+    const hair = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-muted)", "stroke-width": 1, opacity: 0 }, pfSvg);
+    const dot = el("circle", { r: 4, fill: "var(--series-1)", stroke: "var(--surface-1)", "stroke-width": 2, opacity: 0 }, pfSvg);
+    const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, pfSvg);
+    hit.addEventListener("pointermove", (e) => {
+      const r = pfSvg.getBoundingClientRect();
+      const i = Math.max(0, Math.min(n - 1, Math.round((((e.clientX - r.left) * (W / r.width) - m.l) / iw) * (n - 1))));
+      const xx = x(i);
+      hair.setAttribute("x1", xx); hair.setAttribute("x2", xx); hair.setAttribute("opacity", 0.6);
+      dot.setAttribute("cx", xx); dot.setAttribute("cy", y(S.total[i])); dot.setAttribute("opacity", 1);
+      pfTip.replaceChildren();
+      const dd = document.createElement("div"); dd.className = "tt-date";
+      dd.textContent = S.dates[i] + (ps != null && i >= ps ? "（测算）" : "");
+      pfTip.appendChild(dd);
+      const rows = [
+        ["组合市值", "var(--text-primary)", S.total[i], false],
+        ["SSO 部分", "var(--series-1)", S.sso[i], false],
+        ["SPY 部分", "var(--series-2)", S.spy[i], false],
+        ["累计投入", "var(--text-secondary)", S.invested[i], true],
+      ];
+      for (const [nm, col, v, dash] of rows) {
+        const row = document.createElement("div"); row.className = "tt-row";
+        const key = document.createElement("i"); key.style.borderColor = col; if (dash) key.className = "dash";
+        const s = document.createElement("span"); s.textContent = nm;
+        const b = document.createElement("b"); b.textContent = fmtUSD(v);
+        row.append(key, s, b); pfTip.appendChild(row);
+      }
+      pfTip.style.opacity = 1;
+      const tw = pfTip.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
+      pfTip.style.left = Math.max(0, left) + "px"; pfTip.style.top = m.t + 8 + "px";
+    });
+    hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); pfTip.style.opacity = 0; });
+  }
+
+  // 比例—结果小图：x = SSO 比例，y = 指标；圆环 = 当前比例；点击切换比例
+  function drawFrontier(svgEl, key, readEl, fmt) {
+    const F = pfState.frontier, cur = pfState.wPct;
+    const W = svgEl.parentElement.clientWidth, H = 190, m = { l: 56, r: 16, t: 12, b: 28 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    svgEl.setAttribute("viewBox", `0 0 ${W} ${H}`); svgEl.setAttribute("height", H);
+    svgEl.replaceChildren();
+    const vals = F.map((f) => f[key]).filter((v) => !isNaN(v));
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (key === "dd") hi = 0;
+    // 选一个整齐的刻度步长，让刻度不超过 5 格
+    const span = Math.max(hi - lo, 0.005);
+    const stepV = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.25].find((s) => span / s <= 5) || 0.25;
+    lo = Math.floor(lo / stepV - 1e-9) * stepV; hi = Math.ceil(hi / stepV + 1e-9) * stepV;
+    if (key === "dd") hi = 0;
+    const x = (p) => m.l + (p / 100) * iw;
+    const y = (v) => m.t + ((hi - v) / (hi - lo)) * ih;
+    const nt = Math.round((hi - lo) / stepV);
+    for (let k = 0; k <= nt; k++) {
+      const v = lo + stepV * k;
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: "var(--grid)" }, svgEl);
+      const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svgEl); t.textContent = (v * 100).toFixed(stepV < 0.01 ? 1 : 0) + "%";
+    }
+    for (const p of [0, 25, 50, 75, 100]) {
+      const t = el("text", { x: x(p), y: m.t + ih + 18, "text-anchor": "middle" }, svgEl); t.textContent = "SSO " + p + "%";
+    }
+    const pts = F.filter((f) => !isNaN(f[key]));
+    el("path", { d: pts.map((f, i) => (i ? "L" : "M") + x(f.p).toFixed(1) + "," + y(f[key]).toFixed(1)).join(""),
+      fill: "none", stroke: "var(--text-secondary)", "stroke-width": 2, "stroke-linejoin": "round" }, svgEl);
+    const setRead = (f, hover) => {
+      readEl.textContent = (hover ? "" : "当前 ") + "SPY " + (100 - f.p) + "% / SSO " + f.p + "%：" + fmt(f[key]);
+    };
+    const curF = F.find((f) => f.p === cur) || F[0];
+    for (const f of pts) {
+      const isCur = f.p === cur;
+      el("circle", { cx: x(f.p), cy: y(f[key]), r: isCur ? 7 : 4,
+        fill: isCur ? "var(--surface-1)" : "var(--text-secondary)", stroke: isCur ? "var(--text-primary)" : "var(--surface-1)", "stroke-width": isCur ? 3 : 2 }, svgEl);
+      const hit = el("circle", { cx: x(f.p), cy: y(f[key]), r: 12, fill: "transparent" }, svgEl);
+      hit.addEventListener("pointerenter", () => setRead(f, true));
+      hit.addEventListener("pointerleave", () => setRead(curF, false));
+      hit.addEventListener("click", () => { $("pfW").value = f.p; renderPortfolio(); });
+    }
+    setRead(curF, false);
+  }
+
   // ---------- 主流程 ----------
   function update() {
     const amount = Math.max(0, parseFloat($("amount").value) || 0);
@@ -992,7 +1285,7 @@
       const rowsSPY = SERIES.SPY.concat(projectRows(SERIES.SPY, fSPY));
       const buyUntil = $("projBuy").checked ? Infinity : months.length;
       P = {
-        D, sigma, fSSO, fSPY, fIdx: Math.pow(1 - D, 1 / 12),
+        D, sigma, fSSO, fSPY, fIdx: Math.pow(1 - D, 1 / 12), rowsSSO, rowsSPY, buyUntil,
         dates: nextMonths(months[months.length - 1], PROJ_MONTHS),
         sso: simulate(rowsSSO, s, amount, withFee, withDiv, erSSO, dip ? thSSO : null, mult, buyUntil),
         spy: simulate(rowsSPY, s, amount, withFee, withDiv, erSPY, dip ? thSPY : null, mult, buyUntil),
@@ -1028,6 +1321,9 @@
       ],
     };
     renderProjection(P, n, sso, spy);
+    // 组合配置沿用同一套设置（起始月、管理费、分红、下跌加倍、测算）
+    pfCtx = { s, n, dates, withFee, withDiv, erSSO, erSPY, dip, thSSO, thSPY, mult, P };
+    renderPortfolio();
     $("legendDip").style.display = dip ? "" : "none";
     $("legendProj").hidden = !P;
     if (amount > 0) draw(); else svg.replaceChildren();
@@ -1047,7 +1343,9 @@
   }
 
   for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projDrop", "projVol", "projBuy"]) $(id).addEventListener("input", update);
-  window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); });
+  // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
+  for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
+  window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); });
   $("themeBtn").addEventListener("click", () => {
     const root = document.documentElement;
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
