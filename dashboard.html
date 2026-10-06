@@ -316,8 +316,8 @@
       <div class="pf-slider">
         <div class="pf-side pf-left"><span class="kpi-key" style="background:var(--series-2)"></span>SPY <b id="pfSpyPct"></b><span id="pfSpyAmt"></span></div>
         <div class="pf-range-wrap">
-          <input type="range" id="pfW" min="0" max="100" step="5" value="50" aria-label="SSO 占每月定投的比例">
-          <div class="pf-ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+          <input type="range" id="pfW" min="0" max="100" step="5" value="50" aria-label="SPY 占每月定投的比例（其余为 SSO）">
+          <div class="pf-ticks"><span>SPY 0 : SSO 100</span><span>25 : 75</span><span>50 : 50</span><span>75 : 25</span><span>SPY 100 : SSO 0</span></div>
         </div>
         <div class="pf-side pf-right"><span class="kpi-key" style="background:var(--series-1)"></span>SSO <b id="pfSsoPct"></b><span id="pfSsoAmt"></span></div>
       </div>
@@ -329,18 +329,18 @@
     </div>
     <div class="pf-frontier">
       <div>
-        <div class="pf-fr-head"><h3 class="proj-sub">不同 SSO 比例的年化收益（IRR）</h3><span class="pf-readout" id="pfIrrRead"></span></div>
+        <div class="pf-fr-head"><h3 class="proj-sub">不同 SPY : SSO 比例的年化收益（IRR）</h3><span class="pf-readout" id="pfIrrRead"></span></div>
         <svg id="pfIrr" role="img" aria-label="SSO 比例与年化收益的关系"></svg>
       </div>
       <div>
-        <div class="pf-fr-head"><h3 class="proj-sub">不同 SSO 比例的组合最大回撤</h3><span class="pf-readout" id="pfDdRead"></span></div>
+        <div class="pf-fr-head"><h3 class="proj-sub">不同 SPY : SSO 比例的组合最大回撤</h3><span class="pf-readout" id="pfDdRead"></span></div>
         <svg id="pfDd" role="img" aria-label="SSO 比例与组合最大回撤的关系"></svg>
       </div>
     </div>
     <p class="note" style="margin-top:10px">
       每月总投入按滑块比例拆成两笔，分别按上方同样的规则定投（开盘价、整数股、价格高于金额时买 1 股、下跌加倍、管理费、分红），各自持有，不做再平衡。
       金额较小时，「至少买 1 股」会让实际投入高于计划。<b>组合最大回撤</b>按时间加权净值计算（扣除每月新投入的影响），反映组合本身最多跌过多少。
-      下方两张小图展示 SSO 比例从 0% 到 100%（每 5%）的历史结果，圆环标出当前比例，点击任意点可直接切换到该比例。开启「测算未来一年下跌」时，组合图会接上测算的 12 个月。
+      滑块位置代表 SPY 占比（左侧橙色段长度 = SPY 比例，右侧蓝色段 = SSO 比例）。下方两张小图横轴方向与滑块一致，展示 SPY : SSO 从 0 : 100 到 100 : 0（每 5%）的历史结果，圆环标出当前比例，点击任意点可直接切换到该比例。开启「测算未来一年下跌」时，组合图会接上测算的 12 个月。
     </p>
   </div>
 
@@ -1073,8 +1073,9 @@
     if (!pfCtx) return;
     const c = pfCtx, n = c.n;
     const total = Math.max(0, parseFloat($("pfTotal").value) || 0);
-    const wPct = +$("pfW").value, w = wPct / 100;
-    $("pfW").style.setProperty("--p", wPct + "%");
+    // 滑块位置 = SPY 占比：左边橙色段越长 SPY 越多，右边蓝色段是 SSO 的剩余部分
+    const spyPct = +$("pfW").value, wPct = 100 - spyPct, w = wPct / 100;
+    $("pfW").style.setProperty("--p", spyPct + "%");
     $("pfSpyPct").textContent = (100 - wPct) + "%"; $("pfSsoPct").textContent = wPct + "%";
     $("pfSpyAmt").textContent = "每月 " + fmtUSD(total * (1 - w));
     $("pfSsoAmt").textContent = "每月 " + fmtUSD(total * w);
@@ -1227,7 +1228,7 @@
     const stepV = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.25].find((s) => span / s <= 5) || 0.25;
     lo = Math.floor(lo / stepV - 1e-9) * stepV; hi = Math.ceil(hi / stepV + 1e-9) * stepV;
     if (key === "dd") hi = 0;
-    const x = (p) => m.l + (p / 100) * iw;
+    const x = (p) => m.l + ((100 - p) / 100) * iw; // p 为 SSO 比例；横轴与滑块一致，按 SPY 占比从左到右
     const y = (v) => m.t + ((hi - v) / (hi - lo)) * ih;
     const nt = Math.round((hi - lo) / stepV);
     for (let k = 0; k <= nt; k++) {
@@ -1235,8 +1236,8 @@
       el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: "var(--grid)" }, svgEl);
       const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svgEl); t.textContent = (v * 100).toFixed(stepV < 0.01 ? 1 : 0) + "%";
     }
-    for (const p of [0, 25, 50, 75, 100]) {
-      const t = el("text", { x: x(p), y: m.t + ih + 18, "text-anchor": "middle" }, svgEl); t.textContent = "SSO " + p + "%";
+    for (const p of [100, 75, 50, 25, 0]) {
+      const t = el("text", { x: x(p), y: m.t + ih + 18, "text-anchor": "middle" }, svgEl); t.textContent = (100 - p) + " : " + p;
     }
     const pts = F.filter((f) => !isNaN(f[key]));
     el("path", { d: pts.map((f, i) => (i ? "L" : "M") + x(f.p).toFixed(1) + "," + y(f[key]).toFixed(1)).join(""),
@@ -1252,7 +1253,7 @@
       const hit = el("circle", { cx: x(f.p), cy: y(f[key]), r: 12, fill: "transparent" }, svgEl);
       hit.addEventListener("pointerenter", () => setRead(f, true));
       hit.addEventListener("pointerleave", () => setRead(curF, false));
-      hit.addEventListener("click", () => { $("pfW").value = f.p; renderPortfolio(); });
+      hit.addEventListener("click", () => { $("pfW").value = 100 - f.p; renderPortfolio(); });
     }
     setRead(curF, false);
   }
