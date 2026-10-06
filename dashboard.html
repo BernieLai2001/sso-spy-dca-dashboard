@@ -978,7 +978,9 @@
     const { idx } = navIndex(e), { a, b } = state.view, span = b - a;
     const tol = (8 / state.navGeom.iw) * (state.navGeom.n - 1); // 手柄的可点范围 ±8px
     let mode = "move";
-    if (Math.abs(idx - a) <= tol) mode = "left";
+    const narrow = (b - a) < 3 * tol; // 窗口很窄时两端手柄几乎重合：框内按下一律当作平移
+    if (narrow && idx >= a - tol && idx <= b + tol) mode = "move";
+    else if (Math.abs(idx - a) <= tol) mode = "left";
     else if (Math.abs(idx - b) <= tol) mode = "right";
     else if (idx < a || idx > b) setView(idx - span / 2, idx + span / 2, true); // 点在窗口外：窗口跳到该处
     state.navDrag = { mode, i0: idx, a0: state.view.a, b0: state.view.b };
@@ -1419,7 +1421,9 @@
       const idx = navIdx(e), { a, b } = z.view, span = b - a;
       const tol = (8 / z.navGeom.iw) * (z.navGeom.N - 1);
       let mode = "move";
-      if (Math.abs(idx - a) <= tol) mode = "left";
+      const narrow = (b - a) < 3 * tol; // 窗口很窄时两端手柄几乎重合：框内按下一律当作平移
+      if (narrow && idx >= a - tol && idx <= b + tol) mode = "move";
+      else if (Math.abs(idx - a) <= tol) mode = "left";
       else if (Math.abs(idx - b) <= tol) mode = "right";
       else if (idx < a || idx > b) z.setView(idx - span / 2, idx + span / 2, true);
       z.navDrag = { mode, i0: idx, a0: z.view.a, b0: z.view.b };
