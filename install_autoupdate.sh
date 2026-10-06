@@ -16,14 +16,14 @@ if [ "$(uname)" != "Darwin" ]; then
   exit 1
 fi
 
-launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
-
 if [ "${1:-}" = "--uninstall" ]; then
+  launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
   rm -f "$PLIST"
   echo "已卸载 / Uninstalled: $LABEL"
   exit 0
 fi
 
+# 先检查再动已安装的任务，检查不通过时保留原任务 / check first, so a failed check leaves any existing job untouched
 # macOS 不允许后台任务访问「桌面 / 文稿 / 下载」/ macOS blocks background jobs from Desktop, Documents, Downloads
 case "$DIR" in
   "$HOME/Desktop"*|"$HOME/Documents"*|"$HOME/Downloads"*)
@@ -31,6 +31,8 @@ case "$DIR" in
     echo "The project is inside Desktop / Documents / Downloads, which macOS blocks for background jobs. Move it elsewhere first (e.g. ~/Projects)."
     exit 1 ;;
 esac
+
+launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
 
 chmod +x "$DIR/update.sh"
 mkdir -p "$HOME/Library/LaunchAgents"
