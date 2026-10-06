@@ -169,7 +169,7 @@
   .pf-kpi .v { font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .pf-kpi .s { color: var(--text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; }
   .pf-frontier { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 6px; }
-  .pf-fr-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .pf-fr-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 8px; }
   .pf-readout { font-size: 12.5px; color: var(--text-primary); font-variant-numeric: tabular-nums; margin-top: 16px; }
   .pf-frontier svg { cursor: pointer; }
   @media (max-width: 860px) { .pf-frontier { grid-template-columns: 1fr; } .pf-slider { min-width: 100%; } }
@@ -329,18 +329,18 @@
     </div>
     <div class="pf-frontier">
       <div>
-        <div class="pf-fr-head"><h3 class="proj-sub">不同 SPY : SSO 比例的年化收益（IRR）</h3><span class="pf-readout" id="pfIrrRead"></span></div>
+        <div class="pf-fr-head"><h3 class="proj-sub" id="pfIrrTitle">不同 SPY : SSO 比例的年化收益（IRR）</h3><span class="pf-readout" id="pfIrrRead"></span></div>
         <svg id="pfIrr" role="img" aria-label="SSO 比例与年化收益的关系"></svg>
       </div>
       <div>
-        <div class="pf-fr-head"><h3 class="proj-sub">不同 SPY : SSO 比例的组合最大回撤</h3><span class="pf-readout" id="pfDdRead"></span></div>
+        <div class="pf-fr-head"><h3 class="proj-sub" id="pfDdTitle">不同 SPY : SSO 比例的组合最大回撤</h3><span class="pf-readout" id="pfDdRead"></span></div>
         <svg id="pfDd" role="img" aria-label="SSO 比例与组合最大回撤的关系"></svg>
       </div>
     </div>
     <p class="note" style="margin-top:10px">
       每月总投入按滑块比例拆成两笔，分别按上方同样的规则定投（开盘价、整数股、价格高于金额时买 1 股、下跌加倍、管理费、分红），各自持有，不做再平衡。
       金额较小时，「至少买 1 股」会让实际投入高于计划。<b>组合最大回撤</b>按时间加权净值计算（扣除每月新投入的影响），反映组合本身最多跌过多少。
-      滑块位置代表 SPY 占比（左侧橙色段长度 = SPY 比例，右侧蓝色段 = SSO 比例）。下方两张小图横轴方向与滑块一致，展示 SPY : SSO 从 0 : 100 到 100 : 0（每 5%）的历史结果，圆环标出当前比例，点击任意点可直接切换到该比例。开启「测算未来一年下跌」时，组合图会接上测算的 12 个月。
+      滑块位置代表 SPY 占比（左侧橙色段长度 = SPY 比例，右侧蓝色段 = SSO 比例）。下方两张小图横轴方向与滑块一致，展示 SPY : SSO 从 0 : 100 到 100 : 0（每 5%）的结果，圆环标出当前比例，点击任意点可直接切换到该比例。开启「测算未来一年下跌」时，组合图会接上测算的 12 个月，收益倍数、IRR、最大回撤和两张小图都改为按「历史 + 测算一年」计算（副标题给出当前值作对照）。
     </p>
   </div>
 
@@ -1095,23 +1095,38 @@
       const e = document.createElement("div"); e.className = "s"; e.textContent = s || "";
       d.append(a, b, e); k.appendChild(d);
     };
-    tile("实际投入", fmtUSD(inv), "计划 " + fmtUSD(total * n));
-    tile("组合当前市值", fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
-    tile("收益倍数", inv > 0 ? (V / inv).toFixed(2) + "×" : "—", "盈亏 " + signUSD(V - inv), V >= inv ? "pos" : "neg");
-    tile("年化收益（IRR）", isNaN(r) ? "—" : fmtPct(r), "资金加权", r >= 0 ? "pos" : "neg");
-    tile("组合最大回撤", (hist.maxDD * 100).toFixed(1) + "%", "时间加权净值", "neg");
-    if (c.P) {
-      const Ve = chart.values[chart.values.length - 1], newInv = chart.invested[chart.invested.length - 1] - inv;
-      tile("测算一年后市值", fmtUSD(Ve), signPct(Ve / V - 1) + " · 新增投入 " + fmtShort(newInv), Ve >= V ? "pos" : "neg");
+    const fmtIrr = (x) => (isNaN(x) ? "—" : fmtPct(x));
+    const fmtDD = (x) => (x * 100).toFixed(1) + "%";
+    if (!c.P) {
+      tile("实际投入", fmtUSD(inv), "计划 " + fmtUSD(total * n));
+      tile("组合当前市值", fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
+      tile("收益倍数", inv > 0 ? (V / inv).toFixed(2) + "×" : "—", "盈亏 " + signUSD(V - inv), V >= inv ? "pos" : "neg");
+      tile("年化收益（IRR）", fmtIrr(r), "资金加权", r >= 0 ? "pos" : "neg");
+      tile("组合最大回撤", fmtDD(hist.maxDD), "时间加权净值", "neg");
+    } else {
+      // 开启下跌测算：收益倍数、IRR、回撤都按「历史 + 测算一年」计算，副标题给出当前值作对照
+      const L = chart.values.length - 1;
+      const Ve = chart.values[L], invE = chart.invested[L], rE = irr(chart.flows, Ve);
+      tile("实际投入（测算后）", fmtUSD(invE), "当前 " + fmtUSD(inv) + " · 新增 " + fmtShort(invE - inv));
+      tile("组合当前市值", fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
+      tile("测算一年后市值", fmtUSD(Ve), "较当前 " + signPct(Ve / V - 1) + " · 盈亏 " + signUSD(Ve - invE), Ve >= V ? "pos" : "neg");
+      tile("收益倍数（测算后）", invE > 0 ? (Ve / invE).toFixed(2) + "×" : "—", "当前 " + (inv > 0 ? (V / inv).toFixed(2) + "×" : "—"), Ve >= invE ? "pos" : "neg");
+      tile("年化收益 IRR（测算后）", fmtIrr(rE), "当前 " + fmtIrr(r), rE >= 0 ? "pos" : "neg");
+      tile("组合最大回撤（含测算）", fmtDD(chart.maxDD), "当前 " + fmtDD(hist.maxDD), "neg");
     }
 
-    // 不同 SSO 比例的历史结果（每 5% 一个点）
+    // 不同 SPY : SSO 比例的结果（每 5% 一个点）；开启测算时按「历史 + 测算一年」计算
+    const useP = !!c.P;
+    const curSim = useP ? chart : hist;
     const frontier = [];
     for (let p = 0; p <= 100; p += 5) {
-      const sim = p === wPct ? hist : simulatePortfolio(total, p / 100, false);
-      const v = sim.values[n - 1];
+      const sim = p === wPct ? curSim : simulatePortfolio(total, p / 100, useP);
+      const v = sim.values[sim.values.length - 1];
       frontier.push({ p, irr: irr(sim.flows, v), dd: sim.maxDD, value: v });
     }
+    const suffix = useP ? `（含测算：S&P 一年 −${Math.round(c.P.D * 100)}%）` : "（历史至今）";
+    $("pfIrrTitle").textContent = "不同 SPY : SSO 比例的年化收益（IRR）" + suffix;
+    $("pfDdTitle").textContent = "不同 SPY : SSO 比例的组合最大回撤" + suffix;
 
     const xs = chart.values.length;
     pfState = {
