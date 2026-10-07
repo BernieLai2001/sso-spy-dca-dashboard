@@ -71,6 +71,12 @@
     display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
     padding: 14px 16px; margin-bottom: 16px;
     background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    transition: box-shadow .15s;
+  }
+  /* 控制栏吸顶：往下滑时固定在窗口顶部，随时可调（窄屏会折成多行、太占空间，不吸顶） */
+  @media (min-width: 700px) {
+    .controls { position: sticky; top: 8px; z-index: 20; }
+    .controls.stuck { box-shadow: 0 6px 20px rgba(0, 0, 0, .28); }
   }
   .controls label { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); white-space: nowrap; }
   .controls input[type="number"], .controls input[type="month"] {
@@ -1703,6 +1709,11 @@
     try { localStorage.setItem("dashLang", LANG); } catch (e) {}
     applyStatic(); setSubtitle(); update();
   });
+  // 控制栏吸顶后加阴影，与下方滚动经过的内容区分
+  const ctrlBar = document.querySelector(".controls");
+  const markStuck = () => ctrlBar.classList.toggle("stuck", ctrlBar.getBoundingClientRect().top <= 8.5 && window.scrollY > 0);
+  window.addEventListener("scroll", markStuck, { passive: true });
+  markStuck();
   $("themeBtn").addEventListener("click", () => {
     const root = document.documentElement;
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
