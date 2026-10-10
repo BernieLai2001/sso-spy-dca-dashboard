@@ -1,7 +1,8 @@
 """下载 SSO（ProShares Ultra S&P500，2倍做多标普500）与 SPY 的月K线数据，以及
 十年期美债收益率（无风险收益基准）和 CPI（通货膨胀），保存为 CSV。
 
-数据来源：Yahoo Finance（通过 yfinance）；FRED 公开 CSV（GS10、CPIAUCSL，无需 API key）
+数据来源：Yahoo Finance（通过 yfinance）；FRED 公开 CSV（GS10、CPIAUCSL，无需 API key）；
+multpl.com（标普 500 市盈率 P/E 与席勒市盈率 CAPE，1871 年起月度）
 下载失败或数据异常时不会覆盖已有 CSV，并以非零状态退出。
 """
 import sys
@@ -16,6 +17,9 @@ COLUMNS = ["Open", "High", "Low", "Close", "Adj Close", "Volume", "Dividends", "
 # FRED：GS10 = 十年期国债收益率（月均，%）；CPIAUCSL = CPI（城市所有消费者，季调，1982-84=100）
 FRED_SERIES = {"GS10": "GS10", "CPI": "CPIAUCSL"}
 FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
+# multpl.com：标普 500 市盈率（过去 12 个月盈利）与席勒市盈率（CAPE，10 年经通胀调整平均盈利）
+PE_PAGES = {"PE": "https://www.multpl.com/s-p-500-pe-ratio/table/by-month",
+            "CAPE": "https://www.multpl.com/shiller-pe/table/by-month"}
 
 
 def download_monthly(ticker: str) -> Path:
@@ -62,10 +66,37 @@ def download_macro() -> Path:
     return out
 
 
+def download_pe() -> Path:
+    """标普 500 市盈率与 CAPE，按月合并 / S&P 500 P/E and CAPE merged by month."""
+    import io
+    import re
+    import urllib.request
+
+    frames = []
+    for col, url in PE_PAGES.items():
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        html = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")
+        t = pd.read_html(io.StringIO(html))[0]
+        t.columns = ["Date", col]
+        t["Date"] = pd.to_datetime(t["Date"], errors="coerce").dt.to_period("M").dt.to_timestamp()
+        # 数值前可能带估算标记（如 †），只取数字 / strip estimate markers
+        t[col] = pd.to_numeric(t[col].astype(str).str.extract(r"([\d.]+)")[0], errors="coerce")
+        frames.append(t.dropna().drop_duplicates("Date").set_index("Date"))
+    df = pd.concat(frames, axis=1).sort_index()
+    if len(df) < 1000:
+        raise RuntimeError(f"市盈率数据只有 {len(df)} 行，可能页面结构变了 / only {len(df)} rows; page layout may have changed")
+    out = DATA_DIR / "PE_monthly.csv"
+    tmp = out.with_suffix(".csv.tmp")
+    df.to_csv(tmp, index_label="Date", date_format="%Y-%m-%d")
+    tmp.replace(out)
+    print(f"P/E 与 CAPE：{df.index.min().date()} ~ {df.index.max().date()}，{len(df)} 个月 -> {out}")
+    return out
+
+
 if __name__ == "__main__":
     DATA_DIR.mkdir(exist_ok=True)
     failed = False
-    for job in [lambda t=t: download_monthly(t) for t in TICKERS] + [download_macro]:
+    for job in [lambda t=t: download_monthly(t) for t in TICKERS] + [download_macro, download_pe]:
         try:
             job()
         except Exception as e:  # 单个失败不影响其他；保留旧文件

@@ -15,6 +15,7 @@
 - **中英文切换**：右上角按钮一键切换 中文 / English，并记住上次的选择
 - **组合配置**：每月总投入按滑块比例分给 SPY 和 SSO，即时显示组合市值构成、IRR、最大回撤，以及不同比例的结果曲线
 - **无风险收益与通胀对比**：主图加入「同期国债定投」和「通胀保值线」；卡片显示扣通胀的实际年化、相对十年期国债的超额收益、夏普比率；「金额口径」可选名义美元、今天的美元或起始月份的美元（后两者扣除通胀）；「通货膨胀的侵蚀」面板展示购买力缩水
+- **估值（市盈率）**：标普 500 市盈率 P/E 与席勒市盈率 CAPE 的当前值、1871 年以来的历史百分位、盈利收益率与十年期国债对比，以及定投区间内的走势
 - **未来一年下跌测算**：设定 S&P500 一年跌幅，按几何路径分摊到每个交易日，测算 SPY（1 倍）和 SSO（2 倍）每月涨跌与持仓变化，可加入波动损耗
 
 ## 文件
@@ -22,13 +23,13 @@
 | 文件 | 说明 |
 |---|---|
 | `dashboard.html` | 仪表盘（数据已嵌入，可离线打开） |
-| `download_data.py` | 从 Yahoo Finance 下载 SSO、SPY 月K数据，从 FRED 下载十年期国债收益率（GS10）和 CPI（CPIAUCSL），保存到 `data/`；失败时不覆盖旧数据 |
+| `download_data.py` | 从 Yahoo Finance 下载 SSO、SPY 月K数据，从 FRED 下载十年期国债收益率（GS10）和 CPI（CPIAUCSL），从 multpl.com 下载标普 500 市盈率与 CAPE，保存到 `data/`；失败时不覆盖旧数据 |
 | `build_dashboard.py` | 把 `data/` 里的 CSV 嵌入 `dashboard.html` |
 | `update.sh` | 依次运行以上两个脚本，日志写入 `logs/update.log`；会自动找到装有依赖的 Python（也可用环境变量 `PYTHON` 指定） |
-| `requirements.txt` | Python 依赖（yfinance、pandas） |
+| `requirements.txt` | Python 依赖（yfinance、pandas、lxml） |
 | `install_autoupdate.sh` | 安装 / 卸载 macOS 每月自动更新，自动填入本机路径 |
 | `launchd/etf-dashboard-update.plist.template` | 定时任务模板：每月 1 日 09:00 运行 `update.sh` |
-| `data/*.csv` | SSO、SPY 月K数据；`MACRO_monthly.csv` 为十年期国债收益率与 CPI |
+| `data/*.csv` | SSO、SPY 月K数据；`MACRO_monthly.csv` 为十年期国债收益率与 CPI；`PE_monthly.csv` 为市盈率与 CAPE |
 
 ## 快速开始
 
@@ -60,4 +61,4 @@ Windows 可用「任务计划程序」、Linux 可用 cron 定时运行 `downloa
 
 ## 说明
 
-行情数据来自 Yahoo Finance，最后一个月为未完结月份；利率与 CPI 来自 FRED。本项目仅作历史回测与情景演示，不构成投资建议。
+行情数据来自 Yahoo Finance，最后一个月为未完结月份；利率与 CPI 来自 FRED，市盈率来自 multpl.com。本项目仅作历史回测与情景演示，不构成投资建议。

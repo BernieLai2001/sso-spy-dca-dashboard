@@ -40,9 +40,20 @@ def load_macro() -> dict | None:
     return {"dates": [d[:7] for d in df["Date"]], "gs10": [num(v) for v in df["GS10"]], "cpi": [num(v) for v in df["CPI"]]}
 
 
+def load_pe() -> dict | None:
+    """标普 500 市盈率（P/E）与席勒市盈率（CAPE），1871 年起月度；没有该文件时返回 None。"""
+    p = DATA_DIR / "PE_monthly.csv"
+    if not p.exists():
+        return None
+    df = pd.read_csv(p)
+    num = lambda v: None if pd.isna(v) else round(float(v), 2)
+    return {"dates": [d[:7] for d in df["Date"]], "pe": [num(v) for v in df["PE"]], "cape": [num(v) for v in df["CAPE"]]}
+
+
 if __name__ == "__main__":
     payload = {t: load(t) for t in TICKERS}
     payload["MACRO"] = load_macro()
+    payload["PE"] = load_pe()
     payload["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     block = (
         "<!-- ETF_DATA_START -->\n<script>window.ETF_DATA = "
