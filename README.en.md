@@ -14,6 +14,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Charts**: scroll/pinch to zoom, drag to pan, range buttons, overview navigator, log scale, dark/light theme
 - **Chinese / English**: one-click language switch in the top-right corner; the choice is remembered
 - **Portfolio mix**: a slider splits the monthly total between SPY and SSO, with live portfolio breakdown, IRR, max drawdown, and result curves across all mixes
+- **Risk-free & inflation comparison**: "10Y Treasury DCA" and "inflation break-even" lines on the main chart; cards show real (after-inflation) return, excess return vs the 10Y Treasury and the Sharpe ratio; a "How inflation eats your money" panel shows purchasing-power erosion
 - **1-year decline simulation**: set an S&P 500 decline for the next year, spread across trading days along a geometric path, to simulate monthly moves and holdings for SPY (1×) and SSO (2×), optionally with volatility decay
 
 ## Files
@@ -21,13 +22,13 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 | File | Description |
 |---|---|
 | `dashboard.html` | The dashboard (data embedded, works offline) |
-| `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance into `data/`; keeps the old data if a download fails |
+| `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance and the 10Y Treasury yield (GS10) and CPI (CPIAUCSL) from FRED into `data/`; keeps the old data if a download fails |
 | `build_dashboard.py` | Embeds the CSVs in `data/` into `dashboard.html` |
 | `update.sh` | Runs the two scripts above in order and logs to `logs/update.log`; finds a Python with the dependencies installed (or set `PYTHON`) |
 | `requirements.txt` | Python dependencies (yfinance, pandas) |
 | `install_autoupdate.sh` | Installs / uninstalls the macOS monthly auto-update, filling in local paths |
 | `launchd/etf-dashboard-update.plist.template` | Scheduled-job template: runs `update.sh` at 09:00 on the 1st of every month |
-| `data/*.csv` | SSO and SPY monthly bars |
+| `data/*.csv` | SSO and SPY monthly bars; `MACRO_monthly.csv` holds the 10Y yield and CPI |
 
 ## Quick start
 
@@ -59,4 +60,4 @@ On Windows use Task Scheduler, on Linux use cron, to run `download_data.py` and 
 
 ## Disclaimer
 
-Data comes from Yahoo Finance; the latest month is incomplete. This project is for historical backtesting and scenario illustration only and is not investment advice.
+Market data comes from Yahoo Finance (the latest month is incomplete); rates and CPI come from FRED. This project is for historical backtesting and scenario illustration only and is not investment advice.

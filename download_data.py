@@ -1,6 +1,7 @@
-"""下载 SSO（ProShares Ultra S&P500，2倍做多标普500）与 SPY 的月K线数据，保存为 CSV。
+"""下载 SSO（ProShares Ultra S&P500，2倍做多标普500）与 SPY 的月K线数据，以及
+十年期美债收益率（无风险收益基准）和 CPI（通货膨胀），保存为 CSV。
 
-数据来源：Yahoo Finance（通过 yfinance）
+数据来源：Yahoo Finance（通过 yfinance）；FRED 公开 CSV（GS10、CPIAUCSL，无需 API key）
 下载失败或数据异常时不会覆盖已有 CSV，并以非零状态退出。
 """
 import sys
@@ -12,6 +13,9 @@ import yfinance as yf
 DATA_DIR = Path(__file__).resolve().parent / "data"
 TICKERS = ["SSO", "SPY"]
 COLUMNS = ["Open", "High", "Low", "Close", "Adj Close", "Volume", "Dividends", "Stock Splits"]
+# FRED：GS10 = 十年期国债收益率（月均，%）；CPIAUCSL = CPI（城市所有消费者，季调，1982-84=100）
+FRED_SERIES = {"GS10": "GS10", "CPI": "CPIAUCSL"}
+FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
 
 
 def download_monthly(ticker: str) -> Path:
@@ -36,13 +40,35 @@ def download_monthly(ticker: str) -> Path:
     return out
 
 
+def download_macro() -> Path:
+    """十年期国债收益率与 CPI 合并为一张月度表 / 10Y yield and CPI merged into one monthly table."""
+    frames = []
+    for col, sid in FRED_SERIES.items():
+        s = pd.read_csv(FRED_CSV.format(sid))
+        s.columns = ["Date", col]
+        s["Date"] = pd.to_datetime(s["Date"])
+        s[col] = pd.to_numeric(s[col], errors="coerce")
+        frames.append(s.dropna().set_index("Date"))
+    df = pd.concat(frames, axis=1).sort_index()
+    df = df[df.index >= "1990-01-01"]
+    if df.empty or df["GS10"].dropna().empty or df["CPI"].dropna().empty:
+        raise RuntimeError("FRED: 下载结果为空 / empty download")
+    out = DATA_DIR / "MACRO_monthly.csv"
+    tmp = out.with_suffix(".csv.tmp")
+    df.to_csv(tmp, index_label="Date", date_format="%Y-%m-%d")
+    tmp.replace(out)
+    print(f"GS10 至 / through {df['GS10'].last_valid_index().date()}，CPI 至 / through "
+          f"{df['CPI'].last_valid_index().date()} -> {out}")
+    return out
+
+
 if __name__ == "__main__":
     DATA_DIR.mkdir(exist_ok=True)
     failed = False
-    for t in TICKERS:
+    for job in [lambda t=t: download_monthly(t) for t in TICKERS] + [download_macro]:
         try:
-            download_monthly(t)
-        except Exception as e:  # 单个失败不影响另一个；保留旧文件
+            job()
+        except Exception as e:  # 单个失败不影响其他；保留旧文件
             print(f"[失败 / FAILED] {e}", file=sys.stderr)
             failed = True
     sys.exit(1 if failed else 0)

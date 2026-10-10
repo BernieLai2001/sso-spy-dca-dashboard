@@ -4,6 +4,8 @@
 <!-- ETF_DATA_START --> 与 <!-- ETF_DATA_END --> 之间（可重复运行）。
 更新数据流程：python3 download_data.py && python3 build_dashboard.py
 """
+from __future__ import annotations
+
 import json
 import re
 from datetime import datetime
@@ -28,8 +30,19 @@ def load(ticker: str) -> dict:
     }
 
 
+def load_macro() -> dict | None:
+    """十年期国债收益率（%）与 CPI；没有该文件时返回 None，页面会隐藏相关功能。"""
+    p = DATA_DIR / "MACRO_monthly.csv"
+    if not p.exists():
+        return None
+    df = pd.read_csv(p)
+    num = lambda v: None if pd.isna(v) else round(float(v), 4)
+    return {"dates": [d[:7] for d in df["Date"]], "gs10": [num(v) for v in df["GS10"]], "cpi": [num(v) for v in df["CPI"]]}
+
+
 if __name__ == "__main__":
     payload = {t: load(t) for t in TICKERS}
+    payload["MACRO"] = load_macro()
     payload["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     block = (
         "<!-- ETF_DATA_START -->\n<script>window.ETF_DATA = "
