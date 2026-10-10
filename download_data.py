@@ -2,7 +2,7 @@
 十年期美债收益率（无风险收益基准）和 CPI（通货膨胀），保存为 CSV。
 
 数据来源：Yahoo Finance（通过 yfinance）；FRED 公开 CSV（GS10、CPIAUCSL，无需 API key）；
-multpl.com（标普 500 市盈率 P/E 与席勒市盈率 CAPE，1871 年起月度）
+multpl.com（标普 500 席勒市盈率 CAPE，1871 年起月度）
 下载失败或数据异常时不会覆盖已有 CSV，并以非零状态退出。
 """
 import sys
@@ -17,9 +17,9 @@ COLUMNS = ["Open", "High", "Low", "Close", "Adj Close", "Volume", "Dividends", "
 # FRED：GS10 = 十年期国债收益率（月均，%）；CPIAUCSL = CPI（城市所有消费者，季调，1982-84=100）
 FRED_SERIES = {"GS10": "GS10", "CPI": "CPIAUCSL"}
 FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
-# multpl.com：标普 500 市盈率（过去 12 个月盈利）与席勒市盈率（CAPE，10 年经通胀调整平均盈利）
-PE_PAGES = {"PE": "https://www.multpl.com/s-p-500-pe-ratio/table/by-month",
-            "CAPE": "https://www.multpl.com/shiller-pe/table/by-month"}
+# multpl.com：标普 500 席勒市盈率（CAPE = 价格 ÷ 过去 10 年经通胀调整的平均盈利）
+# 不用普通 P/E：它按过去 12 个月的报告利润计算，2009 年盈利塌陷时会飙到 100 倍以上，容易误导
+PE_PAGES = {"CAPE": "https://www.multpl.com/shiller-pe/table/by-month"}
 
 
 def download_monthly(ticker: str) -> Path:
@@ -67,7 +67,7 @@ def download_macro() -> Path:
 
 
 def download_pe() -> Path:
-    """标普 500 市盈率与 CAPE，按月合并 / S&P 500 P/E and CAPE merged by month."""
+    """标普 500 席勒市盈率 CAPE（月度）/ S&P 500 Shiller CAPE (monthly)."""
     import io
     import re
     import urllib.request
@@ -84,12 +84,12 @@ def download_pe() -> Path:
         frames.append(t.dropna().drop_duplicates("Date").set_index("Date"))
     df = pd.concat(frames, axis=1).sort_index()
     if len(df) < 1000:
-        raise RuntimeError(f"市盈率数据只有 {len(df)} 行，可能页面结构变了 / only {len(df)} rows; page layout may have changed")
+        raise RuntimeError(f"CAPE 数据只有 {len(df)} 行，可能页面结构变了 / only {len(df)} rows; page layout may have changed")
     out = DATA_DIR / "PE_monthly.csv"
     tmp = out.with_suffix(".csv.tmp")
     df.to_csv(tmp, index_label="Date", date_format="%Y-%m-%d")
     tmp.replace(out)
-    print(f"P/E 与 CAPE：{df.index.min().date()} ~ {df.index.max().date()}，{len(df)} 个月 -> {out}")
+    print(f"CAPE：{df.index.min().date()} ~ {df.index.max().date()}，{len(df)} 个月 -> {out}")
     return out
 
 
