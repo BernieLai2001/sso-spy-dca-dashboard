@@ -14,7 +14,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Charts**: scroll/pinch to zoom, drag to pan, range buttons, overview navigator, log scale, dark/light theme
 - **Chinese / English**: one-click language switch in the top-right corner; the choice is remembered
 - **Portfolio mix**: a slider splits the monthly total between SPY and SSO, with live portfolio breakdown, IRR, max drawdown, and result curves across all mixes
-- **Risk-free & inflation comparison**: "10Y Treasury DCA" and "inflation break-even" lines on the main chart; cards show real (after-inflation) return, excess return vs the 10Y Treasury and the Sharpe ratio; a "How inflation eats your money" panel shows purchasing-power erosion
+- **Risk-free & inflation comparison**: "10Y Treasury DCA" and "inflation break-even" lines on the main chart; cards show real (after-inflation) return, excess return vs the 10Y Treasury and the Sharpe ratio; an "Inflation-adjusted" toggle restates the main and portfolio charts in today's dollars; a "How inflation eats your money" panel shows purchasing-power erosion
 - **1-year decline simulation**: set an S&P 500 decline for the next year, spread across trading days along a geometric path, to simulate monthly moves and holdings for SPY (1×) and SSO (2×), optionally with volatility decay
 
 ## Files

@@ -237,6 +237,7 @@
     <label><span data-i18n="cBuy">买入</span> <input class="fee" type="number" id="mult" value="2" step="0.5" min="1"><span data-i18n="cTimes">倍</span></label>
     <div class="sep"></div>
     <label><input type="checkbox" id="log"> <span data-i18n="cLog">对数坐标</span></label>
+    <label class="macro-only"><input type="checkbox" id="real"> <span data-i18n="cReal">按通胀调整（实际购买力）</span></label>
     <div class="ctrl-break"></div>
     <label class="proj-toggle"><input type="checkbox" id="proj"> <span data-i18n="cProj">测算未来一年下跌</span></label>
     <label><span data-i18n="cProjDrop">S&amp;P500 一年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
@@ -262,7 +263,7 @@
 
   <div class="card chart-card">
     <div class="chart-top">
-      <h2 data-i18n="chartTitle">持仓市值（美元）</h2>
+      <h2 id="mainChartTitle" data-i18n="chartTitle">持仓市值（美元）</h2>
       <div class="legend">
         <span><i style="border-color:var(--series-1)"></i>SSO</span>
         <span><i style="border-color:var(--series-2)"></i>SPY</span>
@@ -271,7 +272,7 @@
         <span><i class="dash" style="border-color:var(--series-1)"></i><span data-i18n="lgSsoInv">SSO 实际投入</span></span>
         <span><i class="dash" style="border-color:var(--series-2)"></i><span data-i18n="lgSpyInv">SPY 实际投入</span></span>
         <span class="macro-only"><i style="border-color:var(--series-3)"></i><span data-i18n="lgTreasury">同期国债定投</span></span>
-        <span class="macro-only"><i class="dash" style="border-color:var(--infl)"></i><span data-i18n="lgFloor">通胀保值线</span></span>
+        <span class="macro-only"><i class="dash" style="border-color:var(--infl)"></i><span id="lgFloorTxt" data-i18n="lgFloor">通胀保值线</span></span>
       </div>
     </div>
     <div class="range-row" id="mainRange">
@@ -476,6 +477,8 @@
       readout: (cur, spy, sso, v) => (cur ? "当前 " : "") + `SPY ${spy}% / SSO ${sso}%：` + v,
       monthsN: (n) => n + " 个月", lnSsoV: "SSO 市值", lnSpyV: "SPY 市值", lnSsoInv: "SSO 实际投入", lnSpyInv: "SPY 实际投入",
       latest: "（最新）",
+      cReal: "按通胀调整（实际购买力）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
+      frIrrTitleReal: "不同 SPY : SSO 比例的实际年化（扣通胀）",
       lgTreasury: "同期国债定投", lgFloor: "通胀保值线", lnTreasury: "同期国债定投", lnFloor: "通胀保值线",
       realIrr: "实际年化（扣除通胀）", excessIrr: "超额收益（vs 十年期国债）", sharpe: "夏普比率",
       pfRealIrr: "实际年化（扣通胀）", pfExcess: "超额收益 vs 国债", pfRealIrrProj: "实际年化（测算后）", pfExcessProj: "超额收益（测算后）",
@@ -492,7 +495,8 @@
         "<b>通胀保值线</b>：每一笔投入都按 CPI 增长，市值低于这条线就说明购买力被通胀吃掉了。" +
         "<b>实际年化</b>：按 CPI 把每笔投入和期末市值折算成同一购买力后再算 IRR；<b>超额收益</b> = 该 ETF 的 IRR − 同样现金流买国债的 IRR；" +
         "<b>夏普比率</b> = 月度收益减去当月国债利率后的均值 ÷ 标准差 × √12，越高说明每承担一分风险换来的回报越多。" +
-        "开启下跌测算时，测算期的国债利率沿用最新值，CPI 按最近 12 个月的涨幅外推。",
+        "开启下跌测算时，测算期的国债利率沿用最新值，CPI 按最近 12 个月的涨幅外推。" +
+        "勾选顶部的<b>「按通胀调整」</b>后，主图和组合图的金额都换算成最新 CPI 月份的美元：实际投入为每一笔投入按当月 CPI 换算后的累计，红色虚线改为「现金放着不动」的实际价值，组合的比例小图改用实际年化。",
     },
     en: {
       pageTitle: "SSO vs SPY DCA Dashboard",
@@ -562,6 +566,8 @@
       readout: (cur, spy, sso, v) => (cur ? "Current " : "") + `SPY ${spy}% / SSO ${sso}%: ` + v,
       monthsN: (n) => n + " months", lnSsoV: "SSO value", lnSpyV: "SPY value", lnSsoInv: "SSO invested", lnSpyInv: "SPY invested",
       latest: " (latest)",
+      cReal: "Inflation-adjusted (real dollars)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
+      frIrrTitleReal: "Real return (after inflation) by SPY : SSO mix",
       lgTreasury: "Same money in 10Y Treasuries", lgFloor: "Inflation break-even", lnTreasury: "10Y Treasury DCA", lnFloor: "Inflation break-even",
       realIrr: "Real annual return (after inflation)", excessIrr: "Excess return (vs 10Y Treasury)", sharpe: "Sharpe ratio",
       pfRealIrr: "Real return", pfExcess: "Excess vs Treasury", pfRealIrrProj: "Real return (after sim.)", pfExcessProj: "Excess (after sim.)",
@@ -578,7 +584,8 @@
         "<b>Inflation break-even</b>: every contribution grown by CPI; a portfolio below this line has lost purchasing power. " +
         "<b>Real return</b>: IRR after converting every contribution and the final value to the same purchasing power via CPI; <b>excess return</b> = the ETF's IRR − the IRR of the same cash flows in Treasuries; " +
         "<b>Sharpe ratio</b> = mean of monthly returns minus that month's Treasury rate ÷ their standard deviation × √12 — higher means more return per unit of risk. " +
-        "With the decline simulation on, the simulated year holds the latest Treasury yield and extrapolates CPI at its last-12-month pace.",
+        "With the decline simulation on, the simulated year holds the latest Treasury yield and extrapolates CPI at its last-12-month pace. " +
+        "With <b>Inflation-adjusted</b> checked at the top, the main and portfolio charts show amounts in dollars of the latest CPI month: invested is each contribution converted at its month's CPI, the red dashed line becomes the real value of cash left idle, and the portfolio mix chart switches to real returns.",
     },
   };
   let LANG = "zh";
@@ -673,6 +680,11 @@
     const sd = Math.sqrt(ex.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (ex.length - 1));
     return sd > 0 ? (mean / sd) * Math.sqrt(12) : NaN;
   }
+  // 实际购买力：把每个月的金额换算成参考月（最新 CPI 月份）的美元
+  function toReal(values, cpi, ref) { return values.map((v, k) => v * ref / cpi[k]); }
+  // 实际投入：每一笔投入按投入当月的 CPI 换算成参考月美元后累加
+  function realInvested(flows, cpi, ref) { let a = 0; return flows.map((f, k) => (a += f * ref / cpi[k])); }
+  const realOn = () => !!MACRO && $("real").checked;
   function vsRiskFree(sim, mac) {
     const n = sim.values.length, V = sim.values[n - 1];
     const tv = treasuryDCA(sim.flows, mac.y);
@@ -1437,7 +1449,7 @@
 
   function renderPortfolio() {
     if (!pfCtx) return;
-    const c = pfCtx, n = c.n;
+    const c = pfCtx, n = c.n, realMode = realOn();
     const total = Math.max(0, parseFloat($("pfTotal").value) || 0);
     // 滑块位置 = SPY 占比：左边橙色段越长 SPY 越多，右边蓝色段是 SSO 的剩余部分
     const spyPct = +$("pfW").value, wPct = 100 - spyPct, w = wPct / 100;
@@ -1502,19 +1514,26 @@
     const useP = !!c.P;
     const curSim = useP ? chart : hist;
     const frontier = [];
+    const frCpi = realMode ? macroSeries(c.s, curSim.values.length).cpi : null;   // 按通胀调整时，小图改用实际年化
     for (let p = 0; p <= 100; p += 5) {
       const sim = p === wPct ? curSim : simulatePortfolio(total, p / 100, useP);
       const v = sim.values[sim.values.length - 1];
-      frontier.push({ p, irr: irr(sim.flows, v), dd: sim.maxDD, value: v });
+      frontier.push({ p, irr: realMode ? realIrr(sim.flows, v, frCpi) : irr(sim.flows, v), dd: sim.maxDD, value: v });
     }
     const suffix = useP ? T("frSuffixProj", Math.round(c.P.D * 100)) : T("frSuffixHist");
-    $("pfIrrTitle").textContent = T("frIrrTitle") + suffix;
+    $("pfIrrTitle").textContent = (realMode ? T("frIrrTitleReal") : T("frIrrTitle")) + suffix;
     $("pfDdTitle").textContent = T("frDdTitle") + suffix;
 
     const xs = chart.values.length;
     pfState = {
       dates: c.P ? c.dates.concat(c.P.dates) : c.dates, projStart: c.P ? n : null,
-      spy: chart.spy.values, sso: chart.sso.values, total: chart.values, invested: chart.invested, len: xs,
+      ...(realMode ? (() => {
+        // 按通胀调整：堆叠市值换算成最新 CPI 月份的美元，投入线为每笔投入按 CPI 换算后的累计
+        const mac = macroSeries(c.s, xs), ref = MACRO.cpi[months.length - 1];
+        return { spy: toReal(chart.spy.values, mac.cpi, ref), sso: toReal(chart.sso.values, mac.cpi, ref),
+                 total: toReal(chart.values, mac.cpi, ref), invested: realInvested(chart.flows, mac.cpi, ref) };
+      })() : { spy: chart.spy.values, sso: chart.sso.values, total: chart.values, invested: chart.invested }),
+      len: xs,
       frontier, wPct,
     };
     drawPortfolio();
@@ -1894,22 +1913,38 @@
     state = {
       dates: cDates, useLog: $("log").checked, hover: null, view: keepView,
       projStart: P ? n : null,
-      lines: [
-        { name: T("lnSsoV"), color: "var(--series-1)", values: cs.values, marks: dip ? cs.boosted : null },
-        { name: T("lnSpyV"), color: "var(--series-2)", values: cp.values, marks: dip ? cp.boosted : null },
-        { name: T("lnSsoInv"), color: "var(--series-1)", values: cs.invested, dash: true },
-        { name: T("lnSpyInv"), color: "var(--series-2)", values: cp.invested, dash: true },
-        ...(MACRO ? (() => {
-          // 对照线用「每月计划金额」作为现金流（开启测算且停止定投时，测算期不再投入）
-          const mac = macroSeries(s, cn), stopProj = P && !$("projBuy").checked;
-          const plan = cDates.map((_, k) => (stopProj && k >= n ? 0 : amount));
-          return [
-            { name: T("lnTreasury"), color: "var(--series-3)", values: treasuryDCA(plan, mac.y) },
-            { name: T("lnFloor"), color: "var(--infl)", values: inflationFloor(plan, mac.cpi), dash: true },
-          ];
-        })() : []),
-      ],
+      lines: (() => {
+        const base = [
+          { name: T("lnSsoV"), color: "var(--series-1)", values: cs.values, marks: dip ? cs.boosted : null },
+          { name: T("lnSpyV"), color: "var(--series-2)", values: cp.values, marks: dip ? cp.boosted : null },
+          { name: T("lnSsoInv"), color: "var(--series-1)", values: cs.invested, dash: true },
+          { name: T("lnSpyInv"), color: "var(--series-2)", values: cp.invested, dash: true },
+        ];
+        if (!MACRO) return base;
+        // 对照线用「每月计划金额」作为现金流（开启测算且停止定投时，测算期不再投入）
+        const mac = macroSeries(s, cn), stopProj = P && !$("projBuy").checked;
+        const plan = cDates.map((_, k) => (stopProj && k >= n ? 0 : amount));
+        const tv = treasuryDCA(plan, mac.y);
+        if (!realOn()) return base.concat([
+          { name: T("lnTreasury"), color: "var(--series-3)", values: tv },
+          { name: T("lnFloor"), color: "var(--infl)", values: inflationFloor(plan, mac.cpi), dash: true },
+        ]);
+        // 按通胀调整：全部换算成最新 CPI 月份的美元。通胀保值线此时与实际投入重合，改画「现金放着不动」的实际价值
+        const ref = MACRO.cpi[months.length - 1], R = (v) => toReal(v, mac.cpi, ref);
+        let cum = 0; const cashNom = plan.map((f) => (cum += f));
+        return [
+          { ...base[0], values: R(cs.values) },
+          { ...base[1], values: R(cp.values) },
+          { ...base[2], values: realInvested(cs.flows, mac.cpi, ref) },
+          { ...base[3], values: realInvested(cp.flows, mac.cpi, ref) },
+          { name: T("lnTreasury"), color: "var(--series-3)", values: R(tv) },
+          { name: T("lnCash"), color: "var(--infl)", values: R(cashNom), dash: true },
+        ];
+      })(),
     };
+    const realMode = realOn();
+    $("mainChartTitle").textContent = realMode ? T("chartTitleReal", MACRO.cThrough) : T("chartTitle");
+    $("lgFloorTxt").textContent = realMode ? T("lgCash") : T("lgFloor");
     renderProjection(P, n, sso, spy);
     renderInflation(s, n, amount);
     document.querySelectorAll(".macro-only").forEach((e) => { e.hidden = !MACRO; });
@@ -1934,7 +1969,7 @@
     });
   }
 
-  for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projDrop", "projVol", "projBuy"]) $(id).addEventListener("input", update);
+  for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projDrop", "projVol", "projBuy", "real"]) $(id).addEventListener("input", update);
   // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
   for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
   window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); });
