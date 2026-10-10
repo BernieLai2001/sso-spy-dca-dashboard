@@ -85,7 +85,7 @@
     .controls.stuck { box-shadow: 0 6px 20px rgba(0, 0, 0, .28); }
   }
   .controls label { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); white-space: nowrap; }
-  .controls input[type="number"], .controls input[type="month"] {
+  .controls input[type="number"], .controls input[type="month"], .controls select {
     font: inherit; color: var(--text-primary); background: transparent;
     border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px;
   }
@@ -237,7 +237,13 @@
     <label><span data-i18n="cBuy">买入</span> <input class="fee" type="number" id="mult" value="2" step="0.5" min="1"><span data-i18n="cTimes">倍</span></label>
     <div class="sep"></div>
     <label><input type="checkbox" id="log"> <span data-i18n="cLog">对数坐标</span></label>
-    <label class="macro-only"><input type="checkbox" id="real"> <span data-i18n="cReal">按通胀调整（实际购买力）</span></label>
+    <label class="macro-only"><span data-i18n="cBase">金额口径</span>
+      <select id="real">
+        <option value="nominal" data-i18n="optNominal">名义美元</option>
+        <option value="today" data-i18n="optToday">今天的美元（扣除通胀）</option>
+        <option value="start" data-i18n="optStart">起始月份的美元（扣除通胀）</option>
+      </select>
+    </label>
     <div class="ctrl-break"></div>
     <label class="proj-toggle"><input type="checkbox" id="proj"> <span data-i18n="cProj">测算未来一年下跌</span></label>
     <label><span data-i18n="cProjDrop">S&amp;P500 一年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
@@ -477,7 +483,7 @@
       readout: (cur, spy, sso, v) => (cur ? "当前 " : "") + `SPY ${spy}% / SSO ${sso}%：` + v,
       monthsN: (n) => n + " 个月", lnSsoV: "SSO 市值", lnSpyV: "SPY 市值", lnSsoInv: "SSO 实际投入", lnSpyInv: "SPY 实际投入",
       latest: "（最新）",
-      cReal: "按通胀调整（实际购买力）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
+      cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
       frIrrTitleReal: "不同 SPY : SSO 比例的实际年化（扣通胀）",
       lgTreasury: "同期国债定投", lgFloor: "通胀保值线", lnTreasury: "同期国债定投", lnFloor: "通胀保值线",
       realIrr: "实际年化（扣除通胀）", excessIrr: "超额收益（vs 十年期国债）", sharpe: "夏普比率",
@@ -496,7 +502,9 @@
         "<b>实际年化</b>：按 CPI 把每笔投入和期末市值折算成同一购买力后再算 IRR；<b>超额收益</b> = 该 ETF 的 IRR − 同样现金流买国债的 IRR；" +
         "<b>夏普比率</b> = 月度收益减去当月国债利率后的均值 ÷ 标准差 × √12，越高说明每承担一分风险换来的回报越多。" +
         "开启下跌测算时，测算期的国债利率沿用最新值，CPI 按最近 12 个月的涨幅外推。" +
-        "勾选顶部的<b>「按通胀调整」</b>后，主图和组合图的金额都换算成最新 CPI 月份的美元：实际投入为每一笔投入按当月 CPI 换算后的累计，红色虚线改为「现金放着不动」的实际价值，组合的比例小图改用实际年化。",
+        "顶部<b>「金额口径」</b>选择扣除通胀时，主图和组合图的金额都换算成同一时点的美元：<b>今天的美元</b>以最新 CPI 月份为准，期末数字与账户一致、早年的数字被放大；" +
+        "<b>起始月份的美元</b>以控制栏的起始月份为准，期末数字直接显示通胀让它缩水到多少。两种口径只差一个固定系数，曲线形状和实际年化完全相同。" +
+        "实际投入为每一笔投入按当月 CPI 换算后的累计，红色虚线改为「现金放着不动」的实际价值，组合的比例小图改用实际年化。",
     },
     en: {
       pageTitle: "SSO vs SPY DCA Dashboard",
@@ -566,7 +574,7 @@
       readout: (cur, spy, sso, v) => (cur ? "Current " : "") + `SPY ${spy}% / SSO ${sso}%: ` + v,
       monthsN: (n) => n + " months", lnSsoV: "SSO value", lnSpyV: "SPY value", lnSsoInv: "SSO invested", lnSpyInv: "SPY invested",
       latest: " (latest)",
-      cReal: "Inflation-adjusted (real dollars)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
+      cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
       frIrrTitleReal: "Real return (after inflation) by SPY : SSO mix",
       lgTreasury: "Same money in 10Y Treasuries", lgFloor: "Inflation break-even", lnTreasury: "10Y Treasury DCA", lnFloor: "Inflation break-even",
       realIrr: "Real annual return (after inflation)", excessIrr: "Excess return (vs 10Y Treasury)", sharpe: "Sharpe ratio",
@@ -585,7 +593,9 @@
         "<b>Real return</b>: IRR after converting every contribution and the final value to the same purchasing power via CPI; <b>excess return</b> = the ETF's IRR − the IRR of the same cash flows in Treasuries; " +
         "<b>Sharpe ratio</b> = mean of monthly returns minus that month's Treasury rate ÷ their standard deviation × √12 — higher means more return per unit of risk. " +
         "With the decline simulation on, the simulated year holds the latest Treasury yield and extrapolates CPI at its last-12-month pace. " +
-        "With <b>Inflation-adjusted</b> checked at the top, the main and portfolio charts show amounts in dollars of the latest CPI month: invested is each contribution converted at its month's CPI, the red dashed line becomes the real value of cash left idle, and the portfolio mix chart switches to real returns.",
+        "When <b>Amounts in</b> at the top is set to an inflation-adjusted option, the main and portfolio charts restate amounts in dollars of one month: <b>today's dollars</b> uses the latest CPI month, so final values match the account and early values are scaled up; " +
+        "<b>start-month dollars</b> uses the start month in the control bar, so the final value shows directly how far inflation shrank it. The two differ only by a constant factor — curve shapes and real returns are identical. " +
+        "Invested is each contribution converted at its month's CPI, the red dashed line becomes the real value of cash left idle, and the portfolio mix chart switches to real returns.",
     },
   };
   let LANG = "zh";
@@ -684,7 +694,10 @@
   function toReal(values, cpi, ref) { return values.map((v, k) => v * ref / cpi[k]); }
   // 实际投入：每一笔投入按投入当月的 CPI 换算成参考月美元后累加
   function realInvested(flows, cpi, ref) { let a = 0; return flows.map((f, k) => (a += f * ref / cpi[k])); }
-  const realOn = () => !!MACRO && $("real").checked;
+  const realOn = () => !!MACRO && $("real").value !== "nominal";
+  // 参考月：「今天的美元」= 最新 CPI 月份；「起始月份的美元」= 控制栏选的起始月份（第 s 个月）
+  const realBaseMonth = (s) => ($("real").value === "start" ? months[s] : MACRO.cThrough);
+  const realRef = (s) => ($("real").value === "start" ? MACRO.cpi[s] : MACRO.cpi[months.length - 1]);
   function vsRiskFree(sim, mac) {
     const n = sim.values.length, V = sim.values[n - 1];
     const tv = treasuryDCA(sim.flows, mac.y);
@@ -1528,8 +1541,8 @@
     pfState = {
       dates: c.P ? c.dates.concat(c.P.dates) : c.dates, projStart: c.P ? n : null,
       ...(realMode ? (() => {
-        // 按通胀调整：堆叠市值换算成最新 CPI 月份的美元，投入线为每笔投入按 CPI 换算后的累计
-        const mac = macroSeries(c.s, xs), ref = MACRO.cpi[months.length - 1];
+        // 按通胀调整：堆叠市值换算成参考月的美元，投入线为每笔投入按 CPI 换算后的累计
+        const mac = macroSeries(c.s, xs), ref = realRef(c.s);
         return { spy: toReal(chart.spy.values, mac.cpi, ref), sso: toReal(chart.sso.values, mac.cpi, ref),
                  total: toReal(chart.values, mac.cpi, ref), invested: realInvested(chart.flows, mac.cpi, ref) };
       })() : { spy: chart.spy.values, sso: chart.sso.values, total: chart.values, invested: chart.invested }),
@@ -1929,8 +1942,8 @@
           { name: T("lnTreasury"), color: "var(--series-3)", values: tv },
           { name: T("lnFloor"), color: "var(--infl)", values: inflationFloor(plan, mac.cpi), dash: true },
         ]);
-        // 按通胀调整：全部换算成最新 CPI 月份的美元。通胀保值线此时与实际投入重合，改画「现金放着不动」的实际价值
-        const ref = MACRO.cpi[months.length - 1], R = (v) => toReal(v, mac.cpi, ref);
+        // 按通胀调整：全部换算成参考月（今天或起始月份）的美元。通胀保值线此时与实际投入重合，改画「现金放着不动」的实际价值
+        const ref = realRef(s), R = (v) => toReal(v, mac.cpi, ref);
         let cum = 0; const cashNom = plan.map((f) => (cum += f));
         return [
           { ...base[0], values: R(cs.values) },
@@ -1943,7 +1956,7 @@
       })(),
     };
     const realMode = realOn();
-    $("mainChartTitle").textContent = realMode ? T("chartTitleReal", MACRO.cThrough) : T("chartTitle");
+    $("mainChartTitle").textContent = realMode ? T("chartTitleReal", realBaseMonth(s)) : T("chartTitle");
     $("lgFloorTxt").textContent = realMode ? T("lgCash") : T("lgFloor");
     renderProjection(P, n, sso, spy);
     renderInflation(s, n, amount);
