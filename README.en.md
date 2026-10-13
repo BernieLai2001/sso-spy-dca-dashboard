@@ -16,6 +16,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Portfolio mix**: a slider splits the monthly total between SPY and SSO, with live portfolio breakdown, IRR, max drawdown, and result curves across all mixes
 - **Risk-free & inflation comparison**: "10Y Treasury DCA" and "inflation break-even" lines on the main chart; cards show real (after-inflation) return, excess return vs the 10Y Treasury and the Sharpe ratio; an "Amounts in" selector shows nominal, today's or start-month dollars (the latter two inflation-adjusted); a "How inflation eats your money" panel shows purchasing-power erosion
 - **Valuation (Shiller CAPE)**: current value and its percentile since 1871, the record high, earnings yield (1 ÷ CAPE) vs the 10Y Treasury, and its path over the DCA period
+- **Retirement**: monthly living cost after retiring at 65 (default $1,000, rising with inflation), funded either by the portfolio (the rest keeps growing; shows how long it lasts) or by an annuity (premium, paying years, monthly / yearly payout; shows the shortfall and break-even age)
 - **1-year decline simulation**: set an S&P 500 decline for the next year, spread across trading days along a geometric path, to simulate monthly moves and holdings for SPY (1×) and SSO (2×), optionally with volatility decay
 
 ## Files

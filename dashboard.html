@@ -63,6 +63,8 @@
   }
 
   * { box-sizing: border-box; }
+  /* 带 hidden 属性的元素一律隐藏（否则会被 .ret-controls 等的 display:flex 覆盖） */
+  [hidden] { display: none !important; }
   body { margin: 0; }
   .viz-root {
     min-height: 100vh;
@@ -196,6 +198,17 @@
   .infl-stat .v { font-size: 26px; font-weight: 650; letter-spacing: -0.01em; margin: 4px 0; font-variant-numeric: tabular-nums; }
   .infl-stat .s { color: var(--text-muted); font-size: 12.5px; line-height: 1.5; }
   @media (max-width: 860px) { .infl-stats { grid-template-columns: 1fr 1fr; } }
+  .ret-card { margin-top: 16px; }
+  .ret-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; margin-top: 12px; color: var(--text-secondary); }
+  .ret-controls label { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .ret-controls input[type="number"], .ret-controls select {
+    font: inherit; color: var(--text-primary); background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px;
+  }
+  .ret-controls .money input { width: 120px; padding-left: 20px; }
+  .ret-controls input.fee { width: 86px; }
+  .ret-controls input::placeholder { color: var(--text-muted); }
+  .ret-mode { display: inline-flex; gap: 16px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; }
+  .ret-hint { color: var(--text-muted); font-size: 12.5px; }
   .ctrl-break { flex-basis: 100%; height: 0; }
   .proj-toggle { color: var(--text-primary) !important; font-weight: 600; }
   .proj-card { margin-top: 16px; }
@@ -410,6 +423,45 @@
     <p data-i18n-html="pfNote" class="note" style="margin-top:10px"></p>
   </div>
 
+  <div class="card chart-card ret-card" id="retCard">
+    <div class="chart-top">
+      <h2 data-i18n="retTitle">退休生活：65 岁退休后的钱够不够花</h2>
+      <div class="legend">
+        <span><i style="border-color:var(--infl)"></i><span data-i18n="lgNeed">每月生活费（随通胀上涨）</span></span>
+        <span><i style="border-color:var(--series-3)"></i><span id="lgIncome"></span></span>
+      </div>
+    </div>
+    <div class="ret-controls">
+      <label><span data-i18n="retNeedLbl">每月生活费（今天的美元）</span>
+        <span class="money"><span>$</span><input type="number" id="retNeed" value="1000" min="0" step="100"></span></label>
+      <label><span data-i18n="retInflLbl">通胀率</span> <input class="fee" type="number" id="retInfl" step="0.1" min="0">%</label>
+      <span class="ret-mode">
+        <label><input type="radio" name="retMode" value="pf" checked> <span data-i18n="retModePf">用组合配置的市值</span></label>
+        <label><input type="radio" name="retMode" value="ann"> <span data-i18n="retModeAnn">年金</span></label>
+      </span>
+    </div>
+    <div class="ret-controls" id="retPfCtl">
+      <label><span data-i18n="retRetLbl">退休后年化收益</span> <input class="fee" type="number" id="retRet" step="0.5">%</label>
+      <span class="ret-hint" id="retPfHint"></span>
+    </div>
+    <div class="ret-controls" id="retAnnCtl" hidden>
+      <label><span data-i18n="annPremLbl">年保费</span>
+        <span class="money"><span>$</span><input type="number" id="annPrem" min="0" step="1000"></span></label>
+      <label><span data-i18n="annYearsLbl">缴费年限</span> <input class="fee" type="number" id="annYears" value="10" min="1" max="40" step="1"><span data-i18n="annYearsUnit">年</span></label>
+      <label><span data-i18n="annPayLbl">退休后领取</span>
+        <span class="money"><span>$</span><input type="number" id="annPay" min="0" step="100"></span>
+        <select id="annFreq"><option value="m" data-i18n="annMonthly">月领</option><option value="y" data-i18n="annYearly">年领</option></select></label>
+    </div>
+    <div class="pf-kpis" id="retKpis"></div>
+    <h3 class="proj-sub" data-i18n="retChart1">每月生活费 vs 每月收入（名义美元）</h3>
+    <div class="chart-box" id="retBox1"><svg id="retChart1" role="img" data-i18n-aria="retChart1"></svg><div class="tooltip" id="retTip1"></div></div>
+    <div id="retBalWrap">
+      <h3 class="proj-sub" data-i18n="retChart2">组合余额（名义美元）</h3>
+      <div class="chart-box" id="retBox2"><svg id="retChart2" role="img" data-i18n-aria="retChart2"></svg><div class="tooltip" id="retTip2"></div></div>
+    </div>
+    <p class="note" style="margin-top:10px" data-i18n-html="retNote"></p>
+  </div>
+
   <p data-i18n-html="mainNote" class="note"></p>
 
   <details class="card">
@@ -503,6 +555,25 @@
       readout: (cur, spy, sso, v) => (cur ? "当前 " : "") + `SPY ${spy}% / SSO ${sso}%：` + v,
       monthsN: (n) => n + " 个月", lnSsoV: "SSO 市值", lnSpyV: "SPY 市值", lnSsoInv: "SSO 实际投入", lnSpyInv: "SPY 实际投入",
       latest: "（最新）",
+      retTitle: "退休生活：65 岁退休后的钱够不够花", lgNeed: "每月生活费（随通胀上涨）", lgWithdraw: "每月从组合取出", lgAnnuity: "年金每月收入",
+      retNeedLbl: "每月生活费（今天的美元）", retInflLbl: "通胀率", retModePf: "用组合配置的市值", retModeAnn: "年金", retRetLbl: "退休后年化收益",
+      retPfHint: (v) => `起始资金 = 组合配置的市值 ${v}；留空的输入框使用灰色的默认值`,
+      retHighWarn: (r) => `。⚠ ${r}% 是过去的历史收益，不代表未来，退休规划通常按 4%–6% 估算更稳妥`,
+      annPremLbl: "年保费", annYearsLbl: "缴费年限", annYearsUnit: "年", annPayLbl: "退休后领取", annMonthly: "月领", annYearly: "年领",
+      retChart1: "每月生活费 vs 每月收入（名义美元）", retChart2: "组合余额（名义美元）", retBalName: "组合余额", ageLbl: (a) => `${a} 岁`,
+      retStart: "退休时的组合市值", retStartNow: "组合配置的当前市值", retStartProj: "下跌测算一年后的市值",
+      retNeedFirst: "65 岁时每月生活费", retNeedLast: (a, v) => `${a} 岁时涨到每月 ${v}`,
+      retLasts: "资金能撑到", retLastsAll: (a) => `${a} 岁以后`, retLastsAge: (a) => `${a} 岁`, retLastsAllSub: "到 100 岁都花不完", retLastsSub: "之后组合余额归零，生活费没有着落",
+      retBalEnd: (a) => `${a} 岁时组合余额`, retSpent: (v) => `退休期间共取出 ${v}`,
+      annPremTotal: "累计缴纳保费", annPremSub: (p, y) => `每年 ${p} × ${y} 年（退休前缴清）`,
+      annPayM: "每月领取", annPayY: "每年领取", annPayFixed: "按你输入的金额，终身固定不变", annPayEst: (r) => `默认值：按 ${r}% 内部收益率、领到 100 岁估算`,
+      annGapAge: "开始入不敷出", annNoGap: "不会", annGapAt: (a) => `${a} 岁`, annNoGapSub: (a) => `到 ${a} 岁年金都够付生活费`,
+      annGapSub: (n, p) => `年金固定不变，生活费却逐年上涨（65 岁 ${n} vs 年金 ${p}/月）`,
+      annGapSum: (a) => `到 ${a} 岁的累计缺口`, annBreakEven: (a) => `领回全部保费：${a} 岁`, annNoBreakEven: (a) => `${a} 岁前领不回`,
+      retNote: "<b>假设：</b>定投做到今天结束，此时 65 岁退休，按月模拟到 100 岁；生活费以今天的美元输入，之后每年按通胀率上涨（默认取定投期间 CPI 的年均涨幅）。" +
+        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值（默认等于组合的资金加权年化收益）。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
+        "<b>年金：</b>年保费默认等于组合每年的投入；缴费年限默认 10 年（国内年金险最常见的缴费方式），在退休前缴清；领取金额默认按 2.5% 的内部收益率、领取到 100 岁估算，请以实际合同为准。年金每期领取的金额固定，不随通胀上涨。" +
+        "本模块仅作情景演示，不构成理财建议。",
       cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
       frIrrTitleReal: "不同 SPY : SSO 比例的实际年化（扣通胀）",
       lgTreasury: "同期国债定投", lgFloor: "通胀保值线", lnTreasury: "同期国债定投", lnFloor: "通胀保值线",
@@ -604,6 +675,25 @@
       readout: (cur, spy, sso, v) => (cur ? "Current " : "") + `SPY ${spy}% / SSO ${sso}%: ` + v,
       monthsN: (n) => n + " months", lnSsoV: "SSO value", lnSpyV: "SPY value", lnSsoInv: "SSO invested", lnSpyInv: "SPY invested",
       latest: " (latest)",
+      retTitle: "Retirement: is the money enough after 65?", lgNeed: "Monthly living cost (rises with inflation)", lgWithdraw: "Monthly withdrawal", lgAnnuity: "Monthly annuity income",
+      retNeedLbl: "Monthly living cost (today's dollars)", retInflLbl: "Inflation", retModePf: "Live off the portfolio", retModeAnn: "Annuity", retRetLbl: "Return after retirement",
+      retPfHint: (v) => `Starting money = portfolio value ${v}; empty fields use the grey defaults`,
+      retHighWarn: (r) => `. ⚠ ${r}% is a past return, not a forecast — retirement plans usually assume 4%–6%`,
+      annPremLbl: "Annual premium", annYearsLbl: "Paying years", annYearsUnit: "yrs", annPayLbl: "Payout after retirement", annMonthly: "monthly", annYearly: "yearly",
+      retChart1: "Monthly living cost vs monthly income (nominal dollars)", retChart2: "Portfolio balance (nominal dollars)", retBalName: "Portfolio balance", ageLbl: (a) => `age ${a}`,
+      retStart: "Portfolio at retirement", retStartNow: "current portfolio value", retStartProj: "value after the simulated decline",
+      retNeedFirst: "Monthly cost at 65", retNeedLast: (a, v) => `rises to ${v}/mo by ${a}`,
+      retLasts: "Money lasts until", retLastsAll: (a) => `beyond ${a}`, retLastsAge: (a) => `age ${a}`, retLastsAllSub: "never runs out before 100", retLastsSub: "then the portfolio is empty",
+      retBalEnd: (a) => `Balance at ${a}`, retSpent: (v) => `${v} withdrawn in retirement`,
+      annPremTotal: "Total premiums", annPremSub: (p, y) => `${p}/yr × ${y} yrs (paid before retirement)`,
+      annPayM: "Monthly payout", annPayY: "Yearly payout", annPayFixed: "your input, fixed for life", annPayEst: (r) => `default: estimated at ${r}% IRR, paid to 100`,
+      annGapAge: "Income falls short from", annNoGap: "never", annGapAt: (a) => `age ${a}`, annNoGapSub: (a) => `the annuity covers costs to ${a}`,
+      annGapSub: (n, p) => `fixed payout vs rising costs (at 65: ${n} vs ${p}/mo)`,
+      annGapSum: (a) => `Total shortfall by ${a}`, annBreakEven: (a) => `premiums paid back at ${a}`, annNoBreakEven: (a) => `not before ${a}`,
+      retNote: "<b>Assumptions:</b> the DCA ends today at retirement age 65, simulated monthly to 100; the living cost is entered in today's dollars and rises each year with inflation (default: average CPI inflation over the DCA period). " +
+        "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement (default: the portfolio's money-weighted return). Real returns vary year to year, and a crash early in retirement hurts the most. " +
+        "<b>Annuity:</b> the premium defaults to the portfolio's yearly investment; paying years default to 10 (the most common term for annuity products in China), paid before retirement; the payout defaults to an estimate at 2.5% IRR paid to 100 — use your contract's figures. Annuity payouts are fixed and do not rise with inflation. " +
+        "Scenario illustration only, not financial advice.",
       cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
       frIrrTitleReal: "Real return (after inflation) by SPY : SSO mix",
       lgTreasury: "Same money in 10Y Treasuries", lgFloor: "Inflation break-even", lnTreasury: "10Y Treasury DCA", lnFloor: "Inflation break-even",
@@ -1703,6 +1793,9 @@
       frontier, wPct,
     };
     drawPortfolio();
+    // 退休模块：起始资金 = 组合当前市值（开启下跌测算时用测算一年后的市值）
+    retCtx = { startV: c.P ? chart.values[chart.values.length - 1] : V, startIsProj: !!c.P, pfIrr: r, annual: total * 12, s: c.s, n };
+    renderRetirement();
   }
 
   function drawPortfolio() {
@@ -2022,6 +2115,153 @@
     setRead(curF, false);
   }
 
+  // ---------- 退休生活 ----------
+  // 假设：定投做到今天结束、此时 65 岁退休；按月模拟到 100 岁。生活费以今天的美元输入，按通胀率逐月上涨。
+  let retCtx = null, retState = null;
+  const RET_START = 65, RET_END = 100, ANN_RATE = 0.025; // ANN_RATE：估算年金默认领取额用的内部收益率
+  const retMode = () => (document.querySelector('input[name="retMode"]:checked') || {}).value || "pf";
+  const numOr = (id, dflt) => { const v = parseFloat($(id).value); return isFinite(v) ? v : dflt; };
+  // 年金默认领取额：保费在退休前最后 N 年的年初缴纳，按 ANN_RATE 累积到 65 岁，再按同一利率在 65～99 岁每年初等额领取
+  function annuityDefault(prem, years) {
+    let fv = 0; for (let k = years; k >= 1; k--) fv += prem * Math.pow(1 + ANN_RATE, k);
+    const nPay = RET_END - RET_START, adue = (1 - Math.pow(1 + ANN_RATE, -nPay)) / ANN_RATE * (1 + ANN_RATE);
+    return fv / adue;   // 每年领取额
+  }
+  function renderRetirement() {
+    if (!retCtx) return;
+    const c = retCtx, mode = retMode();
+    $("retPfCtl").hidden = mode !== "pf"; $("retAnnCtl").hidden = mode !== "ann"; $("retBalWrap").hidden = mode !== "pf";
+    // 默认值写在输入框的占位提示里：留空就用默认值，跟着组合配置自动变化
+    let inflDflt = 2.5;
+    if (MACRO) { const cpi = macroSeries(c.s, c.n).cpi; inflDflt = (Math.pow(cpi[c.n - 1] / cpi[0], 12 / c.n) - 1) * 100; }
+    $("retInfl").placeholder = inflDflt.toFixed(2);
+    $("retRet").placeholder = isFinite(c.pfIrr) ? (c.pfIrr * 100).toFixed(2) : "7.00";
+    $("annPrem").placeholder = Math.round(c.annual);
+    const need0 = Math.max(0, numOr("retNeed", 1000)), infl = numOr("retInfl", inflDflt) / 100;
+    const ages = [], needY = [], incomeY = [], balY = [];
+    const nM = (RET_END - RET_START) * 12, gNeed = Math.pow(1 + infl, 1 / 12);
+    const k = $("retKpis"); k.replaceChildren();
+    const tile = (t, v, sub, cls) => {
+      const d = document.createElement("div"); d.className = "pf-kpi";
+      const a = document.createElement("div"); a.className = "t"; a.textContent = t;
+      const b = document.createElement("div"); b.className = "v" + (cls ? " " + cls : ""); b.textContent = v;
+      const e = document.createElement("div"); e.className = "s"; e.textContent = sub || "";
+      d.append(a, b, e); k.appendChild(d);
+    };
+    const lastNeed = need0 * Math.pow(1 + infl, RET_END - RET_START);
+    if (mode === "pf") {
+      const ret = numOr("retRet", isFinite(c.pfIrr) ? c.pfIrr * 100 : 7) / 100, gBal = Math.pow(1 + ret, 1 / 12);
+      $("retPfHint").textContent = T("retPfHint", fmtShort(c.startV)) + (ret > 0.10 ? T("retHighWarn", (ret * 100).toFixed(1)) : "");
+      let bal = c.startV, need = need0, outAge = null, spent = 0;
+      for (let m = 0; m < nM; m++) {
+        if (m % 12 === 0) { ages.push(RET_START + m / 12); needY.push(need); balY.push(Math.max(0, bal)); incomeY.push(0); }
+        const take = Math.min(need, Math.max(0, bal));   // 月初取出当月生活费，剩余部分继续增值
+        incomeY[incomeY.length - 1] += take / 12;
+        spent += take;
+        bal = (bal - take) * gBal;
+        if (outAge == null && take < need) outAge = RET_START + m / 12;
+        need *= gNeed;
+      }
+      ages.push(RET_END); needY.push(need); balY.push(Math.max(0, bal)); incomeY.push(bal > 0 ? need : 0);
+      $("lgIncome").textContent = T("lgWithdraw");
+      tile(T("retStart"), fmtUSD(c.startV), c.startIsProj ? T("retStartProj") : T("retStartNow"));
+      tile(T("retNeedFirst"), fmtUSD(need0), T("retNeedLast", RET_END, fmtUSD(lastNeed)));
+      tile(T("retLasts"), outAge == null ? T("retLastsAll", RET_END) : T("retLastsAge", outAge.toFixed(1)), outAge == null ? T("retLastsAllSub") : T("retLastsSub"), outAge == null ? "pos" : "neg");
+      tile(T("retBalEnd", RET_END), fmtUSD(Math.max(0, bal)), T("retSpent", fmtShort(spent)), bal > 0 ? "pos" : "neg");
+    } else {
+      const prem = Math.max(0, numOr("annPrem", c.annual)), years = Math.max(1, Math.round(numOr("annYears", 10)));
+      const freq = $("annFreq").value, dfltYear = annuityDefault(prem, years);
+      $("annPay").placeholder = Math.round(freq === "m" ? dfltYear / 12 : dfltYear);
+      const payInput = numOr("annPay", NaN), payYear = isFinite(payInput) ? (freq === "m" ? payInput * 12 : payInput) : dfltYear;
+      let need = need0, gapAge = null, gapSum = 0, got = 0, beAge = null;
+      const premTotal = prem * years;
+      for (let m = 0; m < nM; m++) {
+        // 月领：每月领 1/12；年领：每年初一次领满一年（图上按每月平均显示）
+        const pay = freq === "m" ? payYear / 12 : (m % 12 === 0 ? payYear : 0);
+        if (m % 12 === 0) { ages.push(RET_START + m / 12); needY.push(need); incomeY.push(payYear / 12); }
+        got += pay;
+        if (beAge == null && got >= premTotal) beAge = RET_START + m / 12;
+        const gapM = need - payYear / 12;
+        if (gapM > 0) { gapSum += gapM; if (gapAge == null) gapAge = RET_START + m / 12; }
+        need *= gNeed;
+      }
+      ages.push(RET_END); needY.push(need); incomeY.push(payYear / 12);
+      $("lgIncome").textContent = T("lgAnnuity");
+      tile(T("annPremTotal"), fmtUSD(premTotal), T("annPremSub", fmtUSD(prem), years));
+      tile(freq === "m" ? T("annPayM") : T("annPayY"), fmtUSD(freq === "m" ? payYear / 12 : payYear),
+        isFinite(payInput) ? T("annPayFixed") : T("annPayEst", (ANN_RATE * 100).toFixed(1)));
+      tile(T("annGapAge"), gapAge == null ? T("annNoGap") : T("annGapAt", gapAge.toFixed(1)),
+        gapAge == null ? T("annNoGapSub", RET_END) : T("annGapSub", fmtUSD(need0), fmtUSD(payYear / 12)), gapAge == null ? "pos" : "neg");
+      tile(T("annGapSum", RET_END), fmtUSD(gapSum), T("annBreakEven", beAge == null ? T("annNoBreakEven", RET_END) : beAge.toFixed(1)), gapSum > 0 ? "neg" : "pos");
+    }
+    retState = { ages, needY, incomeY, balY, mode };
+    drawRetirement();
+  }
+  // 两张小图共用的折线图：x = 年龄，可选面积；悬停显示所有序列
+  function miniChart(svgEl, boxEl, tipEl, xs, series, yFmt, H) {
+    const W = boxEl.clientWidth, m = { l: 64, r: 92, t: 12, b: 30 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, n = xs.length;
+    svgEl.setAttribute("viewBox", `0 0 ${W} ${H}`); svgEl.setAttribute("height", H);
+    svgEl.replaceChildren();
+    const maxV = Math.max(1, ...series.flatMap((sr) => sr.values));
+    const ticks = niceTicks(maxV, 4), top = ticks[ticks.length - 1];
+    const x = (i) => m.l + (i / Math.max(1, n - 1)) * iw, y = (v) => m.t + ih - (v / top) * ih;
+    for (const t of ticks) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(t), y2: y(t), stroke: "var(--grid)" }, svgEl);
+      const tx = el("text", { x: m.l - 10, y: y(t) + 4, "text-anchor": "end" }, svgEl); tx.textContent = yFmt(t);
+    }
+    xs.forEach((a, i) => { if (a % 5 === 0) { const tx = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, svgEl); tx.textContent = T("ageLbl", a); } });
+    for (const sr of series) {
+      const line = sr.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("");
+      if (sr.area) el("path", { d: line + "L" + x(n - 1) + "," + y(0) + "L" + x(0) + "," + y(0) + "Z", fill: sr.color, "fill-opacity": 0.12 }, svgEl);
+      el("path", { d: line, fill: "none", stroke: sr.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-dasharray": sr.dash ? "5 4" : "none" }, svgEl);
+    }
+    // 缺口：生活费高于收入的部分涂红
+    if (series.gap) {
+      const [hiS, loS] = series.gap;
+      for (let i = 0; i < n - 1; i++) {
+        if (hiS.values[i] <= loS.values[i] && hiS.values[i + 1] <= loS.values[i + 1]) continue;
+        const pts = [[x(i), y(Math.max(hiS.values[i], loS.values[i]))], [x(i + 1), y(Math.max(hiS.values[i + 1], loS.values[i + 1]))], [x(i + 1), y(loS.values[i + 1])], [x(i), y(loS.values[i])]];
+        el("path", { d: "M" + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join("L") + "Z", fill: "var(--infl)", "fill-opacity": 0.18 }, svgEl);
+      }
+    }
+    const ends = series.map((sr) => ({ yy: y(sr.values[n - 1]), txt: yFmt(sr.values[n - 1]) })).sort((p, q) => p.yy - q.yy);
+    for (let j = 1; j < ends.length; j++) if (ends[j].yy - ends[j - 1].yy < 16) ends[j].yy = ends[j - 1].yy + 16;
+    for (const e of ends) { const t = el("text", { x: m.l + iw + 10, y: e.yy + 4, class: "dlabel" }, svgEl); t.textContent = e.txt; }
+    const hair = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-muted)", opacity: 0 }, svgEl);
+    const dots = series.map((sr) => el("circle", { r: 4, fill: sr.color, stroke: "var(--surface-1)", "stroke-width": 2, opacity: 0 }, svgEl));
+    const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, svgEl);
+    hit.addEventListener("pointermove", (ev) => {
+      const r = svgEl.getBoundingClientRect();
+      const i = Math.max(0, Math.min(n - 1, Math.round((((ev.clientX - r.left) * (W / r.width) - m.l) / iw) * (n - 1))));
+      const xx = x(i);
+      hair.setAttribute("x1", xx); hair.setAttribute("x2", xx); hair.setAttribute("opacity", 0.6);
+      tipEl.replaceChildren();
+      const dd = document.createElement("div"); dd.className = "tt-date"; dd.textContent = T("ageLbl", xs[i]); tipEl.appendChild(dd);
+      series.forEach((sr, j) => {
+        dots[j].setAttribute("cx", xx); dots[j].setAttribute("cy", y(sr.values[i])); dots[j].setAttribute("opacity", 1);
+        const row = document.createElement("div"); row.className = "tt-row";
+        const key = document.createElement("i"); key.style.borderColor = sr.color; if (sr.dash) key.className = "dash";
+        const sp = document.createElement("span"); sp.textContent = sr.name;
+        const b = document.createElement("b"); b.textContent = fmtUSD(sr.values[i]);
+        row.append(key, sp, b); tipEl.appendChild(row);
+      });
+      tipEl.style.opacity = 1;
+      const tw = tipEl.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
+      tipEl.style.left = Math.max(0, left) + "px"; tipEl.style.top = m.t + 8 + "px";
+    });
+    hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); dots.forEach((d) => d.setAttribute("opacity", 0)); tipEl.style.opacity = 0; });
+  }
+  function drawRetirement() {
+    if (!retState) return;
+    const S = retState;
+    const need = { name: T("lgNeed"), color: "var(--infl)", values: S.needY };
+    const income = { name: S.mode === "pf" ? T("lgWithdraw") : T("lgAnnuity"), color: "var(--series-3)", values: S.incomeY, dash: S.mode === "pf" };
+    const ser = [need, income]; ser.gap = [need, income];
+    miniChart($("retChart1"), $("retBox1"), $("retTip1"), S.ages, ser, fmtShort, 260);
+    if (S.mode === "pf") miniChart($("retChart2"), $("retBox2"), $("retTip2"), S.ages, [{ name: T("retBalName"), color: "var(--series-1)", values: S.balY, area: true }], fmtShort, 240);
+  }
+
   // ---------- 主流程 ----------
   function update() {
     const amount = Math.max(0, parseFloat($("amount").value) || 0);
@@ -2139,7 +2379,11 @@
   for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projDrop", "projVol", "projBuy", "real"]) $(id).addEventListener("input", update);
   // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
   for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
-  window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); if (peState) drawValuation(); });
+  // 退休模块的输入只重算退休部分
+  for (const id of ["retNeed", "retInfl", "retRet", "annPrem", "annYears", "annPay", "annFreq"]) $(id).addEventListener("input", renderRetirement);
+  document.querySelectorAll('input[name="retMode"]').forEach((e) => e.addEventListener("change", renderRetirement));
+  $("annFreq").addEventListener("change", () => { $("annPay").value = ""; renderRetirement(); });   // 换了领取方式，金额回到对应的默认值
+  window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); if (peState) drawValuation(); if (retState) drawRetirement(); });
   $("langBtn").addEventListener("click", () => {
     LANG = LANG === "zh" ? "en" : "zh";
     try { localStorage.setItem("dashLang", LANG); } catch (e) {}
