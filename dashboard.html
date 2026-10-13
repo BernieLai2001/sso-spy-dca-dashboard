@@ -268,7 +268,7 @@
     <label><span data-i18n="cProjDrop">S&amp;P500 一年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
     <label data-i18n-title="cProjVolTip" title="真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌"><span data-i18n="cProjVol">年化波动率</span> <input class="fee" type="number" id="projVol" value="0" step="5" min="0" max="150">%</label>
     <label><input type="checkbox" id="projBuy" checked> <span data-i18n="cProjBuy">测算期间继续定投</span></label>
-    <span class="top-btns"><button class="theme-btn" id="langBtn" type="button" data-i18n="langBtn">English</button><button class="theme-btn" id="themeBtn" type="button" data-i18n="themeBtn">切换深色/浅色</button></span>
+    <span class="top-btns"><button class="theme-btn" id="langBtn" type="button" data-i18n="langBtn">English</button><button class="theme-btn" id="themeBtn" type="button" data-i18n="themeBtn">切换深色/浅色</button><button class="theme-btn" id="resetBtn" type="button" data-i18n="resetBtn" data-i18n-title="resetTip" title="恢复所有设置为默认值">重置设置</button></span>
   </div>
 
   <div class="kpis">
@@ -497,7 +497,7 @@
     zh: {
       pageTitle: "SSO vs SPY 定投复合收益仪表盘",
       h1: "SSO（2倍做多标普500） vs SPY：每月定投价值增长",
-      langBtn: "English",
+      langBtn: "English", resetBtn: "重置设置", resetTip: "恢复所有设置为默认值", resetConfirm: "确定把所有设置恢复为默认值吗？",
       themeBtn: "切换深色/浅色",
       cAmount: "每月定投", cStart: "起始月份", cFee: "扣除管理费", cDiv: "添加股息红利（再投资）",
       cDip: "下跌加倍：开盘价较上月开盘跌幅", cBuy: "买入", cTimes: "倍", cLog: "对数坐标",
@@ -621,7 +621,7 @@
     en: {
       pageTitle: "SSO vs SPY DCA Dashboard",
       h1: "SSO (2× Long S&P 500) vs SPY: Monthly DCA Growth",
-      langBtn: "中文",
+      langBtn: "中文", resetBtn: "Reset", resetTip: "Restore all settings to their defaults", resetConfirm: "Restore all settings to their defaults?",
       themeBtn: "Dark / Light",
       cAmount: "Monthly amount", cStart: "Start month", cFee: "Deduct expense ratio", cDiv: "Reinvest dividends",
       cDip: "Buy the dip: open vs. last month's open down", cBuy: "Buy", cTimes: "×", cLog: "Log scale",
@@ -2441,7 +2441,50 @@
     const root = document.documentElement;
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     root.dataset.theme = dark ? "light" : "dark";
+    savePrefs();
   });
+
+  // ---------- 记住上次的设置 ----------
+  // 所有输入保存在浏览器 localStorage；读写失败（隐私模式、禁用存储等）时静默跳过，页面照常用默认值
+  const PREF_KEY = "dashPrefs";
+  const PREF_IDS = ["amount", "start", "fee", "erSSO", "erSPY", "div", "dip", "thSSO", "thSPY", "mult", "log", "real",
+    "proj", "projDrop", "projVol", "projBuy", "pfTotal", "pfW",
+    "retNeedMode", "retNeed", "retRepl", "retInfl", "retRetMode", "retRet", "annPrem", "annYears", "annPay", "annFreq"];
+  const PREF_AUTO = ["retInfl", "annPrem", "annPay"];   // 会自动跟随默认值的输入框：同时记住是否被手动改过
+  function savePrefs() {
+    const v = {};
+    for (const id of PREF_IDS) { const e = $(id); if (e) v[id] = e.type === "checkbox" ? e.checked : e.value; }
+    const user = {}; for (const id of PREF_AUTO) user[id] = isUserSet(id);
+    const prefs = { v, user, retMode: retMode(), theme: document.documentElement.dataset.theme || "" };
+    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
+  }
+  let saveTimer = 0;
+  const savePrefsSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(savePrefs, 300); };
+  document.addEventListener("input", savePrefsSoon);
+  document.addEventListener("change", savePrefsSoon);
+  function restorePrefs() {
+    let prefs = null;
+    try { prefs = JSON.parse(localStorage.getItem(PREF_KEY) || "null"); } catch (e) {}
+    if (!prefs || !prefs.v) return;
+    for (const id of PREF_IDS) {
+      const e = $(id), val = prefs.v[id];
+      if (!e || val === undefined) continue;
+      if (e.type === "checkbox") { e.checked = !!val; continue; }
+      if (e.tagName === "SELECT" && ![...e.options].some((o) => o.value === val && !o.disabled)) continue;   // 选项已不存在
+      if (id === "start" && !months.includes(val)) continue;                                                   // 起始月份超出数据范围
+      e.value = val;
+    }
+    for (const id of PREF_AUTO) if (prefs.user && prefs.user[id]) $(id).dataset.user = "1";
+    const r = document.querySelector(`input[name="retMode"][value="${prefs.retMode}"]`); if (r) r.checked = true;
+    if (prefs.theme === "light" || prefs.theme === "dark") document.documentElement.dataset.theme = prefs.theme;
+  }
+  $("resetBtn").addEventListener("click", () => {
+    if (!confirm(T("resetConfirm"))) return;
+    try { localStorage.removeItem(PREF_KEY); } catch (e) {}
+    document.removeEventListener("input", savePrefsSoon); document.removeEventListener("change", savePrefsSoon);
+    location.reload();
+  });
+  restorePrefs();
   update();
 })();
 </script>

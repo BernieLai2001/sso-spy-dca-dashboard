@@ -12,7 +12,8 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Buy the dip**: buys 2× the amount when this month's open is down ≥ a threshold vs. last month's open (default SSO 10%, SPY 5%)
 - **Metrics**: market value, actual investment, shares, average cost, multiple, money-weighted annualized return (IRR), max drawdown, comparison with plain DCA
 - **Charts**: scroll/pinch to zoom, drag to pan, range buttons, overview navigator, log scale, dark/light theme
-- **Chinese / English**: one-click language switch in the top-right corner; the choice is remembered
+- **Chinese / English**: one-click language switch in the top-right corner
+- **Remembers your settings**: all inputs and the theme are restored next time (stored in the browser); "Reset" in the top-right restores the defaults
 - **Portfolio mix**: a slider splits the monthly total between SPY and SSO, with live portfolio breakdown, IRR, max drawdown, and result curves across all mixes
 - **Risk-free & inflation comparison**: "10Y Treasury DCA" and "inflation break-even" lines on the main chart; cards show real (after-inflation) return, excess return vs the 10Y Treasury and the Sharpe ratio; an "Amounts in" selector shows nominal, today's or start-month dollars (the latter two inflation-adjusted); a "How inflation eats your money" panel shows purchasing-power erosion
 - **Valuation (Shiller CAPE)**: current value and its percentile since 1871, the record high, earnings yield (1 ÷ CAPE) vs the 10Y Treasury, and its path over the DCA period
