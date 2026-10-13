@@ -568,7 +568,7 @@
       retNeedLbl: "每月生活费（今天的美元）", retNeedManual: "手动输入", retNeedIncome: "美国人均月收入 × 替代率",
       retIncTxt: (v, q) => `美国人均月收入 ${v}（${q}，BEA）`, retInflLbl: "通胀率", retModePf: "用组合配置的市值", retModeAnn: "年金", retRetLbl: "退休后年化收益", retRetManual: "手动设置", retRetLink: "与组合配置联动",
       retLinkedVal: (v, p) => `${v}%（组合配置的年化${p ? "，含下跌测算" : ""}）`,
-      retPfHint: (v) => `起始资金 = 组合配置的市值 ${v}；留空的输入框使用灰色的默认值`,
+      retPfHint: (v) => `起始资金 = 组合配置的市值 ${v}；自动填入的默认值会跟着组合配置变化，手动修改后以你填的为准，清空即恢复默认`,
       retHighWarn: (r) => `。⚠ ${r}% 是过去的历史收益，不代表未来，退休规划通常按 4%–6% 估算更稳妥`,
       annPremLbl: "年保费", annYearsLbl: "缴费年限", annYearsUnit: "年", annPayLbl: "退休后领取", annMonthly: "月领", annYearly: "年领",
       retChart1: "每月生活费 vs 每月收入（名义美元）", retChart2: "组合余额（名义美元）", retBalName: "组合余额", ageLbl: (a) => `${a} 岁`,
@@ -690,7 +690,7 @@
       retNeedLbl: "Monthly living cost (today's dollars)", retNeedManual: "enter manually", retNeedIncome: "US income per capita × replacement rate",
       retIncTxt: (v, q) => `US monthly income per capita ${v} (${q}, BEA)`, retInflLbl: "Inflation", retModePf: "Live off the portfolio", retModeAnn: "Annuity", retRetLbl: "Return after retirement", retRetManual: "set manually", retRetLink: "linked to the portfolio",
       retLinkedVal: (v, p) => `${v}% (portfolio return${p ? ", incl. decline simulation" : ""})`,
-      retPfHint: (v) => `Starting money = portfolio value ${v}; empty fields use the grey defaults`,
+      retPfHint: (v) => `Starting money = portfolio value ${v}; auto-filled defaults follow the portfolio until you edit them — clear a field to restore its default`,
       retHighWarn: (r) => `. ⚠ ${r}% is a past return, not a forecast — retirement plans usually assume 4%–6%`,
       annPremLbl: "Annual premium", annYearsLbl: "Paying years", annYearsUnit: "yrs", annPayLbl: "Payout after retirement", annMonthly: "monthly", annYearly: "yearly",
       retChart1: "Monthly living cost vs monthly income (nominal dollars)", retChart2: "Portfolio balance (nominal dollars)", retBalName: "Portfolio balance", ageLbl: (a) => `age ${a}`,
@@ -2135,6 +2135,9 @@
   const RET_START = 65, RET_END = 100, ANN_RATE = 0.025; // ANN_RATE：估算年金默认领取额用的内部收益率
   const retMode = () => (document.querySelector('input[name="retMode"]:checked') || {}).value || "pf";
   const numOr = (id, dflt) => { const v = parseFloat($(id).value); return isFinite(v) ? v : dflt; };
+  // 自动默认值：输入框没被用户改过（或被清空）时，填入并跟随最新的默认值
+  const isUserSet = (id) => $(id).dataset.user === "1";
+  function autoVal(id, v) { if (!isUserSet(id)) $(id).value = v; }
   // 年金默认领取额：保费在退休前最后 N 年的年初缴纳，按 ANN_RATE 累积到 65 岁，再按同一利率在 65～99 岁每年初等额领取
   function annuityDefault(prem, years) {
     let fv = 0; for (let k = years; k >= 1; k--) fv += prem * Math.pow(1 + ANN_RATE, k);
@@ -2148,8 +2151,8 @@
     // 默认值写在输入框的占位提示里：留空就用默认值，跟着组合配置自动变化
     let inflDflt = 2.5;
     if (MACRO) { const cpi = macroSeries(c.s, c.n).cpi; inflDflt = (Math.pow(cpi[c.n - 1] / cpi[0], 12 / c.n) - 1) * 100; }
-    $("retInfl").placeholder = inflDflt.toFixed(2);
-    $("annPrem").placeholder = Math.round(c.annual);
+    autoVal("retInfl", inflDflt.toFixed(2));
+    autoVal("annPrem", Math.round(c.annual));
     const INC = RAW.INCOME && RAW.INCOME.income && RAW.INCOME.income.length ? RAW.INCOME : null;
     const optInc = $("retNeedMode").querySelector('option[value="income"]');
     optInc.disabled = !INC;
@@ -2206,8 +2209,9 @@
     } else {
       const prem = Math.max(0, numOr("annPrem", c.annual)), years = Math.max(1, Math.round(numOr("annYears", 10)));
       const freq = $("annFreq").value, dfltYear = annuityDefault(prem, years);
-      $("annPay").placeholder = Math.round(freq === "m" ? dfltYear / 12 : dfltYear);
-      const payInput = numOr("annPay", NaN), payYear = isFinite(payInput) ? (freq === "m" ? payInput * 12 : payInput) : dfltYear;
+      autoVal("annPay", Math.round(freq === "m" ? dfltYear / 12 : dfltYear));
+      const payUser = isUserSet("annPay"), payInput = numOr("annPay", NaN);
+      const payYear = payUser && isFinite(payInput) ? (freq === "m" ? payInput * 12 : payInput) : dfltYear;
       let need = need0, gapAge = null, gapSum = 0, got = 0, beAge = null;
       const premTotal = prem * years;
       for (let m = 0; m < nM; m++) {
@@ -2224,7 +2228,7 @@
       $("lgIncome").textContent = T("lgAnnuity");
       tile(T("annPremTotal"), fmtUSD(premTotal), T("annPremSub", fmtUSD(prem), years));
       tile(freq === "m" ? T("annPayM") : T("annPayY"), fmtUSD(freq === "m" ? payYear / 12 : payYear),
-        isFinite(payInput) ? T("annPayFixed") : T("annPayEst", (ANN_RATE * 100).toFixed(1)));
+        payUser ? T("annPayFixed") : T("annPayEst", (ANN_RATE * 100).toFixed(1)));
       tile(T("annGapAge"), gapAge == null ? T("annNoGap") : T("annGapAt", gapAge.toFixed(1)),
         gapAge == null ? T("annNoGapSub", RET_END) : T("annGapSub", fmtUSD(need0), fmtUSD(payYear / 12)), gapAge == null ? "pos" : "neg");
       tile(T("annGapSum", RET_END), fmtUSD(gapSum), T("annBreakEven", beAge == null ? T("annNoBreakEven", RET_END) : beAge.toFixed(1)), gapSum > 0 ? "neg" : "pos");
@@ -2417,7 +2421,11 @@
   // 退休模块的输入只重算退休部分
   for (const id of ["retNeed", "retNeedMode", "retRepl", "retInfl", "retRet", "retRetMode", "annPrem", "annYears", "annPay", "annFreq"]) $(id).addEventListener("input", renderRetirement);
   document.querySelectorAll('input[name="retMode"]').forEach((e) => e.addEventListener("change", renderRetirement));
-  $("annFreq").addEventListener("change", () => { $("annPay").value = ""; renderRetirement(); });   // 换了领取方式，金额回到对应的默认值
+  $("annFreq").addEventListener("change", () => { $("annPay").dataset.user = ""; renderRetirement(); });   // 换了领取方式，金额回到对应的默认值
+  // 记录哪些输入框被用户改过：改过的不再自动更新；清空则恢复为自动默认值
+  for (const id of ["retInfl", "annPrem", "annPay"]) {
+    $(id).addEventListener("input", (e) => { if (e.isTrusted || e.detail === "user") $(id).dataset.user = $(id).value.trim() === "" ? "" : "1"; }, true);
+  }
   window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); if (peState) drawValuation(); if (retState) drawRetirement(); });
   $("langBtn").addEventListener("click", () => {
     LANG = LANG === "zh" ? "en" : "zh";
