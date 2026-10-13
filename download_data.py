@@ -2,7 +2,7 @@
 十年期美债收益率（无风险收益基准）和 CPI（通货膨胀），保存为 CSV。
 
 数据来源：Yahoo Finance（通过 yfinance）；FRED 公开 CSV（GS10、CPIAUCSL，无需 API key）；
-multpl.com（标普 500 席勒市盈率 CAPE，1871 年起月度）
+multpl.com（标普 500 席勒市盈率 CAPE，1871 年起月度）；FRED A792RC0Q052SBEA（美国人均个人收入，季度）
 下载失败或数据异常时不会覆盖已有 CSV，并以非零状态退出。
 """
 import sys
@@ -20,6 +20,8 @@ FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
 # multpl.com：标普 500 席勒市盈率（CAPE = 价格 ÷ 过去 10 年经通胀调整的平均盈利）
 # 不用普通 P/E：它按过去 12 个月的报告利润计算，2009 年盈利塌陷时会飙到 100 倍以上，容易误导
 PE_PAGES = {"CAPE": "https://www.multpl.com/shiller-pe/table/by-month"}
+# FRED：美国人均个人收入（BEA，税前，季度、按年率计，美元）——退休模块用来估算每月生活费
+INCOME_SERIES = "A792RC0Q052SBEA"
 
 
 def download_monthly(ticker: str) -> Path:
@@ -93,10 +95,26 @@ def download_pe() -> Path:
     return out
 
 
+def download_income() -> Path:
+    """美国人均个人收入（季度，年率）/ US personal income per capita (quarterly, annual rate)."""
+    s = pd.read_csv(FRED_CSV.format(INCOME_SERIES))
+    s.columns = ["Date", "Income"]
+    s["Income"] = pd.to_numeric(s["Income"], errors="coerce")
+    s = s.dropna()
+    if s.empty:
+        raise RuntimeError("FRED 人均收入：下载结果为空 / empty download")
+    out = DATA_DIR / "INCOME_quarterly.csv"
+    tmp = out.with_suffix(".csv.tmp")
+    s.to_csv(tmp, index=False)
+    tmp.replace(out)
+    print(f"人均个人收入至 / through {s['Date'].iloc[-1]}：${s['Income'].iloc[-1]:,.0f}/年 -> {out}")
+    return out
+
+
 if __name__ == "__main__":
     DATA_DIR.mkdir(exist_ok=True)
     failed = False
-    for job in [lambda t=t: download_monthly(t) for t in TICKERS] + [download_macro, download_pe]:
+    for job in [lambda t=t: download_monthly(t) for t in TICKERS] + [download_macro, download_pe, download_income]:
         try:
             job()
         except Exception as e:  # 单个失败不影响其他；保留旧文件

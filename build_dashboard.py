@@ -50,8 +50,18 @@ def load_pe() -> dict | None:
     return {"dates": [d[:7] for d in df["Date"]], "cape": [num(v) for v in df["CAPE"]]}
 
 
+def load_income() -> dict | None:
+    """美国人均个人收入（季度，年率）；没有该文件时返回 None。"""
+    p = DATA_DIR / "INCOME_quarterly.csv"
+    if not p.exists():
+        return None
+    df = pd.read_csv(p)
+    return {"dates": [d[:7] for d in df["Date"]], "income": [round(float(v), 0) for v in df["Income"]]}
+
+
 if __name__ == "__main__":
     payload = {t: load(t) for t in TICKERS}
+    payload["INCOME"] = load_income()
     payload["MACRO"] = load_macro()
     payload["PE"] = load_pe()
     payload["updated"] = datetime.now().strftime("%Y-%m-%d %H:%M")

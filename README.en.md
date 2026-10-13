@@ -16,7 +16,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Portfolio mix**: a slider splits the monthly total between SPY and SSO, with live portfolio breakdown, IRR, max drawdown, and result curves across all mixes
 - **Risk-free & inflation comparison**: "10Y Treasury DCA" and "inflation break-even" lines on the main chart; cards show real (after-inflation) return, excess return vs the 10Y Treasury and the Sharpe ratio; an "Amounts in" selector shows nominal, today's or start-month dollars (the latter two inflation-adjusted); a "How inflation eats your money" panel shows purchasing-power erosion
 - **Valuation (Shiller CAPE)**: current value and its percentile since 1871, the record high, earnings yield (1 ÷ CAPE) vs the 10Y Treasury, and its path over the DCA period
-- **Retirement**: monthly living cost after retiring at 65 (default $1,000, rising with inflation), funded either by the portfolio (the rest keeps growing; shows how long it lasts) or by an annuity (premium, paying years, monthly / yearly payout; shows the shortfall and break-even age)
+- **Retirement**: monthly living cost after retiring at 65 (manual, default $3,000, or US income per capita × a pension replacement rate; rising with inflation), funded either by the portfolio (the rest keeps growing; shows how long it lasts) or by an annuity (premium, paying years, monthly / yearly payout; shows the shortfall and break-even age)
 - **1-year decline simulation**: set an S&P 500 decline for the next year, spread across trading days along a geometric path, to simulate monthly moves and holdings for SPY (1×) and SSO (2×), optionally with volatility decay
 
 ## Files
@@ -24,13 +24,13 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 | File | Description |
 |---|---|
 | `dashboard.html` | The dashboard (data embedded, works offline) |
-| `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance, the 10Y Treasury yield (GS10) and CPI (CPIAUCSL) from FRED, and the S&P 500 Shiller CAPE from multpl.com into `data/`; keeps the old data if a download fails |
+| `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance, the 10Y Treasury yield (GS10) and CPI (CPIAUCSL) from FRED, the S&P 500 Shiller CAPE from multpl.com, and US personal income per capita from FRED into `data/`; keeps the old data if a download fails |
 | `build_dashboard.py` | Embeds the CSVs in `data/` into `dashboard.html` |
 | `update.sh` | Runs the two scripts above in order and logs to `logs/update.log`; finds a Python with the dependencies installed (or set `PYTHON`) |
 | `requirements.txt` | Python dependencies (yfinance, pandas, lxml) |
 | `install_autoupdate.sh` | Installs / uninstalls the macOS monthly auto-update, filling in local paths |
 | `launchd/etf-dashboard-update.plist.template` | Scheduled-job template: runs `update.sh` at 09:00 on the 1st of every month |
-| `data/*.csv` | SSO and SPY monthly bars; `MACRO_monthly.csv` holds the 10Y yield and CPI; `PE_monthly.csv` holds the Shiller CAPE |
+| `data/*.csv` | SSO and SPY monthly bars; `MACRO_monthly.csv` holds the 10Y yield and CPI; `PE_monthly.csv` holds the Shiller CAPE; `INCOME_quarterly.csv` holds US personal income per capita |
 
 ## Quick start
 
