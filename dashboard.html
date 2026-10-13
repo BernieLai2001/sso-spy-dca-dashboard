@@ -209,6 +209,7 @@
   .ret-controls input::placeholder { color: var(--text-muted); }
   .ret-mode { display: inline-flex; gap: 16px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 6px; }
   .ret-hint { color: var(--text-muted); font-size: 12.5px; }
+  .ret-linked { color: var(--text-primary); font-variant-numeric: tabular-nums; }
   .ctrl-break { flex-basis: 100%; height: 0; }
   .proj-toggle { color: var(--text-primary) !important; font-weight: 600; }
   .proj-card { margin-top: 16px; }
@@ -441,7 +442,10 @@
       </span>
     </div>
     <div class="ret-controls" id="retPfCtl">
-      <label><span data-i18n="retRetLbl">退休后年化收益</span> <input class="fee" type="number" id="retRet" step="0.5">%</label>
+      <label><span data-i18n="retRetLbl">退休后年化收益</span>
+        <select id="retRetMode"><option value="manual" data-i18n="retRetManual">手动设置</option><option value="link" data-i18n="retRetLink">与组合配置联动</option></select></label>
+      <label id="retRetManualWrap"><input class="fee" type="number" id="retRet" value="5" step="0.5">%</label>
+      <b id="retRetLinked" class="ret-linked"></b>
       <span class="ret-hint" id="retPfHint"></span>
     </div>
     <div class="ret-controls" id="retAnnCtl" hidden>
@@ -556,7 +560,8 @@
       monthsN: (n) => n + " 个月", lnSsoV: "SSO 市值", lnSpyV: "SPY 市值", lnSsoInv: "SSO 实际投入", lnSpyInv: "SPY 实际投入",
       latest: "（最新）",
       retTitle: "退休生活：65 岁退休后的钱够不够花", lgNeed: "每月生活费（随通胀上涨）", lgWithdraw: "每月从组合取出", lgAnnuity: "年金每月收入",
-      retNeedLbl: "每月生活费（今天的美元）", retInflLbl: "通胀率", retModePf: "用组合配置的市值", retModeAnn: "年金", retRetLbl: "退休后年化收益",
+      retNeedLbl: "每月生活费（今天的美元）", retInflLbl: "通胀率", retModePf: "用组合配置的市值", retModeAnn: "年金", retRetLbl: "退休后年化收益", retRetManual: "手动设置", retRetLink: "与组合配置联动",
+      retLinkedVal: (v, p) => `${v}%（组合配置的年化${p ? "，含下跌测算" : ""}）`,
       retPfHint: (v) => `起始资金 = 组合配置的市值 ${v}；留空的输入框使用灰色的默认值`,
       retHighWarn: (r) => `。⚠ ${r}% 是过去的历史收益，不代表未来，退休规划通常按 4%–6% 估算更稳妥`,
       annPremLbl: "年保费", annYearsLbl: "缴费年限", annYearsUnit: "年", annPayLbl: "退休后领取", annMonthly: "月领", annYearly: "年领",
@@ -571,7 +576,7 @@
       annGapSub: (n, p) => `年金固定不变，生活费却逐年上涨（65 岁 ${n} vs 年金 ${p}/月）`,
       annGapSum: (a) => `到 ${a} 岁的累计缺口`, annBreakEven: (a) => `领回全部保费：${a} 岁`, annNoBreakEven: (a) => `${a} 岁前领不回`,
       retNote: "<b>假设：</b>定投做到今天结束，此时 65 岁退休，按月模拟到 100 岁；生活费以今天的美元输入，之后每年按通胀率上涨（默认取定投期间 CPI 的年均涨幅）。" +
-        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值（默认等于组合的资金加权年化收益）。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
+        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，直接使用组合配置面板的名义年化收益（开启下跌测算时为测算后的值），调整组合时自动跟着变。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
         "<b>年金：</b>年保费默认等于组合每年的投入；缴费年限默认 10 年（国内年金险最常见的缴费方式），在退休前缴清；领取金额默认按 2.5% 的内部收益率、领取到 100 岁估算，请以实际合同为准。年金每期领取的金额固定，不随通胀上涨。" +
         "本模块仅作情景演示，不构成理财建议。",
       cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
@@ -676,7 +681,8 @@
       monthsN: (n) => n + " months", lnSsoV: "SSO value", lnSpyV: "SPY value", lnSsoInv: "SSO invested", lnSpyInv: "SPY invested",
       latest: " (latest)",
       retTitle: "Retirement: is the money enough after 65?", lgNeed: "Monthly living cost (rises with inflation)", lgWithdraw: "Monthly withdrawal", lgAnnuity: "Monthly annuity income",
-      retNeedLbl: "Monthly living cost (today's dollars)", retInflLbl: "Inflation", retModePf: "Live off the portfolio", retModeAnn: "Annuity", retRetLbl: "Return after retirement",
+      retNeedLbl: "Monthly living cost (today's dollars)", retInflLbl: "Inflation", retModePf: "Live off the portfolio", retModeAnn: "Annuity", retRetLbl: "Return after retirement", retRetManual: "set manually", retRetLink: "linked to the portfolio",
+      retLinkedVal: (v, p) => `${v}% (portfolio return${p ? ", incl. decline simulation" : ""})`,
       retPfHint: (v) => `Starting money = portfolio value ${v}; empty fields use the grey defaults`,
       retHighWarn: (r) => `. ⚠ ${r}% is a past return, not a forecast — retirement plans usually assume 4%–6%`,
       annPremLbl: "Annual premium", annYearsLbl: "Paying years", annYearsUnit: "yrs", annPayLbl: "Payout after retirement", annMonthly: "monthly", annYearly: "yearly",
@@ -691,7 +697,7 @@
       annGapSub: (n, p) => `fixed payout vs rising costs (at 65: ${n} vs ${p}/mo)`,
       annGapSum: (a) => `Total shortfall by ${a}`, annBreakEven: (a) => `premiums paid back at ${a}`, annNoBreakEven: (a) => `not before ${a}`,
       retNote: "<b>Assumptions:</b> the DCA ends today at retirement age 65, simulated monthly to 100; the living cost is entered in today's dollars and rises each year with inflation (default: average CPI inflation over the DCA period). " +
-        "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement (default: the portfolio's money-weighted return). Real returns vary year to year, and a crash early in retirement hurts the most. " +
+        "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio panel's nominal return (after the simulated year if the decline simulation is on) and follows any change to the portfolio. Real returns vary year to year, and a crash early in retirement hurts the most. " +
         "<b>Annuity:</b> the premium defaults to the portfolio's yearly investment; paying years default to 10 (the most common term for annuity products in China), paid before retirement; the payout defaults to an estimate at 2.5% IRR paid to 100 — use your contract's figures. Annuity payouts are fixed and do not rise with inflation. " +
         "Scenario illustration only, not financial advice.",
       cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
@@ -1794,7 +1800,8 @@
     };
     drawPortfolio();
     // 退休模块：起始资金 = 组合当前市值（开启下跌测算时用测算一年后的市值）
-    retCtx = { startV: c.P ? chart.values[chart.values.length - 1] : V, startIsProj: !!c.P, pfIrr: r, annual: total * 12, s: c.s, n };
+    const pfIrrShown = c.P ? irr(chart.flows, chart.values[chart.values.length - 1]) : r;   // 名义年化（退休模块按名义美元计算）
+    retCtx = { startV: c.P ? chart.values[chart.values.length - 1] : V, startIsProj: !!c.P, pfIrr: pfIrrShown, annual: total * 12, s: c.s, n };
     renderRetirement();
   }
 
@@ -2135,7 +2142,6 @@
     let inflDflt = 2.5;
     if (MACRO) { const cpi = macroSeries(c.s, c.n).cpi; inflDflt = (Math.pow(cpi[c.n - 1] / cpi[0], 12 / c.n) - 1) * 100; }
     $("retInfl").placeholder = inflDflt.toFixed(2);
-    $("retRet").placeholder = isFinite(c.pfIrr) ? (c.pfIrr * 100).toFixed(2) : "7.00";
     $("annPrem").placeholder = Math.round(c.annual);
     const need0 = Math.max(0, numOr("retNeed", 1000)), infl = numOr("retInfl", inflDflt) / 100;
     const ages = [], needY = [], incomeY = [], balY = [];
@@ -2150,7 +2156,12 @@
     };
     const lastNeed = need0 * Math.pow(1 + infl, RET_END - RET_START);
     if (mode === "pf") {
-      const ret = numOr("retRet", isFinite(c.pfIrr) ? c.pfIrr * 100 : 7) / 100, gBal = Math.pow(1 + ret, 1 / 12);
+      // 退休后年化收益：手动设置（默认 5%），或与组合配置的年化联动
+      const linked = $("retRetMode").value === "link" && isFinite(c.pfIrr);
+      $("retRetManualWrap").hidden = linked;
+      $("retRetLinked").hidden = !linked;
+      if (linked) $("retRetLinked").textContent = T("retLinkedVal", (c.pfIrr * 100).toFixed(2), c.startIsProj);
+      const ret = linked ? c.pfIrr : numOr("retRet", 5) / 100, gBal = Math.pow(1 + ret, 1 / 12);
       $("retPfHint").textContent = T("retPfHint", fmtShort(c.startV)) + (ret > 0.10 ? T("retHighWarn", (ret * 100).toFixed(1)) : "");
       let bal = c.startV, need = need0, outAge = null, spent = 0;
       for (let m = 0; m < nM; m++) {
@@ -2380,7 +2391,7 @@
   // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
   for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
   // 退休模块的输入只重算退休部分
-  for (const id of ["retNeed", "retInfl", "retRet", "annPrem", "annYears", "annPay", "annFreq"]) $(id).addEventListener("input", renderRetirement);
+  for (const id of ["retNeed", "retInfl", "retRet", "retRetMode", "annPrem", "annYears", "annPay", "annFreq"]) $(id).addEventListener("input", renderRetirement);
   document.querySelectorAll('input[name="retMode"]').forEach((e) => e.addEventListener("change", renderRetirement));
   $("annFreq").addEventListener("change", () => { $("annPay").value = ""; renderRetirement(); });   // 换了领取方式，金额回到对应的默认值
   window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); if (peState) drawValuation(); if (retState) drawRetirement(); });

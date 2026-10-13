@@ -24,7 +24,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 | File | Description |
 |---|---|
 | `dashboard.html` | The dashboard (data embedded, works offline) |
-| `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance the 10Y Treasury yield (GS10) and CPI (CPIAUCSL) from FRED, and the S&P 500 Shiller CAPE from multpl.com into `data/`; keeps the old data if a download fails |
+| `download_data.py` | Downloads SSO and SPY monthly bars from Yahoo Finance, the 10Y Treasury yield (GS10) and CPI (CPIAUCSL) from FRED, and the S&P 500 Shiller CAPE from multpl.com into `data/`; keeps the old data if a download fails |
 | `build_dashboard.py` | Embeds the CSVs in `data/` into `dashboard.html` |
 | `update.sh` | Runs the two scripts above in order and logs to `logs/update.log`; finds a Python with the dependencies installed (or set `PYTHON`) |
 | `requirements.txt` | Python dependencies (yfinance, pandas, lxml) |
