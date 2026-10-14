@@ -30,6 +30,20 @@ def load(ticker: str) -> dict:
     }
 
 
+def load_daily(ticker: str, since: str) -> dict | None:
+    """日K收盘价（拆股调整）与分红，从 since（YYYY-MM）起；没有该文件时返回 None，页面改用月K。"""
+    p = DATA_DIR / f"{ticker}_daily.csv"
+    if not p.exists():
+        return None
+    df = pd.read_csv(p)
+    df = df[df["Date"].str[:7] >= since]
+    return {
+        "dates": list(df["Date"].str[:10]),
+        "close": [round(x, 4) for x in df["Close"]],
+        "div": [round(x, 6) for x in df["Dividends"]],
+    }
+
+
 def load_macro() -> dict | None:
     """十年期国债收益率（%）与 CPI；没有该文件时返回 None，页面会隐藏相关功能。"""
     p = DATA_DIR / "MACRO_monthly.csv"
@@ -61,6 +75,8 @@ def load_income() -> dict | None:
 
 if __name__ == "__main__":
     payload = {t: load(t) for t in TICKERS}
+    since = payload["SSO"]["dates"][0]  # 只保留 SSO 成立以来的日K，控制页面大小
+    payload["DAILY"] = {t: load_daily(t, since) for t in TICKERS}
     payload["INCOME"] = load_income()
     payload["MACRO"] = load_macro()
     payload["PE"] = load_pe()

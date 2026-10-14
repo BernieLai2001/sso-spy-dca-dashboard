@@ -1,4 +1,4 @@
-"""下载 SSO（ProShares Ultra S&P500，2倍做多标普500）与 SPY 的月K线数据，以及
+"""下载 SSO（ProShares Ultra S&P500，2倍做多标普500）与 SPY 的月K线和日K线数据，以及
 十年期美债收益率（无风险收益基准）和 CPI（通货膨胀），保存为 CSV。
 
 数据来源：Yahoo Finance（通过 yfinance）；FRED 公开 CSV（GS10、CPIAUCSL，无需 API key）；
@@ -43,6 +43,30 @@ def download_monthly(ticker: str) -> Path:
     df.to_csv(tmp)
     tmp.replace(out)
     print(f"{ticker}: {len(df)} 条月度数据 / monthly rows, {df.index[0]} ~ {df.index[-1]} -> {out}")
+    return out
+
+
+def download_daily(ticker: str) -> Path:
+    """日K收盘价（拆股调整）与分红，用于每日市值、日度回撤和波动率 / daily closes and dividends."""
+    df = yf.Ticker(ticker).history(period="max", interval="1d", auto_adjust=False)
+    df = df.dropna(subset=["Close"])
+    cols = ["Close", "Dividends", "Stock Splits"]
+    if df.empty or not set(cols) <= set(df.columns):
+        raise RuntimeError(f"{ticker}: 日K下载结果为空或缺少字段 / daily download is empty or missing columns")
+    df.index = df.index.tz_localize(None).date
+    df.index.name = "Date"
+    df = df[cols]
+
+    out = DATA_DIR / f"{ticker}_daily.csv"
+    if out.exists():
+        old = pd.read_csv(out)
+        if len(df) < len(old):
+            raise RuntimeError(f"{ticker}: 新日K只有 {len(df)} 行，少于已有的 {len(old)} 行，放弃覆盖 / "
+                               f"only {len(df)} daily rows, fewer than the existing {len(old)}; not overwriting")
+    tmp = out.with_suffix(".csv.tmp")
+    df.to_csv(tmp)
+    tmp.replace(out)
+    print(f"{ticker}: {len(df)} 条日度数据 / daily rows, {df.index[0]} ~ {df.index[-1]} -> {out}")
     return out
 
 
@@ -114,7 +138,8 @@ def download_income() -> Path:
 if __name__ == "__main__":
     DATA_DIR.mkdir(exist_ok=True)
     failed = False
-    for job in [lambda t=t: download_monthly(t) for t in TICKERS] + [download_macro, download_pe, download_income]:
+    jobs = [lambda t=t: download_monthly(t) for t in TICKERS] + [lambda t=t: download_daily(t) for t in TICKERS]
+    for job in jobs + [download_macro, download_pe, download_income]:
         try:
             job()
         except Exception as e:  # 单个失败不影响其他；保留旧文件
