@@ -9,7 +9,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Monthly DCA**: buys **whole shares** at the monthly bar's **open**; buys 1 share when the price is above the monthly amount
 - **Split restoration**: Yahoo's split-adjusted prices are restored to the actual traded prices, and share counts double in split months
 - **Expense ratio** (SSO 0.89%, SPY 0.0945%, editable) and **dividend reinvestment**
-- **Buy the dip**: buys 2× the amount when this month's open is down ≥ a threshold vs. last month's open (default SSO 10%, SPY 5%)
+- **Buy the dip**: buys 2× the amount when this month's open is down ≥ a threshold vs. last month's open (set SPY only, default 5%; SSO's is automatically 2×, i.e. 10%)
 - **Metrics**: market value, actual investment, shares, average cost, multiple, money-weighted annualized return (IRR) and the ETF's own time-weighted return, max drawdown (from daily data), comparison with plain DCA
 - **Charts**: portfolio value drawn for every trading day from daily data (the DCA still buys monthly), scroll/pinch to zoom, drag to pan, range buttons, overview navigator, log scale, dark/light theme
 - **Chinese / English**: one-click language switch in the top-right corner

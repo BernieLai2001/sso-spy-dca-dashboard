@@ -251,8 +251,8 @@
     <label><input type="checkbox" id="div" checked> <span data-i18n="cDiv">添加股息红利（再投资）</span></label>
     <div class="sep"></div>
     <label><input type="checkbox" id="dip" checked> <span data-i18n="cDip">下跌加倍：开盘价较上月开盘跌幅</span></label>
-    <label>SSO ≥ <input class="fee" type="number" id="thSSO" value="10" step="1" min="0">%</label>
-    <label>SPY ≥ <input class="fee" type="number" id="thSPY" value="5" step="1" min="0">%</label>
+    <label>SPY ≥ <input class="fee" type="number" id="thSPY" value="5" step="1" min="0">%
+      <span id="thSsoHint" style="color:var(--text-secondary);font-size:12px;margin-left:6px" data-i18n-title="thSsoTip" title="SSO 是 2 倍杠杆，阈值自动取 SPY 的 2 倍"></span></label>
     <label><span data-i18n="cBuy">买入</span> <input class="fee" type="number" id="mult" value="2" step="0.5" min="1"><span data-i18n="cTimes">倍</span></label>
     <div class="sep"></div>
     <label><input type="checkbox" id="log"> <span data-i18n="cLog">对数坐标</span></label>
@@ -532,7 +532,7 @@
       langBtn: "English", resetBtn: "重置设置", resetTip: "恢复所有设置为默认值", resetConfirm: "确定把所有设置恢复为默认值吗？",
       themeBtn: "切换深色/浅色",
       cAmount: "每月定投", cStart: "起始月份", cFee: "扣除管理费", cDiv: "添加股息红利（再投资）",
-      cDip: "下跌加倍：开盘价较上月开盘跌幅", cBuy: "买入", cTimes: "倍", cLog: "对数坐标",
+      cDip: "下跌加倍：开盘价较上月开盘跌幅", thSsoHint: (v) => `→ SSO ${v}%（自动 = 2 倍）`, thSsoTip: "SSO 是 2 倍杠杆，阈值自动取 SPY 的 2 倍", cBuy: "买入", cTimes: "倍", cLog: "对数坐标",
       cProj: "测算未来下跌", cProjMonths: "时长", cMonthsUnit: "个月", cProjDrop: "S&P500 {dur}跌幅", cProjVol: "S&P500 年化波动率", projVolSso: (v) => `→ SSO ${v}%（自动 = 2 倍）`, projVolSsoTip: "SSO 每天追踪 2 倍，波动率自动按 S&P500 的 2 倍计算",
       cProjVolTip: "填 S&P500 指数本身的年化波动率。真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌",
       cProjBuy: "测算期间继续定投",
@@ -562,7 +562,7 @@
         "开启「测算未来下跌」时，组合图会接上测算的 {dur}，收益倍数、IRR、最大回撤和两张小图都改为按「历史 + 测算期」计算（副标题给出当前值作对照）。",
       mainNote: "<b>买入规则：</b>每月按月K<b>开盘价</b>买入<b>整数股</b>：股数 = ⌊定投金额 ÷ 开盘价⌋，花不完的零头不投入（例：定投 $100、价格 $28 → 买 3 股，实际投入 $84）；" +
         "若开盘价高于定投金额，则当月买 1 股，实际投入 = 1 股的价格。因此两只 ETF 的「实际投入」各不相同，收益倍数与 IRR 均按实际投入计算。<br>" +
-        "<b>下跌加倍：</b>若本月开盘价较上月开盘价下跌 ≥ 设定阈值（默认 SSO 10%、SPY 5%），本月按「定投金额 × 倍数」买入整数股（至少买「倍数」股）；" +
+        "<b>下跌加倍：</b>若本月开盘价较上月开盘价下跌 ≥ 设定阈值（只需设定 SPY，默认 5%；SSO 是 2 倍杠杆，阈值自动取 SPY 的 2 倍，即 10%），本月按「定投金额 × 倍数」买入整数股（至少买「倍数」股）；" +
         "跌幅用拆股调整后的价格计算，避免把拆股误判为暴跌。卡片中的「较普通定投」是与不加倍的同条件定投对比。<br>" +
         "<b>拆股还原：</b>Yahoo 价格是拆股调整后的，这里用拆股记录还原成当时的真实成交价（SSO 于 2015-05、2020-08、2022-01、2025-11 各 1 拆 2），拆股当月持股数随之翻倍。<br>" +
         "<b>扣除管理费：</b>ETF 的管理费每天从基金净值中扣除，所以市场价格本身已经是扣费后的结果。勾选时＝真实价格；取消勾选时，每月把「费率 ÷ 12」累计加回价格，模拟“如果没有管理费”的假设情形。<br>" +
@@ -668,7 +668,7 @@
       langBtn: "中文", resetBtn: "Reset", resetTip: "Restore all settings to their defaults", resetConfirm: "Restore all settings to their defaults?",
       themeBtn: "Dark / Light",
       cAmount: "Monthly amount", cStart: "Start month", cFee: "Deduct expense ratio", cDiv: "Reinvest dividends",
-      cDip: "Buy the dip: open vs. last month's open down", cBuy: "Buy", cTimes: "×", cLog: "Log scale",
+      cDip: "Buy the dip: open vs. last month's open down", thSsoHint: (v) => `→ SSO ${v}% (auto, 2×)`, thSsoTip: "SSO is 2× leveraged, so its threshold is set to twice SPY's", cBuy: "Buy", cTimes: "×", cLog: "Log scale",
       cProj: "Simulate a future decline", cProjMonths: "Length", cMonthsUnit: "months", cProjDrop: "S&P 500 drop over {dur}", cProjVol: "S&P 500 annual volatility", projVolSso: (v) => `→ SSO ${v}% (auto, 2×)`, projVolSsoTip: "SSO tracks 2× daily, so its volatility is set automatically to twice the S&P 500's",
       cProjVolTip: "Enter the S&P 500 index's own annual volatility. Real declines swing up and down daily, which costs a 2× leveraged ETF extra; 0 means a smooth decline",
       cProjBuy: "Keep investing during simulation",
@@ -697,7 +697,7 @@
         "With the decline simulation on, the chart extends {dur} of simulated months, and the multiple, IRR, max drawdown and both small charts use history + the simulated period (subtitles show today's values for comparison).",
       mainNote: "<b>Buying rule:</b> each month buys <b>whole shares</b> at the monthly bar's <b>open</b>: shares = ⌊amount ÷ open⌋, and leftover cash is not invested (e.g. $100 at $28 → 3 shares, $84 invested). " +
         "If the open is above the amount, 1 share is bought and its price counts as invested. So SSO and SPY end up with different actual investment, and multiples and IRR use actual investment.<br>" +
-        "<b>Buy the dip:</b> if this month's open is down ≥ the threshold vs. last month's open (default SSO 10%, SPY 5%), this month buys whole shares worth amount × multiplier (at least that many shares). " +
+        "<b>Buy the dip:</b> if this month's open is down ≥ the threshold vs. last month's open (set SPY only, default 5%; SSO is 2× leveraged, so its threshold is automatically twice SPY's, i.e. 10%), this month buys whole shares worth amount × multiplier (at least that many shares). " +
         "Drops use split-adjusted prices so a split isn't mistaken for a crash. \"vs. plain DCA\" on the cards compares against the same DCA without doubling.<br>" +
         "<b>Split restoration:</b> Yahoo prices are split-adjusted; they are restored to the actual traded prices using the split history (SSO split 2-for-1 in 2015-05, 2020-08, 2022-01 and 2025-11), and share counts double in the split month.<br>" +
         "<b>Expense ratio:</b> fees are deducted from the fund's NAV daily, so market prices are already net of fees. Checked = actual prices; unchecked adds back fee ÷ 12 each month to model a hypothetical no-fee fund.<br>" +
@@ -2755,7 +2755,9 @@
     const withFee = $("fee").checked, withDiv = $("div").checked;
     const erSSO = parseFloat($("erSSO").value) || 0, erSPY = parseFloat($("erSPY").value) || 0;
     const dip = $("dip").checked, mult = Math.max(1, parseFloat($("mult").value) || 1);
-    const thSSO = (parseFloat($("thSSO").value) || 0) / 100, thSPY = (parseFloat($("thSPY").value) || 0) / 100;
+    // SSO 是 2 倍杠杆：阈值自动取 SPY 的 2 倍
+    const thSPY = Math.max(0, parseFloat($("thSPY").value) || 0) / 100, thSSO = 2 * thSPY;
+    $("thSsoHint").textContent = T("thSsoHint", +(thSSO * 100).toFixed(2));
     const sso = simulate(SERIES.SSO, s, amount, withFee, withDiv, erSSO, dip ? thSSO : null, mult);
     const spy = simulate(SERIES.SPY, s, amount, withFee, withDiv, erSPY, dip ? thSPY : null, mult);
     // 普通定投（不加倍）作为对照
@@ -2875,7 +2877,7 @@
     });
   }
 
-  for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projMonths", "projDrop", "projVol", "projBuy", "real"]) $(id).addEventListener("input", update);
+  for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSPY", "mult", "proj", "projMonths", "projDrop", "projVol", "projBuy", "real"]) $(id).addEventListener("input", update);
   // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
   for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
   // 退休模块的输入只重算退休部分
@@ -2907,7 +2909,7 @@
   // ---------- 记住上次的设置 ----------
   // 所有输入保存在浏览器 localStorage；读写失败（隐私模式、禁用存储等）时静默跳过，页面照常用默认值
   const PREF_KEY = "dashPrefs";
-  const PREF_IDS = ["amount", "start", "fee", "erSSO", "erSPY", "div", "dip", "thSSO", "thSPY", "mult", "log", "real",
+  const PREF_IDS = ["amount", "start", "fee", "erSSO", "erSPY", "div", "dip", "thSPY", "mult", "log", "real",
     "proj", "projMonths", "projDrop", "projVol", "projBuy", "pfTotal", "pfW",
     "retNeedMode", "retNeed", "retRepl", "retInfl", "retRetMode", "retRet", "annPrem", "annYears", "annPay", "annFreq"];
   const PREF_AUTO = ["retInfl", "annPrem", "annPay"];   // 会自动跟随默认值的输入框：同时记住是否被手动改过
