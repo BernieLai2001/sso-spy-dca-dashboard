@@ -24,6 +24,28 @@ PE_PAGES = {"CAPE": "https://www.multpl.com/shiller-pe/table/by-month"}
 INCOME_SERIES = "A792RC0Q052SBEA"
 
 
+def fix_with_daily(ticker: str, df: pd.DataFrame) -> pd.DataFrame:
+    """用日K校正月K的开盘 / 最高 / 最低价。Yahoo 的月K偶尔有错（如 SSO 2024-09 的开盘价没有按拆股调整，
+    是正确值的 2 倍），会误触发下跌加倍。开盘价 = 当月第一个交易日的开盘价，最高 / 最低取当月日K的极值。
+    Fix monthly Open/High/Low from daily bars; Yahoo's monthly bars are occasionally wrong."""
+    d = yf.Ticker(ticker).history(period="max", interval="1d", auto_adjust=False).dropna(subset=["Close"])
+    if d.empty:
+        return df
+    d.index = d.index.tz_localize(None)
+    g = d.groupby(d.index.strftime("%Y-%m"))
+    ref = pd.DataFrame({"Open": g["Open"].first(), "High": g["High"].max(), "Low": g["Low"].min()})
+    ym = pd.Index([str(x)[:7] for x in df.index])
+    for col in ["Open", "High", "Low"]:
+        r = ref[col].reindex(ym).to_numpy()
+        cur = df[col].to_numpy()
+        bad = (pd.notna(r)) & (abs(cur / r - 1) > 0.005)
+        for i in bad.nonzero()[0]:
+            print(f"{ticker} {ym[i]} 月K {col} {cur[i]:.3f} 与日K {r[i]:.3f} 不一致，已按日K校正 / "
+                  f"monthly {col} disagrees with daily; corrected")
+        df.loc[bad, col] = r[bad]
+    return df
+
+
 def download_monthly(ticker: str) -> Path:
     df = yf.Ticker(ticker).history(period="max", interval="1mo", auto_adjust=False)
     df = df.dropna(subset=["Close"])
@@ -32,6 +54,7 @@ def download_monthly(ticker: str) -> Path:
     df.index = df.index.tz_localize(None).date
     df.index.name = "Date"
     df = df[COLUMNS]
+    df = fix_with_daily(ticker, df)
 
     out = DATA_DIR / f"{ticker}_monthly.csv"
     if out.exists():
