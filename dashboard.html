@@ -340,7 +340,8 @@
       <h2 data-i18n="peTitle">估值：标普 500 席勒市盈率 CAPE</h2>
       <div class="legend">
         <span><i style="border-color:var(--series-7)"></i><span data-i18n="lgCape">席勒市盈率 CAPE</span></span>
-        <span><i class="dash" style="border-color:var(--text-secondary)"></i><span data-i18n="lgAvg">长期均值</span></span>
+        <span><i class="dash" style="border-color:var(--series-7)"></i><span data-i18n="lgAvg">长期均值</span></span>
+        <span><i style="border-color:var(--text-secondary);border-top-style:dotted;border-top-width:3px"></i><span data-i18n="lgAvg40">近 40 年均值</span></span>
         <span><i class="sw" style="background:var(--series-1);opacity:.25"></i><span data-i18n="lgDcaZone">定投区间</span></span>
       </div>
     </div>
@@ -638,10 +639,10 @@
       stCashTitle: "这些钱如果一直放现金", stCashSub: (inv, need, gap) => `投入 ${inv}，要保住购买力需要 ${need}，等于被通胀吃掉 ${gap}`,
       stBondTitle: "如果每月买十年期国债", stBondSub: (r, rr) => `名义年化 ${r} · 扣通胀后只有 ${rr}`,
       ttPower: "1 美元的购买力", ttCum: "累计通胀",
-      peTitle: "估值：标普 500 席勒市盈率 CAPE", lgCape: "席勒市盈率 CAPE", lgAvg: "长期均值",
-      ariaPe: "标普 500 席勒市盈率走势", peSub: (a, b) => `CAPE 走势（${a} ~ ${b}），浅蓝底为定投区间`, lgDcaZone: "定投区间", avgLbl: (v) => `均值 ${v}×`,
+      peTitle: "估值：标普 500 席勒市盈率 CAPE", lgCape: "席勒市盈率 CAPE", lgAvg: "长期均值", lgAvg40: "近 40 年均值",
+      ariaPe: "标普 500 席勒市盈率走势", peSub: (a, b) => `CAPE 走势（${a} ~ ${b}），浅蓝底为定投区间`, lgDcaZone: "定投区间", avgLbl: (v) => `长期 ${v}×`, avg40Lbl: (v) => `近40年 ${v}×`,
       stCape: "当前席勒市盈率 CAPE", stCapeMax: "历史最高 CAPE", stCapeMaxSub: (d, p) => `出现在 ${d} · 现在是它的 ${p}`,
-      stPctSub: (p, y, a) => `高于 ${y} 年以来 ${p} 的月份 · 长期均值 ${a}×`,
+      stPctSub: (p, y, a, p40, a40) => `高于 ${y} 年以来 ${p}、近 40 年 ${p40} 的月份 · 均值：长期 ${a}× / 近 40 年 ${a40}×`,
       stEy: "盈利收益率（1 ÷ CAPE）", stEySubMore: (y, d) => `十年期国债 ${y} · 股票比国债多 ${d} 个百分点`, stEySubLess: (y, d) => `十年期国债 ${y} · 股票反而比国债少 ${d} 个百分点`, stEySubNoBond: "没有国债数据可比较",
       stStart: (d) => `定投起点 ${d} → 现在的 CAPE`, stStartSub: (p) => `估值上升了 ${p}`,
       peNote: "<b>数据：</b>multpl.com 提供的标普 500 月度数据（最新月份为估算值）。<b>席勒市盈率 CAPE</b> = 指数价格 ÷ 过去 10 年经通胀调整后的平均每股收益。" +
@@ -772,10 +773,10 @@
       stCashTitle: "If this money just sat in cash", stCashSub: (inv, need, gap) => `Put in ${inv}; keeping purchasing power needs ${need} — inflation ate ${gap}`,
       stBondTitle: "If invested monthly in 10Y Treasuries", stBondSub: (r, rr) => `${r} nominal · only ${rr} after inflation`,
       ttPower: "Purchasing power of $1", ttCum: "Cumulative inflation",
-      peTitle: "Valuation: S&P 500 Shiller CAPE", lgCape: "Shiller CAPE", lgAvg: "Long-run average",
-      ariaPe: "S&P 500 Shiller CAPE over time", peSub: (a, b) => `CAPE (${a} – ${b}); light blue marks the DCA period`, lgDcaZone: "DCA period", avgLbl: (v) => `avg ${v}×`,
+      peTitle: "Valuation: S&P 500 Shiller CAPE", lgCape: "Shiller CAPE", lgAvg: "Long-run average", lgAvg40: "40-year average",
+      ariaPe: "S&P 500 Shiller CAPE over time", peSub: (a, b) => `CAPE (${a} – ${b}); light blue marks the DCA period`, lgDcaZone: "DCA period", avgLbl: (v) => `long-run ${v}×`, avg40Lbl: (v) => `40-yr ${v}×`,
       stCape: "Current Shiller CAPE", stCapeMax: "Highest CAPE on record", stCapeMaxSub: (d, p) => `in ${d} · today is ${p} of it`,
-      stPctSub: (p, y, a) => `higher than ${p} of months since ${y} · long-run avg ${a}×`,
+      stPctSub: (p, y, a, p40, a40) => `higher than ${p} of months since ${y} and ${p40} of the last 40 years · avg: long-run ${a}× / 40-yr ${a40}×`,
       stEy: "Earnings yield (1 ÷ CAPE)", stEySubMore: (y, d) => `10Y Treasury ${y} · stocks earn ${d} pp more`, stEySubLess: (y, d) => `10Y Treasury ${y} · stocks earn ${d} pp less than bonds`, stEySubNoBond: "no Treasury data to compare",
       stStart: (d) => `CAPE at DCA start ${d} → now`, stStartSub: (p) => `valuation up ${p}`,
       peNote: "<b>Data:</b> monthly S&P 500 figures from multpl.com (the latest month is an estimate). <b>Shiller CAPE</b> = index price ÷ 10-year average inflation-adjusted earnings per share. " +
@@ -1872,6 +1873,9 @@
     const c = stat(E.cape);
     let mi = -1; E.cape.forEach((v, i) => { if (v != null && (mi < 0 || v > E.cape[mi])) mi = i; });
     c.max = E.cape[mi]; c.maxDate = E.dates[mi];
+    const v40 = E.cape.slice(-480).filter((x) => x != null);
+    c.avg40 = v40.reduce((a, b) => a + b, 0) / v40.length;
+    c.pct40 = v40.filter((x) => x <= c.cur).length / v40.length;
     return { E, idx, cape: c, last: E.dates[E.dates.length - 1] };
   })();
   let peState = null;
@@ -1890,7 +1894,7 @@
       const e = document.createElement("div"); e.className = "s"; e.textContent = sub;
       d.append(a, b, e); box.appendChild(d);
     };
-    stat(T("stCape"), cape.cur.toFixed(1) + "×", T("stPctSub", (cape.pct * 100).toFixed(0) + "%", cape.since, cape.avg.toFixed(1)), cape.cur > cape.avg ? "neg" : "pos");
+    stat(T("stCape"), cape.cur.toFixed(1) + "×", T("stPctSub", (cape.pct * 100).toFixed(0) + "%", cape.since, cape.avg.toFixed(1), (cape.pct40 * 100).toFixed(0) + "%", cape.avg40.toFixed(1)), cape.cur > cape.avg ? "neg" : "pos");
     stat(T("stCapeMax"), cape.max.toFixed(1) + "×", T("stCapeMaxSub", cape.maxDate, ((cape.cur / cape.max) * 100).toFixed(0) + "%"), "");
     // CAPE 盈利收益率 = 1 ÷ CAPE，与十年期国债收益率对比（股票相对国债的风险溢价）
     const ey = 100 / cape.cur, y10 = MACRO ? MACRO.lastY : null;
@@ -1904,7 +1908,7 @@
     const first = E.cape.findIndex((v, i) => v != null && E.dates[i] >= "1920-01");
     $("peSub").textContent = T("peSub", E.dates[first], PEDATA.last);
     const fd = E.dates.slice(first);
-    peState = { dates: fd, cape: E.cape.slice(first), avgCape: cape.avg, dcaFrom: fd.indexOf(dates[0]) };
+    peState = { dates: fd, cape: E.cape.slice(first), avgCape: cape.avg, avg40: cape.avg40, dcaFrom: fd.indexOf(dates[0]) };
     drawValuation();
   }
   const peSvg = $("peChart"), peBox = $("peBox"), peTip = $("peTip");
@@ -1915,7 +1919,7 @@
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     peSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); peSvg.setAttribute("height", H);
     peSvg.replaceChildren();
-    const vals = S.cape.concat([S.avgCape]).filter((v) => v != null);
+    const vals = S.cape.concat([S.avgCape, S.avg40]).filter((v) => v != null);
     const hi = Math.ceil((Math.max(...vals) * 1.05) / 10) * 10;
     const lo = Math.max(0, Math.floor(Math.min(...vals) / 10) * 10);
     const clipId = "peClip";
@@ -1951,6 +1955,8 @@
         ends.push({ yy: y(sr.v[li]), txt: sr.v[li].toFixed(1) + "×" });
       }
       ends.push({ yy: y(sr.avg), txt: T("avgLbl", sr.avg.toFixed(1)), muted: true });
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(S.avg40), y2: y(S.avg40), stroke: "var(--text-secondary)", "stroke-width": 1.5, "stroke-dasharray": "2 3", opacity: 0.8 }, peSvg);
+      ends.push({ yy: y(S.avg40), txt: T("avg40Lbl", S.avg40.toFixed(1)), muted: true });
     }
     ends.sort((p, q) => p.yy - q.yy);
     for (let k = 1; k < ends.length; k++) if (ends[k].yy - ends[k - 1].yy < 15) ends[k].yy = ends[k - 1].yy + 15;
