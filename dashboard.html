@@ -393,11 +393,14 @@
       <svg id="vimpChart" role="img" data-i18n-aria="vimpAria" aria-label="年化波动率对 SSO 测算期跌幅的影响"></svg>
       <div class="tooltip" id="vimpTip"></div>
     </div>
+    <details id="projTableBox">
+    <summary data-i18n="projTableSum">查看逐月明细</summary>
     <table class="proj-table">
       <thead><tr><th data-i18n="thMonth">月份</th><th data-i18n="thSpxMo">S&amp;P500 当月</th><th data-i18n="thSpyMo">SPY 当月</th><th data-i18n="thSsoMo">SSO 当月</th>
         <th data-i18n="thSpyInvMo">SPY 当月投入</th><th data-i18n="thSpyVal">SPY 市值</th><th data-i18n="thSsoInvMo">SSO 当月投入</th><th data-i18n="thSsoVal">SSO 市值</th></tr></thead>
       <tbody id="projBody"></tbody>
     </table>
+    </details>
     <p data-i18n-html="projNote" class="note" style="margin-top:10px"></p>
   </div>
 
@@ -542,7 +545,7 @@
       ariaChart: "SSO 与 SPY 定投市值曲线（可缩放、拖动）", ariaNav: "全区间缩略图，拖动窗口选择显示范围",
       projTitle0: "未来 {dur}下跌测算", lgSpx: "S&P500 指数", projSub: "价格累计涨跌（相对当前）",
       ariaProj: "未来 {dur} S&P500、SPY、SSO 价格累计涨跌测算",
-      thMonth: "月份", thSpxMo: "S&P500 当月", thSpyMo: "SPY 当月", thSsoMo: "SSO 当月",
+      projTableSum: "查看逐月明细（{dur}）", thMonth: "月份", thSpxMo: "S&P500 当月", thSpyMo: "SPY 当月", thSsoMo: "SSO 当月",
       thSpyInvMo: "SPY 当月投入", thSpyVal: "SPY 市值", thSsoInvMo: "SSO 当月投入", thSsoVal: "SSO 市值",
       projNote: "<b>测算方法：</b>把 S&amp;P500 在测算期（{dur}）内的总跌幅按指数（几何）路径平均分摊到每个交易日（每月按 21 个交易日）：每日 d = (1−跌幅)^(1/(21×月数)) − 1，" +
         "所以每月跌幅相同，都是 (1−跌幅)^(1/月数) − 1，而不是简单的「跌幅 ÷ 月数」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。" +
@@ -678,7 +681,7 @@
       ariaChart: "SSO and SPY DCA value over time (zoomable, draggable)", ariaNav: "Full-range overview; drag the window to choose the visible range",
       projTitle0: "Decline simulation: next {dur}", lgSpx: "S&P 500 index", projSub: "Cumulative price change (vs. now)",
       ariaProj: "Simulated cumulative price change of S&P 500, SPY and SSO over the next {dur}",
-      thMonth: "Month", thSpxMo: "S&P 500 (mo)", thSpyMo: "SPY (mo)", thSsoMo: "SSO (mo)",
+      projTableSum: "Show monthly detail ({dur})", thMonth: "Month", thSpxMo: "S&P 500 (mo)", thSpyMo: "SPY (mo)", thSsoMo: "SSO (mo)",
       thSpyInvMo: "SPY invested", thSpyVal: "SPY value", thSsoInvMo: "SSO invested", thSsoVal: "SSO value",
       projNote: "<b>Method:</b> the S&amp;P 500's total decline over the simulation period ({dur}) is spread evenly across trading days (21 per month) along a geometric path: daily d = (1−drop)^(1/(21×months)) − 1, " +
         "so every month falls by the same (1−drop)^(1/months) − 1 — not simply drop ÷ months. SPY tracks 1× daily and SSO 2× daily; each compounds over 21 trading days per month, then the expense ratio is deducted. " +
@@ -1878,6 +1881,8 @@
     c.pct40 = v40.filter((x) => x <= c.cur).length / v40.length;
     return { E, idx, cape: c, last: E.dates[E.dates.length - 1] };
   })();
+  try { $("projTableBox").open = localStorage.getItem("projTableOpen") === "1"; } catch (e) {}
+  $("projTableBox").addEventListener("toggle", () => { try { localStorage.setItem("projTableOpen", $("projTableBox").open ? "1" : "0"); } catch (e) {} });
   let peState = null;
   function renderValuation(s) {
     const card = $("peCard");
@@ -2791,7 +2796,7 @@
   }
   $("resetBtn").addEventListener("click", () => {
     if (!confirm(T("resetConfirm"))) return;
-    try { localStorage.removeItem(PREF_KEY); } catch (e) {}
+    try { localStorage.removeItem(PREF_KEY); localStorage.removeItem("projTableOpen"); } catch (e) {}
     document.removeEventListener("input", savePrefsSoon); document.removeEventListener("change", savePrefsSoon);
     location.reload();
   });
