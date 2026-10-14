@@ -538,7 +538,7 @@
       cProjBuy: "测算期间继续定投",
       kPlan: "计划投入（每月定投 × 期数）", kMonths: "定投期数", kActual: "SSO / SPY 实际投入",
       kRange: "定投区间", kDiff: "SSO − SPY 终值差",
-      chartTitle: "持仓市值（美元）", lgProj: "测算", lgDip: "下跌加倍买入月",
+      chartTitle: "持仓市值（美元）", lgProj: "测算", lgDip: "下跌加倍买入（月初）",
       lgSsoInv: "SSO 实际投入", lgSpyInv: "SPY 实际投入",
       rAll: "全部", r10: "近10年", r5: "近5年", r3: "近3年", r1: "近1年",
       rangeHint: "滚轮 / 双指捏合缩放 · 按住拖动平移 · 双击还原",
@@ -674,7 +674,7 @@
       cProjBuy: "Keep investing during simulation",
       kPlan: "Planned investment (monthly × months)", kMonths: "Months invested", kActual: "SSO / SPY actually invested",
       kRange: "Period", kDiff: "SSO − SPY value gap",
-      chartTitle: "Portfolio value (USD)", lgProj: "Simulated", lgDip: "Dip-buy month",
+      chartTitle: "Portfolio value (USD)", lgProj: "Simulated", lgDip: "Dip buy (month start)",
       lgSsoInv: "SSO invested", lgSpyInv: "SPY invested",
       rAll: "All", r10: "10Y", r5: "5Y", r3: "3Y", r1: "1Y",
       rangeHint: "Scroll / pinch to zoom · drag to pan · double-click to reset",
@@ -873,10 +873,11 @@
   // 返回 pos（以月为单位的横坐标：第 k 个月的月末 = k）、val、date、mk（所属月份）
   function dailyValues(t, sim, s, withDiv) {
     if (!DAILY) return null;
-    const R = DAILY[t], rows = SERIES[t], pos = [], val = [], date = [], mk = [];
+    const R = DAILY[t], rows = SERIES[t], pos = [], val = [], date = [], mk = [], first = [];
     const H = Math.min(sim.values.length, months.length - s);
     for (let k = 0; k < H; k++) {
       const i = s + k, b = R.byMonth[i], r = rows[i];
+      first.push(pos.length); // 本月第一个交易日（定投买入日）在数组中的下标
       if (!b) { pos.push(k); val.push(sim.values[k]); date.push(months[i]); mk.push(k); continue; }
       const after = r.close / r.adjClose, sh = sim.shares[k], fm = sim.fees[k], nd = b.e - b.s + 1;
       let cash = sim.cashs[k] - (withDiv ? sh * r.div : 0);
@@ -885,7 +886,7 @@
         pos.push(k - 1 + (j - b.s + 1) / nd); val.push(sh * R.close[j] * after * fm + cash); date.push(R.dates[j]); mk.push(k);
       }
     }
-    return { pos, val, date, mk };
+    return { pos, val, date, mk, first };
   }
   // ETF 单位净值的最大回撤（日K）：从第 s 个月的第一个交易日起，每日总回报连乘
   function etfDailyDD(t, s, withDiv, erAnnual, withFee) {
@@ -1268,7 +1269,12 @@
     for (const l of lines) {
       if (!l.marks) continue;
       for (let i = i0; i <= i1; i++)
-        if (l.marks[i]) el("circle", { cx: x(i), cy: y(l.values[i]), r: 4, fill: "var(--surface-1)", stroke: l.color, "stroke-width": 2 }, plot);
+        if (l.marks[i]) {
+          // 有日K时画在买入日（本月第一个交易日）的市值上；测算期仍按月
+          const j = l.daily && i <= histEnd ? l.daily.first[i] : -1;
+          const cx = j >= 0 ? x(l.daily.pos[j]) : x(i), cy = j >= 0 ? y(l.daily.val[j]) : y(l.values[i]);
+          el("circle", { cx, cy, r: 4, fill: "var(--surface-1)", stroke: l.color, "stroke-width": 2 }, plot);
+        }
     }
     // 右侧直接标注：可见区间最后一个月的数值（避免重叠）
     const last = Math.min(n - 1, Math.floor(b + 1e-9));
@@ -1342,6 +1348,7 @@
       const row = document.createElement("div"); row.className = "tt-row";
       const key = document.createElement("i"); key.style.borderColor = l.color; if (l.dash) key.className = "dash";
       const name = document.createElement("span"); name.textContent = l.name;
+      if (l.marks && l.marks[k] && l.daily && l.daily.date[l.daily.first[k]] === d0.date[j]) name.textContent += T("ttBoost");
       const val = document.createElement("b"); val.textContent = fmtUSD(v);
       row.append(key, name, val); tip.appendChild(row);
     });
