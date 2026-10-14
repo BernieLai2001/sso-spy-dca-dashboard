@@ -535,7 +535,7 @@
         "<b>扣除管理费：</b>ETF 的管理费每天从基金净值中扣除，所以市场价格本身已经是扣费后的结果。勾选时＝真实价格；取消勾选时，每月把「费率 ÷ 12」累计加回价格，模拟“如果没有管理费”的假设情形。<br>" +
         "<b>添加股息红利：</b>勾选时，分红先计入现金账户，下个月开盘时与定投一起、同样按整数股再投资，剩余零钱留在现金里（计入市值）；取消勾选时只计算价格涨跌（分红不计入）。<br>" +
         "<b>市值</b> = 持股数 × 月收盘价 + 现金余额。<b>平均持仓成本价</b> = 所有买入花费（定投 + 分红再投资）÷ 当前持股数，已按拆股后的股数折算，可直接与现价比较。" +
-        "<b>年化收益（IRR）</b>是按每笔实际投入时点计算的资金加权年化收益率；<b>最大回撤</b>是该 ETF 净值（按当前选项计算）在区间内的最大跌幅。" +
+        "<b>年化收益（IRR）</b>是按每笔实际投入时点计算的资金加权年化收益率，衡量这笔定投的回报；<b>ETF 自身年化（时间加权）</b>是 ETF 单位净值的年复合增长率，与何时投入无关，相当于一开始投一笔钱一直持有；<b>最大回撤</b>是该 ETF 净值（按当前选项计算）在区间内的最大跌幅。" +
         "最后一个月数据截至下载当日，并非完整月份。本页仅作历史回测演示，不构成投资建议。",
       yearTable: "查看逐年数据表（每年末）",
       thYearEnd: "年末", thSsoSh: "SSO 持股", thSsoInv: "SSO 实际投入", thSsoV: "SSO 市值", thSsoX: "SSO 倍数",
@@ -567,7 +567,8 @@
       retTitle: "退休生活：65 岁退休后的钱够不够花", lgNeed: "每月生活费（随通胀上涨）", lgWithdraw: "每月从组合取出", lgAnnuity: "年金每月收入",
       retNeedLbl: "每月生活费（今天的美元）", retNeedManual: "手动输入", retNeedIncome: "美国人均月收入 × 替代率",
       retIncTxt: (v, q) => `美国人均月收入 ${v}（${q}，BEA）`, retInflLbl: "通胀率", retModePf: "用组合配置的市值", retModeAnn: "年金", retRetLbl: "退休后年化收益", retRetManual: "手动设置", retRetLink: "与组合配置联动",
-      retLinkedVal: (v, p) => `${v}%（组合配置的年化${p ? "，含下跌测算" : ""}）`,
+      retLinkedVal: (v, p) => `${v}%（组合的时间加权年化${p ? "，含下跌测算" : ""}）`,
+      twrRow: "ETF 自身年化（时间加权）", pfTwr: "时间加权年化", pfTwrProj: "时间加权年化（测算后）", timeWeighted: "资产本身的年复合增长",
       retPfHint: (v) => `起始资金 = 组合配置的市值 ${v}；自动填入的默认值会跟着组合配置变化，手动修改后以你填的为准，清空即恢复默认`,
       retHighWarn: (r) => `。⚠ ${r}% 是过去的历史收益，不代表未来，退休规划通常按 4%–6% 估算更稳妥`,
       annPremLbl: "年保费", annYearsLbl: "缴费年限", annYearsUnit: "年", annPayLbl: "退休后领取", annMonthly: "月领", annYearly: "年领",
@@ -582,7 +583,7 @@
       annGapSub: (n, p) => `年金固定不变，生活费却逐年上涨（65 岁 ${n} vs 年金 ${p}/月）`,
       annGapSum: (a) => `到 ${a} 岁的累计缺口`, annBreakEven: (a) => `领回全部保费：${a} 岁`, annNoBreakEven: (a) => `${a} 岁前领不回`,
       retNote: "<b>假设：</b>定投做到今天结束，此时 65 岁退休，按月模拟到 100 岁；每月生活费以今天的美元计，之后每年按通胀率上涨（默认取定投期间 CPI 的年均涨幅）。<b>每月生活费</b>可手动输入（默认 $3,000），或用「美国人均月收入 × 替代率」：人均收入取美国经济分析局（BEA）最新一季的人均个人收入（税前，FRED A792RC0Q052SBEA）÷ 12；替代率默认 40%，即美国社会保障局（SSA）常引用的「Social Security 约替代普通收入者退休前收入的 40%」，不同口径差别较大（如 OECD 统计的美国净替代率约 50%），可自行修改。" +
-        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，直接使用组合配置面板的名义年化收益（开启下跌测算时为测算后的值），调整组合时自动跟着变。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
+        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，使用组合的<b>时间加权年化</b>（开启下跌测算时为测算后的值），调整组合时自动跟着变。这里不用组合面板的「年化收益（IRR）」：IRR 是货币加权的，反映的是定投这笔钱的回报，受投入时点影响；退休时是一大笔钱整体放在市场里增值，应当用资产本身的年复合增长率，也就是时间加权年化。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
         "<b>年金：</b>年保费默认等于组合每年的投入；缴费年限默认 10 年（国内年金险最常见的缴费方式），在退休前缴清；领取金额默认按 2.5% 的内部收益率、领取到 100 岁估算，请以实际合同为准。年金每期领取的金额固定，不随通胀上涨。" +
         "本模块仅作情景演示，不构成理财建议。",
       cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
@@ -658,7 +659,7 @@
         "<b>Expense ratio:</b> fees are deducted from the fund's NAV daily, so market prices are already net of fees. Checked = actual prices; unchecked adds back fee ÷ 12 each month to model a hypothetical no-fee fund.<br>" +
         "<b>Dividends:</b> when checked, dividends go to a cash account and are reinvested in whole shares at the next month's open along with the DCA; leftover cash stays in the account (counted in value). Unchecked = price return only.<br>" +
         "<b>Value</b> = shares × monthly close + cash. <b>Average cost</b> = all purchase spending (DCA + reinvested dividends) ÷ current shares, on a post-split basis, so it compares directly with today's price. " +
-        "<b>IRR</b> is the money-weighted annualized return based on when each purchase was made; <b>max drawdown</b> is the ETF NAV's largest fall over the period (under the current options). " +
+        "<b>IRR</b> is the money-weighted annualized return based on when each purchase was made, measuring the DCA itself; <b>ETF's own return (time-weighted)</b> is the compound growth of the ETF's unit NAV regardless of timing — like investing once at the start and holding; <b>max drawdown</b> is the ETF NAV's largest fall over the period (under the current options). " +
         "The latest month is incomplete (data as of the download date). For historical backtesting only — not investment advice.",
       yearTable: "Year-end table",
       thYearEnd: "Year end", thSsoSh: "SSO shares", thSsoInv: "SSO invested", thSsoV: "SSO value", thSsoX: "SSO multiple",
@@ -689,7 +690,8 @@
       retTitle: "Retirement: is the money enough after 65?", lgNeed: "Monthly living cost (rises with inflation)", lgWithdraw: "Monthly withdrawal", lgAnnuity: "Monthly annuity income",
       retNeedLbl: "Monthly living cost (today's dollars)", retNeedManual: "enter manually", retNeedIncome: "US income per capita × replacement rate",
       retIncTxt: (v, q) => `US monthly income per capita ${v} (${q}, BEA)`, retInflLbl: "Inflation", retModePf: "Live off the portfolio", retModeAnn: "Annuity", retRetLbl: "Return after retirement", retRetManual: "set manually", retRetLink: "linked to the portfolio",
-      retLinkedVal: (v, p) => `${v}% (portfolio return${p ? ", incl. decline simulation" : ""})`,
+      retLinkedVal: (v, p) => `${v}% (portfolio time-weighted return${p ? ", incl. decline simulation" : ""})`,
+      twrRow: "ETF's own return (time-weighted)", pfTwr: "Time-weighted return", pfTwrProj: "Time-weighted (after sim.)", timeWeighted: "growth of the holdings themselves",
       retPfHint: (v) => `Starting money = portfolio value ${v}; auto-filled defaults follow the portfolio until you edit them — clear a field to restore its default`,
       retHighWarn: (r) => `. ⚠ ${r}% is a past return, not a forecast — retirement plans usually assume 4%–6%`,
       annPremLbl: "Annual premium", annYearsLbl: "Paying years", annYearsUnit: "yrs", annPayLbl: "Payout after retirement", annMonthly: "monthly", annYearly: "yearly",
@@ -704,7 +706,7 @@
       annGapSub: (n, p) => `fixed payout vs rising costs (at 65: ${n} vs ${p}/mo)`,
       annGapSum: (a) => `Total shortfall by ${a}`, annBreakEven: (a) => `premiums paid back at ${a}`, annNoBreakEven: (a) => `not before ${a}`,
       retNote: "<b>Assumptions:</b> the DCA ends today at retirement age 65, simulated monthly to 100; the monthly living cost is in today's dollars and rises each year with inflation (default: average CPI inflation over the DCA period). <b>Living cost</b> is entered manually (default $3,000) or set as US income per capita × a replacement rate: income is the latest quarterly BEA personal income per capita (pre-tax, FRED A792RC0Q052SBEA) ÷ 12; the replacement rate defaults to 40% — the Social Security Administration's often-cited figure that Social Security replaces about 40% of an average earner's pre-retirement income. Definitions vary widely (the OECD puts the US net replacement rate near 50%), so adjust as needed. " +
-        "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio panel's nominal return (after the simulated year if the decline simulation is on) and follows any change to the portfolio. Real returns vary year to year, and a crash early in retirement hurts the most. " +
+        "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio's <b>time-weighted return</b> (after the simulated year if the decline simulation is on) and follows any change to the portfolio. It does not use the portfolio's IRR: IRR is money-weighted and reflects the DCA's own result, which depends on when money went in; in retirement a lump sum stays invested, so the right rate is the holdings' own compound growth — the time-weighted return. Real returns vary year to year, and a crash early in retirement hurts the most. " +
         "<b>Annuity:</b> the premium defaults to the portfolio's yearly investment; paying years default to 10 (the most common term for annuity products in China), paid before retirement; the payout defaults to an estimate at 2.5% IRR paid to 100 — use your contract's figures. Annuity payouts are fixed and do not rise with inflation. " +
         "Scenario illustration only, not financial advice.",
       cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
@@ -909,7 +911,9 @@
     }
     // 拆股后持股数已翻倍，所以 成本 ÷ 当前持股数 就是按当前股价口径的平均成本
     const avgCost = shares > 0 ? costBasis / shares : NaN;
-    return { values, invested: investedArr, shares: sharesArr, flows, boosted, cash, maxDD, avgCost, lastClose, rets };
+    // 时间加权年化（ETF 自身）：单位净值的年复合增长率，与定投时点无关
+    const twr = rets.length ? Math.pow(unit, 12 / rets.length) - 1 : NaN;
+    return { values, invested: investedArr, shares: sharesArr, flows, boosted, cash, maxDD, avgCost, lastClose, rets, twr };
   }
 
   // ---------- 未来一年下跌测算 ----------
@@ -1337,6 +1341,7 @@
       [T("pnlTotal"), (gain >= 0 ? "+" : "−") + fmtUSD(Math.abs(gain)), gain >= 0 ? "pos" : "neg"],
       [T("multipleFull"), (V / invested).toFixed(2) + "×", ""],
       [T("irr"), isNaN(r) ? "—" : fmtPct(r), r >= 0 ? "pos" : "neg"],
+      [T("twrRow"), isNaN(sim.twr) ? "—" : fmtPct(sim.twr), sim.twr >= 0 ? "pos" : "neg"],
       [T("etfDD"), (maxDD * 100).toFixed(1) + "%", "neg"],
       ...(mac ? (() => {
         const q = vsRiskFree(sim, mac), pp = (x) => (isNaN(x) ? "—" : (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(2) + T("pp"));
@@ -1705,15 +1710,16 @@
     const len = a.values.length;
     const values = [], invested = [], flows = [];
     // 时间加权净值：每月收益 = 月末市值 ÷（上月末市值 + 本月新投入）
-    let nav = 1, peak = 1, maxDD = 0, prevV = 0;
+    let nav = 1, navN = 0, peak = 1, maxDD = 0, prevV = 0;
     for (let i = 0; i < len; i++) {
       const V = a.values[i] + b.values[i], f = a.flows[i] + b.flows[i];
       values.push(V); invested.push(a.invested[i] + b.invested[i]); flows.push(f);
       const base = prevV + f;
-      if (base > 0 && prevV > 0) { nav *= V / base; peak = Math.max(peak, nav); maxDD = Math.min(maxDD, nav / peak - 1); }
+      if (base > 0 && prevV > 0) { nav *= V / base; navN++; peak = Math.max(peak, nav); maxDD = Math.min(maxDD, nav / peak - 1); }
       prevV = V;
     }
-    return { sso: a, spy: b, values, invested, flows, maxDD };
+    const twr = navN ? Math.pow(nav, 12 / navN) - 1 : NaN;   // 时间加权年化：扣除每月新投入后的净值年复合增长率
+    return { sso: a, spy: b, values, invested, flows, maxDD, twr };
   }
 
   function renderPortfolio() {
@@ -1749,6 +1755,7 @@
       tile(T("pfValueNow"), fmtUSD(V), "SPY " + fmtShort(hist.spy.values[n - 1]) + " · SSO " + fmtShort(hist.sso.values[n - 1]));
       tile(T("pfMultiple"), inv > 0 ? (V / inv).toFixed(2) + "×" : "—", T("pnlShort", signUSD(V - inv)), V >= inv ? "pos" : "neg");
       tile(T("irr"), fmtIrr(r), T("moneyWeighted"), r >= 0 ? "pos" : "neg");
+      tile(T("pfTwr"), fmtIrr(hist.twr), T("timeWeighted"), hist.twr >= 0 ? "pos" : "neg");
       tile(T("pfDD"), fmtDD(hist.maxDD), T("twr"), "neg");
       if (MACRO) pfMacroTiles(hist, macroSeries(c.s, n), null, null);
     } else {
@@ -1760,6 +1767,7 @@
       tile(T("pfYearValue"), fmtUSD(Ve), T("vsNow", signPct(Ve / V - 1)) + " · " + T("pnlShort", signUSD(Ve - invE)), Ve >= V ? "pos" : "neg");
       tile(T("pfMultProj"), invE > 0 ? (Ve / invE).toFixed(2) + "×" : "—", T("nowV", inv > 0 ? (V / inv).toFixed(2) + "×" : "—"), Ve >= invE ? "pos" : "neg");
       tile(T("pfIrrProj"), fmtIrr(rE), T("nowV", fmtIrr(r)), rE >= 0 ? "pos" : "neg");
+      tile(T("pfTwrProj"), fmtIrr(chart.twr), T("nowV", fmtIrr(hist.twr)), chart.twr >= 0 ? "pos" : "neg");
       tile(T("pfDDProj"), fmtDD(chart.maxDD), T("nowV", fmtDD(hist.maxDD)), "neg");
       if (MACRO) pfMacroTiles(chart, macroSeries(c.s, chart.values.length), hist, macroSeries(c.s, n));
     }
@@ -1807,7 +1815,8 @@
     };
     drawPortfolio();
     // 退休模块：起始资金 = 组合当前市值（开启下跌测算时用测算一年后的市值）
-    const pfIrrShown = c.P ? irr(chart.flows, chart.values[chart.values.length - 1]) : r;   // 名义年化（退休模块按名义美元计算）
+    // 退休时是一笔钱整体放在市场里增值，应使用时间加权年化（资产本身的年复合增长），而不是定投的货币加权 IRR
+    const pfIrrShown = c.P ? chart.twr : hist.twr;
     retCtx = { startV: c.P ? chart.values[chart.values.length - 1] : V, startIsProj: !!c.P, pfIrr: pfIrrShown, annual: total * 12, s: c.s, n };
     renderRetirement();
   }

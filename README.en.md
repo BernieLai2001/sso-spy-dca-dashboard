@@ -10,7 +10,7 @@ Compares monthly dollar-cost averaging (DCA) into **SSO (ProShares Ultra S&P500,
 - **Split restoration**: Yahoo's split-adjusted prices are restored to the actual traded prices, and share counts double in split months
 - **Expense ratio** (SSO 0.89%, SPY 0.0945%, editable) and **dividend reinvestment**
 - **Buy the dip**: buys 2× the amount when this month's open is down ≥ a threshold vs. last month's open (default SSO 10%, SPY 5%)
-- **Metrics**: market value, actual investment, shares, average cost, multiple, money-weighted annualized return (IRR), max drawdown, comparison with plain DCA
+- **Metrics**: market value, actual investment, shares, average cost, multiple, money-weighted annualized return (IRR) and the ETF's own time-weighted return, max drawdown, comparison with plain DCA
 - **Charts**: scroll/pinch to zoom, drag to pan, range buttons, overview navigator, log scale, dark/light theme
 - **Chinese / English**: one-click language switch in the top-right corner
 - **Remembers your settings**: all inputs and the theme are restored next time (stored in the browser); "Reset" in the top-right restores the defaults
