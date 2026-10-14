@@ -266,7 +266,8 @@
     <div class="ctrl-break"></div>
     <label class="proj-toggle"><input type="checkbox" id="proj"> <span data-i18n="cProj">测算未来一年下跌</span></label>
     <label><span data-i18n="cProjDrop">S&amp;P500 一年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
-    <label data-i18n-title="cProjVolTip" title="真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌"><span data-i18n="cProjVol">年化波动率</span> <input class="fee" type="number" id="projVol" value="0" step="5" min="0" max="150">%</label>
+    <label data-i18n-title="cProjVolTip" title="填 S&amp;P500 指数本身的年化波动率。真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌"><span data-i18n="cProjVol">S&amp;P500 年化波动率</span> <input class="fee" type="number" id="projVol" value="0" step="5" min="0" max="150">%
+      <span id="projVolSso" style="color:var(--text-secondary);font-size:12px;margin-left:6px" data-i18n-title="projVolSsoTip" title="SSO 每天追踪 2 倍，波动率自动按 S&amp;P500 的 2 倍计算"></span></label>
     <label><input type="checkbox" id="projBuy" checked> <span data-i18n="cProjBuy">测算期间继续定投</span></label>
     <span class="top-btns"><button class="theme-btn" id="langBtn" type="button" data-i18n="langBtn">English</button><button class="theme-btn" id="themeBtn" type="button" data-i18n="themeBtn">切换深色/浅色</button><button class="theme-btn" id="resetBtn" type="button" data-i18n="resetBtn" data-i18n-title="resetTip" title="恢复所有设置为默认值">重置设置</button></span>
   </div>
@@ -356,7 +357,7 @@
       <div class="legend">
         <span><i style="border-color:var(--series-2)"></i>SPY</span>
         <span><i style="border-color:var(--series-1)"></i>SSO</span>
-        <span id="volRefLegend" hidden><i class="dash" style="border-color:var(--infl)"></i><span data-i18n="volRefLg">下跌测算设定的波动率</span></span>
+        <span id="volRefLegend" hidden><i class="dash" style="border-color:var(--text-secondary)"></i><span data-i18n="volRefLg">下跌测算设定（S&amp;P / SSO = 2 倍）</span></span>
       </div>
     </div>
     <div class="infl-stats" id="volStats"></div>
@@ -526,8 +527,8 @@
       themeBtn: "切换深色/浅色",
       cAmount: "每月定投", cStart: "起始月份", cFee: "扣除管理费", cDiv: "添加股息红利（再投资）",
       cDip: "下跌加倍：开盘价较上月开盘跌幅", cBuy: "买入", cTimes: "倍", cLog: "对数坐标",
-      cProj: "测算未来一年下跌", cProjDrop: "S&P500 一年跌幅", cProjVol: "年化波动率",
-      cProjVolTip: "真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌",
+      cProj: "测算未来一年下跌", cProjDrop: "S&P500 一年跌幅", cProjVol: "S&P500 年化波动率", projVolSso: (v) => `→ SSO ${v}%（自动 = 2 倍）`, projVolSsoTip: "SSO 每天追踪 2 倍，波动率自动按 S&P500 的 2 倍计算",
+      cProjVolTip: "填 S&P500 指数本身的年化波动率。真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌",
       cProjBuy: "测算期间继续定投",
       kPlan: "计划投入（每月定投 × 期数）", kMonths: "定投期数", kActual: "SSO / SPY 实际投入",
       kRange: "定投区间", kDiff: "SSO − SPY 终值差",
@@ -542,7 +543,7 @@
       thSpyInvMo: "SPY 当月投入", thSpyVal: "SPY 市值", thSsoInvMo: "SSO 当月投入", thSsoVal: "SSO 市值",
       projNote: "<b>测算方法：</b>把 S&amp;P500 的全年跌幅按指数（几何）路径平均分摊到每个交易日：每日 d = (1−跌幅)^(1/252) − 1，" +
         "所以每月跌幅相同，都是 (1−跌幅)^(1/12) − 1，而不是简单的「跌幅 ÷ 12」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。" +
-        "「年化波动率」大于 0 时，SSO 每月额外乘以 e^(−σ²/12)，这是 2 倍杠杆在日内震荡中的波动损耗（σ 为年化波动率，真实熊市常见 30%–60%）。" +
+        "「S&amp;P500 年化波动率」σ 只填指数本身的波动率（平静时期约 10%–15%，真实熊市常见 30%–60%）；SSO 每天追踪 2 倍，它的波动率自动取 2σ。σ 大于 0 时，SSO 每月额外乘以 e^(−σ²/12)，这是 2 倍杠杆在日内震荡中的波动损耗。" +
         "图中的阴影是<b>波动区间（±1σ）</b>：实线是平均路径，真实走势会围绕它上下波动，k 个月后约有 68% 的概率落在 平均路径 × e^(±倍数×σ×√(k/12)) 之间；SSO 的倍数为 2，区间是 SPY 的两倍宽。" +
         "测算期间沿用上方的定投、整数股和下跌加倍规则；不计分红，不计 SSO 的融资成本。这只是假设情景，不是预测。",
       pfTitle: "组合配置：每月定投按比例分给 SPY 和 SSO", lgSpyPart: "SPY 部分", lgSsoPart: "SSO 部分",
@@ -612,16 +613,16 @@
         "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，使用组合的<b>时间加权年化</b>（开启下跌测算时为测算后的值），调整组合时自动跟着变。这里不用组合面板的「年化收益（IRR）」：IRR 是货币加权的，反映的是定投这笔钱的回报，受投入时点影响；退休时是一大笔钱整体放在市场里增值，应当用资产本身的年复合增长率，也就是时间加权年化。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
         "<b>年金：</b>年保费默认等于组合每年的投入；缴费年限默认 10 年（国内年金险最常见的缴费方式），在退休前缴清；领取金额默认按 2.5% 的内部收益率、领取到 100 岁估算，请以实际合同为准。年金每期领取的金额固定，不随通胀上涨。" +
         "本模块仅作情景演示，不构成理财建议。",
-      volTitle: "历史波动率：SPY 与 SSO", volRefLg: "下跌测算设定的波动率", volAria: "SPY 与 SSO 的滚动 12 个月年化波动率",
-      volSub: (a, b) => `滚动 12 个月年化波动率（${a} ~ ${b}）`, volRefLbl: (v) => `测算设定 ${v}%`,
+      volTitle: "历史波动率：SPY 与 SSO", volRefLg: "下跌测算设定（S&P / SSO = 2 倍）", volAria: "SPY 与 SSO 的滚动 12 个月年化波动率",
+      volSub: (a, b) => `滚动 12 个月年化波动率（${a} ~ ${b}）`, volRefLbl: (n, v) => `测算 ${n} ${v}%`,
       volNowSpy: "SPY 当前波动率", volNowSso: "SSO 当前波动率", volAvgSub: (v) => `区间平均 ${v}`,
       volMaxSpy: "SPY 最高波动率", volMaxSso: "SSO 最高波动率", volMaxSub: (d) => `出现在 ${d}（截至该月的过去 12 个月）`,
       volNote: "<b>算法：</b>用每月的总回报（含分红）计算，年化波动率 = 过去 12 个月月收益率的标准差 × √12。波动率越高，涨跌越剧烈。" +
         "SSO 的波动率大约是 SPY 的 2 倍。用月度数据算出的波动率会比用日度数据算的低一些，因为看不到月内的大起大落，危机时期尤其明显。" +
         "下跌测算里的「年化波动率」指的是标普 500 指数本身的波动率，可以对照图中 SPY 的历史水平来设定：平静时期约 10%–15%，2008、2020 年危机时升到 30%–40% 以上（按日度数据会更高）。",
-      vimpSub: (d) => `年化波动率对 SSO 的影响（标普一年 −${d}%）`, vimpAria: "年化波动率对 SSO 一年跌幅的影响",
-      vimpRead: (v, c, l) => `当前设定 ${v}%：SSO 一年 ${c}%（比平滑下跌多跌 ${Math.abs(l)} 个百分点）`,
-      vimpX: (v) => `${v}%`, vimpNaive: (v) => `简单 ×2：${v}%`, vimpNaiveName: "简单按 2 倍", vimpTipHead: (v) => `年化波动率 ${v}%`,
+      vimpSub: (d) => `S&P500 年化波动率对 SSO 的影响（标普一年 −${d}%）`, vimpAria: "年化波动率对 SSO 一年跌幅的影响",
+      vimpRead: (v, c, l) => `当前 S&P ${v}%（SSO ${v * 2}%）：SSO 一年 ${c}%（比平滑下跌多跌 ${Math.abs(l)} 个百分点）`,
+      vimpX: (v) => `${v}%`, vimpNaive: (v) => `简单 ×2：${v}%`, vimpNaiveName: "简单按 2 倍", vimpTipHead: (v) => `S&P 波动率 ${v}% · SSO ${v * 2}%`,
       cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
       frIrrTitleReal: "不同 SPY : SSO 比例的实际年化（扣通胀）",
       lgTreasury: "同期国债定投", lgFloor: "通胀保值线", lnTreasury: "同期国债定投", lnFloor: "通胀保值线",
@@ -662,8 +663,8 @@
       themeBtn: "Dark / Light",
       cAmount: "Monthly amount", cStart: "Start month", cFee: "Deduct expense ratio", cDiv: "Reinvest dividends",
       cDip: "Buy the dip: open vs. last month's open down", cBuy: "Buy", cTimes: "×", cLog: "Log scale",
-      cProj: "Simulate a 1-year decline", cProjDrop: "S&P 500 1-yr drop", cProjVol: "Annual volatility",
-      cProjVolTip: "Real declines swing up and down daily, which costs a 2× leveraged ETF extra; 0 means a smooth decline",
+      cProj: "Simulate a 1-year decline", cProjDrop: "S&P 500 1-yr drop", cProjVol: "S&P 500 annual volatility", projVolSso: (v) => `→ SSO ${v}% (auto, 2×)`, projVolSsoTip: "SSO tracks 2× daily, so its volatility is set automatically to twice the S&P 500's",
+      cProjVolTip: "Enter the S&P 500 index's own annual volatility. Real declines swing up and down daily, which costs a 2× leveraged ETF extra; 0 means a smooth decline",
       cProjBuy: "Keep investing during simulation",
       kPlan: "Planned investment (monthly × months)", kMonths: "Months invested", kActual: "SSO / SPY actually invested",
       kRange: "Period", kDiff: "SSO − SPY value gap",
@@ -678,7 +679,7 @@
       thSpyInvMo: "SPY invested", thSpyVal: "SPY value", thSsoInvMo: "SSO invested", thSsoVal: "SSO value",
       projNote: "<b>Method:</b> the S&amp;P 500's full-year decline is spread evenly across trading days along a geometric path: daily d = (1−drop)^(1/252) − 1, " +
         "so every month falls by the same (1−drop)^(1/12) − 1 — not simply drop ÷ 12. SPY tracks 1× daily and SSO 2× daily; each compounds over 21 trading days per month, then the expense ratio is deducted. " +
-        "When annual volatility is above 0, SSO is further multiplied by e^(−σ²/12) each month — the volatility decay of 2× leverage in choppy markets (σ = annual volatility; real bear markets often run 30%–60%). " +
+        "The \"S&amp;P 500 annual volatility\" σ is the index's own volatility (about 10%–15% in calm periods, often 30%–60% in real bear markets); SSO tracks 2× daily, so its volatility is set automatically to 2σ. When σ is above 0, SSO is further multiplied by e^(−σ²/12) each month — the volatility decay of 2× leverage in choppy markets. " +
         "The shading is the <b>volatility range (±1σ)</b>: the solid line is the average path, and real prices swing around it — after k months there is about a 68% chance of landing within average path × e^(±leverage×σ×√(k/12)). SSO's leverage is 2, so its range is twice as wide as SPY's. " +
         "The DCA, whole-share and buy-the-dip rules above still apply; dividends and SSO's financing cost are not included. This is a hypothetical scenario, not a forecast.",
       pfTitle: "Portfolio: split each month's investment between SPY and SSO", lgSpyPart: "SPY part", lgSsoPart: "SSO part",
@@ -746,16 +747,16 @@
         "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio's <b>time-weighted return</b> (after the simulated year if the decline simulation is on) and follows any change to the portfolio. It does not use the portfolio's IRR: IRR is money-weighted and reflects the DCA's own result, which depends on when money went in; in retirement a lump sum stays invested, so the right rate is the holdings' own compound growth — the time-weighted return. Real returns vary year to year, and a crash early in retirement hurts the most. " +
         "<b>Annuity:</b> the premium defaults to the portfolio's yearly investment; paying years default to 10 (the most common term for annuity products in China), paid before retirement; the payout defaults to an estimate at 2.5% IRR paid to 100 — use your contract's figures. Annuity payouts are fixed and do not rise with inflation. " +
         "Scenario illustration only, not financial advice.",
-      volTitle: "Historical volatility: SPY and SSO", volRefLg: "Volatility set in the decline simulation", volAria: "Rolling 12-month annualized volatility of SPY and SSO",
-      volSub: (a, b) => `Rolling 12-month annualized volatility (${a} – ${b})`, volRefLbl: (v) => `simulation ${v}%`,
+      volTitle: "Historical volatility: SPY and SSO", volRefLg: "Decline simulation setting (S&P / SSO = 2×)", volAria: "Rolling 12-month annualized volatility of SPY and SSO",
+      volSub: (a, b) => `Rolling 12-month annualized volatility (${a} – ${b})`, volRefLbl: (n, v) => `sim. ${n} ${v}%`,
       volNowSpy: "SPY volatility now", volNowSso: "SSO volatility now", volAvgSub: (v) => `period average ${v}`,
       volMaxSpy: "SPY peak volatility", volMaxSso: "SSO peak volatility", volMaxSub: (d) => `in ${d} (trailing 12 months)`,
       volNote: "<b>Method:</b> from monthly total returns (incl. dividends), annualized volatility = standard deviation of the last 12 monthly returns × √12. Higher volatility means bigger swings. " +
         "SSO's volatility is roughly twice SPY's. Monthly data understates volatility compared with daily data, since it misses swings within a month — especially in crises. " +
         "The decline simulation's \"annual volatility\" is that of the S&P 500 index itself, so set it against SPY's history here: about 10%–15% in calm periods, rising above 30%–40% in the 2008 and 2020 crises (higher on daily data).",
-      vimpSub: (d) => `Effect of volatility on SSO (S&P −${d}% in 1 year)`, vimpAria: "Effect of annual volatility on SSO's one-year decline",
-      vimpRead: (v, c, l) => `At ${v}%: SSO ${c}% in a year (${Math.abs(l)} pp worse than a smooth decline)`,
-      vimpX: (v) => `${v}%`, vimpNaive: (v) => `naive ×2: ${v}%`, vimpNaiveName: "Naive 2×", vimpTipHead: (v) => `Annual volatility ${v}%`,
+      vimpSub: (d) => `Effect of S&P 500 volatility on SSO (S&P −${d}% in 1 year)`, vimpAria: "Effect of annual volatility on SSO's one-year decline",
+      vimpRead: (v, c, l) => `At S&P ${v}% (SSO ${v * 2}%): SSO ${c}% in a year (${Math.abs(l)} pp worse than a smooth decline)`,
+      vimpX: (v) => `${v}%`, vimpNaive: (v) => `naive ×2: ${v}%`, vimpNaiveName: "Naive 2×", vimpTipHead: (v) => `S&P volatility ${v}% · SSO ${v * 2}%`,
       cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
       frIrrTitleReal: "Real return (after inflation) by SPY : SSO mix",
       lgTreasury: "Same money in 10Y Treasuries", lgFloor: "Inflation break-even", lnTreasury: "10Y Treasury DCA", lnFloor: "Inflation break-even",
@@ -1731,7 +1732,7 @@
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     volSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); volSvg.setAttribute("height", H);
     volSvg.replaceChildren();
-    const vals = S.spy.concat(S.sso, [S.ref]).filter((v) => v != null);
+    const vals = S.spy.concat(S.sso, [2 * S.ref]).filter((v) => v != null);
     const hi = Math.max(0.2, Math.ceil(Math.max(...vals) * 10) / 10);
     const x = (i) => m.l + (n === 1 ? 0 : (i / (n - 1)) * iw), y = (v) => m.t + ih - (v / hi) * ih;
     const step = hi > 0.6 ? 0.2 : 0.1;
@@ -1750,9 +1751,9 @@
       const li = sr.v.length - 1;
       if (sr.v[li] != null) { el("circle", { cx: x(li), cy: y(sr.v[li]), r: 4, fill: sr.color, stroke: "var(--surface-1)", "stroke-width": 2 }, volSvg); ends.push({ yy: y(sr.v[li]), txt: sr.name + " " + (sr.v[li] * 100).toFixed(0) + "%" }); }
     }
-    if (S.ref > 0) {
-      el("line", { x1: m.l, x2: m.l + iw, y1: y(S.ref), y2: y(S.ref), stroke: "var(--infl)", "stroke-width": 1.5, "stroke-dasharray": "5 4" }, volSvg);
-      ends.push({ yy: y(S.ref), txt: T("volRefLbl", Math.round(S.ref * 100)) });
+    if (S.ref > 0) for (const [v, color, nm] of [[S.ref, "var(--series-2)", "S&P"], [2 * S.ref, "var(--series-1)", "SSO"]]) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: color, "stroke-width": 1.5, "stroke-dasharray": "5 4", opacity: 0.85 }, volSvg);
+      ends.push({ yy: y(v), txt: T("volRefLbl", nm, Math.round(v * 100)) });
     }
     ends.sort((p, q) => p.yy - q.yy);
     for (let k = 1; k < ends.length; k++) if (ends[k].yy - ends[k - 1].yy < 15) ends[k].yy = ends[k - 1].yy + 15;
@@ -2591,9 +2592,11 @@
     // 未来一年下跌测算：在历史数据后接 12 个月模拟价格，按同样规则继续模拟
     const proj = $("proj").checked;
     let P = null;
+    $("projVolSso").hidden = !proj;
     if (proj) {
       const D = Math.min(0.99, Math.max(0, (parseFloat($("projDrop").value) || 0) / 100));
       const sigma = Math.max(0, (parseFloat($("projVol").value) || 0) / 100);
+      $("projVolSso").textContent = T("projVolSso", Math.round(sigma * 200));
       const fSSO = projFactors(D, sigma, erSSO, 2), fSPY = projFactors(D, 0, erSPY, 1);
       const rowsSSO = SERIES.SSO.concat(projectRows(SERIES.SSO, fSSO));
       const rowsSPY = SERIES.SPY.concat(projectRows(SERIES.SPY, fSPY));
