@@ -374,6 +374,7 @@
         <span><i class="dash" style="border-color:var(--principal)"></i><span data-i18n="lgSpx">S&amp;P500 指数</span></span>
         <span><i style="border-color:var(--series-2)"></i>SPY</span>
         <span><i style="border-color:var(--series-1)"></i>SSO</span>
+        <span id="projBandLg" hidden><i class="sw" style="background:var(--text-muted);opacity:.35"></i><span data-i18n="projBandLg">波动区间（±1σ）</span></span>
       </div>
     </div>
     <div class="proj-stats" id="projStats"></div>
@@ -541,6 +542,7 @@
       projNote: "<b>测算方法：</b>把 S&amp;P500 的全年跌幅按指数（几何）路径平均分摊到每个交易日：每日 d = (1−跌幅)^(1/252) − 1，" +
         "所以每月跌幅相同，都是 (1−跌幅)^(1/12) − 1，而不是简单的「跌幅 ÷ 12」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。" +
         "「年化波动率」大于 0 时，SSO 每月额外乘以 e^(−σ²/12)，这是 2 倍杠杆在日内震荡中的波动损耗（σ 为年化波动率，真实熊市常见 30%–60%）。" +
+        "图中的阴影是<b>波动区间（±1σ）</b>：实线是平均路径，真实走势会围绕它上下波动，k 个月后约有 68% 的概率落在 平均路径 × e^(±倍数×σ×√(k/12)) 之间；SSO 的倍数为 2，区间是 SPY 的两倍宽。" +
         "测算期间沿用上方的定投、整数股和下跌加倍规则；不计分红，不计 SSO 的融资成本。这只是假设情景，不是预测。",
       pfTitle: "组合配置：每月定投按比例分给 SPY 和 SSO", lgSpyPart: "SPY 部分", lgSsoPart: "SSO 部分",
       lgInvested: "累计投入", pfTotalLbl: "每月总投入", ariaSlider: "SPY 占每月定投的比例（其余为 SSO）",
@@ -574,7 +576,7 @@
       projTitle: (a, b) => `未来一年下跌测算（${a} ~ ${b}）`, spxSet: "S&P500 指数（设定）", fullYear: (p) => "全年 " + p,
       monthlyGeo: "每月涨跌（几何平均）", linearMonthly: "若按线性每月", daily: "每日涨跌", simName: (n) => n + "（测算）",
       monthly: "每月涨跌", nowToYear: "当前市值 → 一年后", newInv: "期间新增投入", holdPnl: "持仓盈亏（不含新投入）",
-      yearVsInv: "一年后 vs 累计投入", boosted: "（加倍）", nowTag: "（当前）", now: "当前", cumChg: " · 累计涨跌",
+      yearVsInv: "一年后 vs 累计投入", boosted: "（加倍）", nowTag: "（当前）", now: "当前", cumChg: " · 累计涨跌", projBandLg: "波动区间（±1σ）", bandRange: "　波动区间", yearBand: "一年后波动区间（±1σ）",
       perMonth: (v) => "每月 " + v,
       pfInvested: "实际投入", plan: (v) => "计划 " + v, pfValueNow: "组合当前市值", pfMultiple: "收益倍数",
       pnlShort: (v) => "盈亏 " + v, moneyWeighted: "资金加权", pfDD: "组合最大回撤", twr: "时间加权净值",
@@ -676,6 +678,7 @@
       projNote: "<b>Method:</b> the S&amp;P 500's full-year decline is spread evenly across trading days along a geometric path: daily d = (1−drop)^(1/252) − 1, " +
         "so every month falls by the same (1−drop)^(1/12) − 1 — not simply drop ÷ 12. SPY tracks 1× daily and SSO 2× daily; each compounds over 21 trading days per month, then the expense ratio is deducted. " +
         "When annual volatility is above 0, SSO is further multiplied by e^(−σ²/12) each month — the volatility decay of 2× leverage in choppy markets (σ = annual volatility; real bear markets often run 30%–60%). " +
+        "The shading is the <b>volatility range (±1σ)</b>: the solid line is the average path, and real prices swing around it — after k months there is about a 68% chance of landing within average path × e^(±leverage×σ×√(k/12)). SSO's leverage is 2, so its range is twice as wide as SPY's. " +
         "The DCA, whole-share and buy-the-dip rules above still apply; dividends and SSO's financing cost are not included. This is a hypothetical scenario, not a forecast.",
       pfTitle: "Portfolio: split each month's investment between SPY and SSO", lgSpyPart: "SPY part", lgSsoPart: "SSO part",
       lgInvested: "Total invested", pfTotalLbl: "Monthly total", ariaSlider: "SPY share of each month's investment (the rest goes to SSO)",
@@ -707,7 +710,7 @@
       projTitle: (a, b) => `1-year decline simulation (${a} – ${b})`, spxSet: "S&P 500 index (input)", fullYear: (p) => "Full year " + p,
       monthlyGeo: "Monthly change (geometric)", linearMonthly: "If linear, per month", daily: "Daily change", simName: (n) => n + " (simulated)",
       monthly: "Monthly change", nowToYear: "Value now → in 1 year", newInv: "New money invested", holdPnl: "Holding P&L (excl. new money)",
-      yearVsInv: "In 1 year vs. invested", boosted: " (dip)", nowTag: " (now)", now: "Now", cumChg: " · cumulative change",
+      yearVsInv: "In 1 year vs. invested", boosted: " (dip)", nowTag: " (now)", now: "Now", cumChg: " · cumulative change", projBandLg: "Volatility range (±1σ)", bandRange: "  range", yearBand: "1-year range (±1σ)",
       perMonth: (v) => v + " / mo",
       pfInvested: "Actually invested", plan: (v) => "Plan " + v, pfValueNow: "Current value", pfMultiple: "Multiple",
       pnlShort: (v) => "P&L " + v, moneyWeighted: "Money-weighted", pfDD: "Max drawdown", twr: "Time-weighted NAV",
@@ -1440,7 +1443,7 @@
       [T("linearMonthly"), signPct(-P.D / 12, 2), ""],
       [T("daily"), signPct(Math.pow(1 - P.D, 1 / 252) - 1, 3), "neg"],
     ]);
-    const fundBlock = (name, color, f, sim, histSim) => {
+    const fundBlock = (name, color, f, sim, histSim, L) => {
       const endV = sim.values[sim.values.length - 1], nowV = histSim.values[histSim.values.length - 1];
       const newInv = sim.invested[sim.invested.length - 1] - histSim.invested[histSim.invested.length - 1];
       const holdLoss = endV - nowV - newInv; // 持仓本身的盈亏（扣掉新投入的钱）
@@ -1451,10 +1454,10 @@
         [T("newInv"), fmtUSD(newInv), ""],
         [T("holdPnl"), signUSD(holdLoss), holdLoss >= 0 ? "pos" : "neg"],
         [T("yearVsInv"), signUSD(endV - totInv) + " (" + signPct(endV / totInv - 1) + ")", endV >= totInv ? "pos" : "neg"],
-      ]);
+      ].concat(P.sigma > 0 ? [[T("yearBand"), signPct(Math.pow(f, 12) * Math.exp(-L * P.sigma) - 1, 0) + " ~ " + signPct(Math.pow(f, 12) * Math.exp(L * P.sigma) - 1, 0), ""]] : []));
     };
-    fundBlock("SPY", "var(--series-2)", P.fSPY, P.spy, spyH);
-    fundBlock("SSO", "var(--series-1)", P.fSSO, P.sso, ssoH);
+    fundBlock("SPY", "var(--series-2)", P.fSPY, P.spy, spyH, 1);
+    fundBlock("SSO", "var(--series-1)", P.fSSO, P.sso, ssoH, 2);
 
     // 逐月表
     const tb = $("projBody"); tb.replaceChildren();
@@ -1471,12 +1474,15 @@
 
     // 累计涨跌曲线：第 0 点 = 当前（最新收盘）
     const cum = (f) => Array.from({ length: PROJ_MONTHS + 1 }, (_, k) => Math.pow(f, k) - 1);
+    // 波动区间：年化波动率 σ 下，k 个月后价格约 68% 的概率落在 中心路径 × e^(±Lσ√(k/12)) 之间（L 为杠杆倍数）
+    const band = (f, L) => P.sigma > 0 ? [-1, 1].map((sg) => Array.from({ length: PROJ_MONTHS + 1 }, (_, k) => Math.pow(f, k) * Math.exp(sg * L * P.sigma * Math.sqrt(k / 12)) - 1)) : null;
+    $("projBandLg").hidden = !(P.sigma > 0);
     projState = {
       labels: [months[months.length - 1] + T("nowTag")].concat(pd),
       lines: [
         { name: "S&P500", color: "var(--principal)", values: cum(P.fIdx), dash: true }, // 与 SPY 几乎重合，用虚线区分
-        { name: "SPY", color: "var(--series-2)", values: cum(P.fSPY) },
-        { name: "SSO", color: "var(--series-1)", values: cum(P.fSSO) },
+        { name: "SPY", color: "var(--series-2)", values: cum(P.fSPY), band: band(P.fSPY, 1) },
+        { name: "SSO", color: "var(--series-1)", values: cum(P.fSSO), band: band(P.fSSO, 2) },
       ],
     };
     drawProj();
@@ -1491,7 +1497,7 @@
     const iw = W - m.l - m.r, ih = H - m.t - m.b, n = labels.length;
     projSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); projSvg.setAttribute("height", H);
     projSvg.replaceChildren();
-    const all = lines.flatMap((l) => l.values);
+    const all = lines.flatMap((l) => (l.band ? l.values.concat(l.band[0], l.band[1]) : l.values));
     const lo = Math.min(-0.1, Math.floor(Math.min(...all) * 10) / 10), hi = Math.max(0, Math.ceil(Math.max(...all) * 10) / 10);
     const x = (i) => m.l + (i / (n - 1)) * iw;
     const y = (v) => m.t + ((hi - v) / (hi - lo)) * ih;
@@ -1506,6 +1512,14 @@
       const t = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, projSvg);
       t.textContent = i === 0 ? T("now") : lb;
     });
+    for (const l of lines) {
+      if (!l.band) continue;
+      const [dn, up] = l.band;
+      const d = up.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join("") +
+        dn.map((v, i) => "L" + x(n - 1 - i).toFixed(1) + "," + y(dn[n - 1 - i]).toFixed(1)).join("") + "Z";
+      el("path", { d, fill: l.color, "fill-opacity": 0.13, stroke: "none" }, projSvg);
+      for (const b of l.band) el("path", { d: b.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(""), fill: "none", stroke: l.color, "stroke-opacity": 0.45, "stroke-width": 1, "stroke-dasharray": "2 3" }, projSvg);
+    }
     for (const l of lines) {
       el("path", { d: l.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(""),
         fill: "none", stroke: l.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round",
@@ -1538,6 +1552,12 @@
         const nm = document.createElement("span"); nm.textContent = l.name;
         const v = document.createElement("b"); v.textContent = signPct(l.values[i], 1);
         row.append(key, nm, v); projTip.appendChild(row);
+        if (l.band && i > 0) {
+          const br = document.createElement("div"); br.className = "tt-row"; br.style.opacity = 0.75;
+          const sp = document.createElement("span"); sp.textContent = T("bandRange");
+          const bv = document.createElement("b"); bv.textContent = signPct(l.band[0][i], 0) + " ~ " + signPct(l.band[1][i], 0);
+          br.append(document.createElement("i"), sp, bv); br.firstChild.style.borderColor = "transparent"; projTip.appendChild(br);
+        }
       }
       projTip.style.opacity = 1;
       const tw = projTip.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
