@@ -341,6 +341,7 @@
       <div class="legend">
         <span><i style="border-color:var(--series-7)"></i><span data-i18n="lgCape">席勒市盈率 CAPE</span></span>
         <span><i class="dash" style="border-color:var(--text-secondary)"></i><span data-i18n="lgAvg">长期均值</span></span>
+        <span><i class="sw" style="background:var(--series-1);opacity:.25"></i><span data-i18n="lgDcaZone">定投区间</span></span>
       </div>
     </div>
     <div class="infl-stats" id="peStats"></div>
@@ -638,7 +639,7 @@
       stBondTitle: "如果每月买十年期国债", stBondSub: (r, rr) => `名义年化 ${r} · 扣通胀后只有 ${rr}`,
       ttPower: "1 美元的购买力", ttCum: "累计通胀",
       peTitle: "估值：标普 500 席勒市盈率 CAPE", lgCape: "席勒市盈率 CAPE", lgAvg: "长期均值",
-      ariaPe: "标普 500 席勒市盈率走势", peSub: (a, b) => `定投区间内的 CAPE（${a} ~ ${b}）`, avgLbl: (v) => `均值 ${v}×`,
+      ariaPe: "标普 500 席勒市盈率走势", peSub: (a, b) => `CAPE 全部历史（${a} ~ ${b}），浅蓝底为定投区间`, lgDcaZone: "定投区间", avgLbl: (v) => `均值 ${v}×`,
       stCape: "当前席勒市盈率 CAPE", stCapeMax: "历史最高 CAPE", stCapeMaxSub: (d, p) => `出现在 ${d} · 现在是它的 ${p}`,
       stPctSub: (p, y, a) => `高于 ${y} 年以来 ${p} 的月份 · 长期均值 ${a}×`,
       stEy: "盈利收益率（1 ÷ CAPE）", stEySubMore: (y, d) => `十年期国债 ${y} · 股票比国债多 ${d} 个百分点`, stEySubLess: (y, d) => `十年期国债 ${y} · 股票反而比国债少 ${d} 个百分点`, stEySubNoBond: "没有国债数据可比较",
@@ -772,7 +773,7 @@
       stBondTitle: "If invested monthly in 10Y Treasuries", stBondSub: (r, rr) => `${r} nominal · only ${rr} after inflation`,
       ttPower: "Purchasing power of $1", ttCum: "Cumulative inflation",
       peTitle: "Valuation: S&P 500 Shiller CAPE", lgCape: "Shiller CAPE", lgAvg: "Long-run average",
-      ariaPe: "S&P 500 Shiller CAPE over time", peSub: (a, b) => `CAPE over the DCA period (${a} – ${b})`, avgLbl: (v) => `avg ${v}×`,
+      ariaPe: "S&P 500 Shiller CAPE over time", peSub: (a, b) => `CAPE, full history (${a} – ${b}); light blue marks the DCA period`, lgDcaZone: "DCA period", avgLbl: (v) => `avg ${v}×`,
       stCape: "Current Shiller CAPE", stCapeMax: "Highest CAPE on record", stCapeMaxSub: (d, p) => `in ${d} · today is ${p} of it`,
       stPctSub: (p, y, a) => `higher than ${p} of months since ${y} · long-run avg ${a}×`,
       stEy: "Earnings yield (1 ÷ CAPE)", stEySubMore: (y, d) => `10Y Treasury ${y} · stocks earn ${d} pp more`, stEySubLess: (y, d) => `10Y Treasury ${y} · stocks earn ${d} pp less than bonds`, stEySubNoBond: "no Treasury data to compare",
@@ -1083,7 +1084,7 @@
   // X 轴刻度间隔（月）：保证标签不拥挤
   function monthStep(span, iw) {
     const maxTicks = Math.max(2, Math.floor(iw / 72));
-    return [1, 2, 3, 6, 12, 24, 36, 60, 120].find((s) => span / s <= maxTicks) || 120;
+    return [1, 2, 3, 6, 12, 24, 36, 60, 120, 240, 360].find((s) => span / s <= maxTicks) || 360;
   }
   const monthIndex = (d) => +d.slice(0, 4) * 12 + (+d.slice(5, 7) - 1);
 
@@ -1899,8 +1900,10 @@
     const c0 = at(E.cape, dates[0]);
     stat(T("stStart", dates[0]), (c0 != null ? c0.toFixed(1) : "—") + "× → " + cape.cur.toFixed(1) + "×",
       c0 != null ? T("stStartSub", (((cape.cur / c0) - 1) * 100).toFixed(0) + "%") : "", "");
-    $("peSub").textContent = T("peSub", dates[0], PEDATA.last);
-    peState = { dates, cape: dates.map((d) => at(E.cape, d)), avgCape: cape.avg };
+    const first = E.cape.findIndex((v) => v != null);
+    $("peSub").textContent = T("peSub", E.dates[first], PEDATA.last);
+    const fd = E.dates.slice(first);
+    peState = { dates: fd, cape: E.cape.slice(first), avgCape: cape.avg, dcaFrom: fd.indexOf(dates[0]) };
     drawValuation();
   }
   const peSvg = $("peChart"), peBox = $("peBox"), peTip = $("peTip");
@@ -1928,6 +1931,12 @@
       if (monthIndex(d) % step) return;
       const t = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, peSvg); t.textContent = step >= 12 ? d.slice(0, 4) : d;
     });
+    if (S.dcaFrom >= 0) {
+      const xs = x(S.dcaFrom), xe = m.l + iw;
+      el("rect", { x: xs, y: m.t, width: Math.max(0, xe - xs), height: ih, fill: "var(--series-1)", "fill-opacity": 0.08 }, peSvg);
+      el("line", { x1: xs, x2: xs, y1: m.t, y2: m.t + ih, stroke: "var(--series-1)", "stroke-dasharray": "3 3", opacity: 0.6 }, peSvg);
+      if (xe - xs > 60) { const t = el("text", { x: xs + 6, y: m.t + 14 }, peSvg); t.textContent = T("lgDcaZone"); }
+    }
     const series = [{ name: T("lgCape"), color: "var(--series-7)", v: S.cape, avg: S.avgCape }];
     const ends = [];
     for (const sr of series) {
