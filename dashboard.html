@@ -349,6 +349,24 @@
     <p class="note" style="margin-top:10px" data-i18n-html="peNote"></p>
   </div>
 
+  <div class="card chart-card infl-card" id="volCard">
+    <div class="chart-top">
+      <h2 data-i18n="volTitle">历史波动率：SPY 与 SSO</h2>
+      <div class="legend">
+        <span><i style="border-color:var(--series-2)"></i>SPY</span>
+        <span><i style="border-color:var(--series-1)"></i>SSO</span>
+        <span id="volRefLegend" hidden><i class="dash" style="border-color:var(--infl)"></i><span data-i18n="volRefLg">下跌测算设定的波动率</span></span>
+      </div>
+    </div>
+    <div class="infl-stats" id="volStats"></div>
+    <h3 class="proj-sub" id="volSub"></h3>
+    <div class="chart-box" id="volBox">
+      <svg id="volChart" role="img" data-i18n-aria="volAria" aria-label="SPY 与 SSO 的滚动 12 个月年化波动率"></svg>
+      <div class="tooltip" id="volTip"></div>
+    </div>
+    <p class="note" style="margin-top:10px" data-i18n-html="volNote"></p>
+  </div>
+
   <div class="card chart-card proj-card" id="projCard" hidden>
     <div class="chart-top">
       <h2 id="projTitle" data-i18n="projTitle0">未来一年下跌测算</h2>
@@ -363,6 +381,11 @@
     <div class="chart-box" id="projBox">
       <svg id="projChart" role="img" data-i18n-aria="ariaProj" aria-label="未来一年 S&P500、SPY、SSO 价格累计涨跌测算"></svg>
       <div class="tooltip" id="projTip"></div>
+    </div>
+    <div class="pf-fr-head"><h3 class="proj-sub" id="vimpSub"></h3><span class="pf-readout" id="vimpRead"></span></div>
+    <div class="chart-box" id="vimpBox">
+      <svg id="vimpChart" role="img" data-i18n-aria="vimpAria" aria-label="年化波动率对 SSO 一年跌幅的影响"></svg>
+      <div class="tooltip" id="vimpTip"></div>
     </div>
     <table class="proj-table">
       <thead><tr><th data-i18n="thMonth">月份</th><th data-i18n="thSpxMo">S&amp;P500 当月</th><th data-i18n="thSpyMo">SPY 当月</th><th data-i18n="thSsoMo">SSO 当月</th>
@@ -586,6 +609,16 @@
         "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，使用组合的<b>时间加权年化</b>（开启下跌测算时为测算后的值），调整组合时自动跟着变。这里不用组合面板的「年化收益（IRR）」：IRR 是货币加权的，反映的是定投这笔钱的回报，受投入时点影响；退休时是一大笔钱整体放在市场里增值，应当用资产本身的年复合增长率，也就是时间加权年化。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
         "<b>年金：</b>年保费默认等于组合每年的投入；缴费年限默认 10 年（国内年金险最常见的缴费方式），在退休前缴清；领取金额默认按 2.5% 的内部收益率、领取到 100 岁估算，请以实际合同为准。年金每期领取的金额固定，不随通胀上涨。" +
         "本模块仅作情景演示，不构成理财建议。",
+      volTitle: "历史波动率：SPY 与 SSO", volRefLg: "下跌测算设定的波动率", volAria: "SPY 与 SSO 的滚动 12 个月年化波动率",
+      volSub: (a, b) => `滚动 12 个月年化波动率（${a} ~ ${b}）`, volRefLbl: (v) => `测算设定 ${v}%`,
+      volNowSpy: "SPY 当前波动率", volNowSso: "SSO 当前波动率", volAvgSub: (v) => `区间平均 ${v}`,
+      volMaxSpy: "SPY 最高波动率", volMaxSso: "SSO 最高波动率", volMaxSub: (d) => `出现在 ${d}（截至该月的过去 12 个月）`,
+      volNote: "<b>算法：</b>用每月的总回报（含分红）计算，年化波动率 = 过去 12 个月月收益率的标准差 × √12。波动率越高，涨跌越剧烈。" +
+        "SSO 的波动率大约是 SPY 的 2 倍。用月度数据算出的波动率会比用日度数据算的低一些，因为看不到月内的大起大落，危机时期尤其明显。" +
+        "下跌测算里的「年化波动率」指的是标普 500 指数本身的波动率，可以对照图中 SPY 的历史水平来设定：平静时期约 10%–15%，2008、2020 年危机时升到 30%–40% 以上（按日度数据会更高）。",
+      vimpSub: (d) => `年化波动率对 SSO 的影响（标普一年 −${d}%）`, vimpAria: "年化波动率对 SSO 一年跌幅的影响",
+      vimpRead: (v, c, l) => `当前设定 ${v}%：SSO 一年 ${c}%（比平滑下跌多跌 ${Math.abs(l)} 个百分点）`,
+      vimpX: (v) => `${v}%`, vimpNaive: (v) => `简单 ×2：${v}%`, vimpNaiveName: "简单按 2 倍", vimpTipHead: (v) => `年化波动率 ${v}%`,
       cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
       frIrrTitleReal: "不同 SPY : SSO 比例的实际年化（扣通胀）",
       lgTreasury: "同期国债定投", lgFloor: "通胀保值线", lnTreasury: "同期国债定投", lnFloor: "通胀保值线",
@@ -709,6 +742,16 @@
         "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio's <b>time-weighted return</b> (after the simulated year if the decline simulation is on) and follows any change to the portfolio. It does not use the portfolio's IRR: IRR is money-weighted and reflects the DCA's own result, which depends on when money went in; in retirement a lump sum stays invested, so the right rate is the holdings' own compound growth — the time-weighted return. Real returns vary year to year, and a crash early in retirement hurts the most. " +
         "<b>Annuity:</b> the premium defaults to the portfolio's yearly investment; paying years default to 10 (the most common term for annuity products in China), paid before retirement; the payout defaults to an estimate at 2.5% IRR paid to 100 — use your contract's figures. Annuity payouts are fixed and do not rise with inflation. " +
         "Scenario illustration only, not financial advice.",
+      volTitle: "Historical volatility: SPY and SSO", volRefLg: "Volatility set in the decline simulation", volAria: "Rolling 12-month annualized volatility of SPY and SSO",
+      volSub: (a, b) => `Rolling 12-month annualized volatility (${a} – ${b})`, volRefLbl: (v) => `simulation ${v}%`,
+      volNowSpy: "SPY volatility now", volNowSso: "SSO volatility now", volAvgSub: (v) => `period average ${v}`,
+      volMaxSpy: "SPY peak volatility", volMaxSso: "SSO peak volatility", volMaxSub: (d) => `in ${d} (trailing 12 months)`,
+      volNote: "<b>Method:</b> from monthly total returns (incl. dividends), annualized volatility = standard deviation of the last 12 monthly returns × √12. Higher volatility means bigger swings. " +
+        "SSO's volatility is roughly twice SPY's. Monthly data understates volatility compared with daily data, since it misses swings within a month — especially in crises. " +
+        "The decline simulation's \"annual volatility\" is that of the S&P 500 index itself, so set it against SPY's history here: about 10%–15% in calm periods, rising above 30%–40% in the 2008 and 2020 crises (higher on daily data).",
+      vimpSub: (d) => `Effect of volatility on SSO (S&P −${d}% in 1 year)`, vimpAria: "Effect of annual volatility on SSO's one-year decline",
+      vimpRead: (v, c, l) => `At ${v}%: SSO ${c}% in a year (${Math.abs(l)} pp worse than a smooth decline)`,
+      vimpX: (v) => `${v}%`, vimpNaive: (v) => `naive ×2: ${v}%`, vimpNaiveName: "Naive 2×", vimpTipHead: (v) => `Annual volatility ${v}%`,
       cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
       frIrrTitleReal: "Real return (after inflation) by SPY : SSO mix",
       lgTreasury: "Same money in 10Y Treasuries", lgFloor: "Inflation break-even", lnTreasury: "10Y Treasury DCA", lnFloor: "Inflation break-even",
@@ -1437,6 +1480,8 @@
       ],
     };
     drawProj();
+    vimpState = { D: P.D, sigma: P.sigma, erSSO: P.erSSO, erSPY: P.erSPY };
+    drawVolImpact();
   }
 
   const projSvg = $("projChart"), projBox = $("projBox"), projTip = $("projTip");
@@ -1582,6 +1627,166 @@
       inflTip.style.left = Math.max(0, left) + "px"; inflTip.style.top = m.t + 8 + "px";
     });
     hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); inflTip.style.opacity = 0; });
+  }
+
+  // ---------- 历史波动率 ----------
+  // 用月度总回报（含分红）计算滚动 12 个月的年化波动率 = 月收益标准差 × √12
+  let volState = null;
+  function rollingVol(rows) {
+    const r = rows.map((x, i) => (i ? (x.adjClose + x.adjDiv) / rows[i - 1].adjClose - 1 : null));
+    return r.map((_, i) => {
+      if (i < 12) return null;
+      const w = r.slice(i - 11, i + 1), m = w.reduce((a, b) => a + b, 0) / 12;
+      return Math.sqrt(w.reduce((a, b) => a + (b - m) * (b - m), 0) / 11) * Math.sqrt(12);
+    });
+  }
+  const VOL = { SPY: rollingVol(SERIES.SPY), SSO: rollingVol(SERIES.SSO) };
+  function renderHistVol(s) {
+    const dates = months.slice(s), spy = VOL.SPY.slice(s), sso = VOL.SSO.slice(s);
+    const box = $("volStats"); box.replaceChildren();
+    const stat = (t, v, sub, cls) => {
+      const d = document.createElement("div"); d.className = "infl-stat";
+      const a = document.createElement("div"); a.className = "t"; a.textContent = t;
+      const b = document.createElement("div"); b.className = "v" + (cls ? " " + cls : ""); b.textContent = v;
+      const e = document.createElement("div"); e.className = "s"; e.textContent = sub;
+      d.append(a, b, e); box.appendChild(d);
+    };
+    const pct = (v) => (v == null ? "—" : (v * 100).toFixed(1) + "%");
+    const summary = (arr) => {
+      const v = arr.filter((x) => x != null), mx = Math.max(...v), mi = arr.indexOf(mx);
+      return { cur: v[v.length - 1], avg: v.reduce((a, b) => a + b, 0) / v.length, max: mx, maxDate: dates[mi] };
+    };
+    const a = summary(spy), b = summary(sso);
+    stat(T("volNowSpy"), pct(a.cur), T("volAvgSub", pct(a.avg)), "");
+    stat(T("volNowSso"), pct(b.cur), T("volAvgSub", pct(b.avg)), "");
+    stat(T("volMaxSpy"), pct(a.max), T("volMaxSub", a.maxDate), "neg");
+    stat(T("volMaxSso"), pct(b.max), T("volMaxSub", b.maxDate), "neg");
+    $("volSub").textContent = T("volSub", dates[0], dates[dates.length - 1]);
+    // 开启下跌测算且设定了波动率时，画一条参考线（测算里的 σ 是标普指数的波动率，可与 SPY 对比）
+    const ref = $("proj").checked ? Math.max(0, (parseFloat($("projVol").value) || 0) / 100) : 0;
+    $("volRefLegend").hidden = !(ref > 0);
+    volState = { dates, spy, sso, ref };
+    drawHistVol();
+  }
+  const volSvg = $("volChart"), volBox = $("volBox"), volTip = $("volTip");
+  function drawHistVol() {
+    if (!volState) return;
+    const S = volState, n = S.dates.length;
+    const W = volBox.clientWidth, H = 240, m = { l: 56, r: 92, t: 12, b: 30 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    volSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); volSvg.setAttribute("height", H);
+    volSvg.replaceChildren();
+    const vals = S.spy.concat(S.sso, [S.ref]).filter((v) => v != null);
+    const hi = Math.max(0.2, Math.ceil(Math.max(...vals) * 10) / 10);
+    const x = (i) => m.l + (n === 1 ? 0 : (i / (n - 1)) * iw), y = (v) => m.t + ih - (v / hi) * ih;
+    const step = hi > 0.6 ? 0.2 : 0.1;
+    for (let v = 0; v <= hi + 1e-9; v += step) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: v ? "var(--grid)" : "var(--border)" }, volSvg);
+      const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, volSvg); t.textContent = Math.round(v * 100) + "%";
+    }
+    const ms = monthStep(n - 1, iw);
+    S.dates.forEach((d, i) => { if (monthIndex(d) % ms) return; const t = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, volSvg); t.textContent = ms >= 12 ? d.slice(0, 4) : d; });
+    const series = [{ name: "SPY", color: "var(--series-2)", v: S.spy }, { name: "SSO", color: "var(--series-1)", v: S.sso }];
+    const ends = [];
+    for (const sr of series) {
+      let d = "", pen = false;
+      sr.v.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1); pen = true; });
+      el("path", { d, fill: "none", stroke: sr.color, "stroke-width": 2, "stroke-linejoin": "round" }, volSvg);
+      const li = sr.v.length - 1;
+      if (sr.v[li] != null) { el("circle", { cx: x(li), cy: y(sr.v[li]), r: 4, fill: sr.color, stroke: "var(--surface-1)", "stroke-width": 2 }, volSvg); ends.push({ yy: y(sr.v[li]), txt: sr.name + " " + (sr.v[li] * 100).toFixed(0) + "%" }); }
+    }
+    if (S.ref > 0) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(S.ref), y2: y(S.ref), stroke: "var(--infl)", "stroke-width": 1.5, "stroke-dasharray": "5 4" }, volSvg);
+      ends.push({ yy: y(S.ref), txt: T("volRefLbl", Math.round(S.ref * 100)) });
+    }
+    ends.sort((p, q) => p.yy - q.yy);
+    for (let k = 1; k < ends.length; k++) if (ends[k].yy - ends[k - 1].yy < 15) ends[k].yy = ends[k - 1].yy + 15;
+    for (const e of ends) { const t = el("text", { x: m.l + iw + 10, y: e.yy + 4, class: "dlabel" }, volSvg); t.textContent = e.txt; }
+    const hair = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-muted)", opacity: 0 }, volSvg);
+    const dots = series.map((sr) => el("circle", { r: 4, fill: sr.color, stroke: "var(--surface-1)", "stroke-width": 2, opacity: 0 }, volSvg));
+    const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, volSvg);
+    hit.addEventListener("pointermove", (ev) => {
+      const r = volSvg.getBoundingClientRect();
+      const i = Math.max(0, Math.min(n - 1, Math.round((((ev.clientX - r.left) * (W / r.width) - m.l) / iw) * (n - 1))));
+      const xx = x(i);
+      hair.setAttribute("x1", xx); hair.setAttribute("x2", xx); hair.setAttribute("opacity", 0.6);
+      volTip.replaceChildren();
+      const dd = document.createElement("div"); dd.className = "tt-date"; dd.textContent = S.dates[i]; volTip.appendChild(dd);
+      series.forEach((sr, k) => {
+        const v = sr.v[i];
+        dots[k].setAttribute("opacity", v == null ? 0 : 1); if (v != null) { dots[k].setAttribute("cx", xx); dots[k].setAttribute("cy", y(v)); }
+        const row = document.createElement("div"); row.className = "tt-row";
+        const key = document.createElement("i"); key.style.borderColor = sr.color;
+        const sp = document.createElement("span"); sp.textContent = sr.name;
+        const b = document.createElement("b"); b.textContent = v == null ? "—" : (v * 100).toFixed(1) + "%";
+        row.append(key, sp, b); volTip.appendChild(row);
+      });
+      volTip.style.opacity = 1;
+      const tw = volTip.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
+      volTip.style.left = Math.max(0, left) + "px"; volTip.style.top = m.t + 8 + "px";
+    });
+    hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); dots.forEach((d) => d.setAttribute("opacity", 0)); volTip.style.opacity = 0; });
+  }
+
+  // ---------- 下跌测算：年化波动率对 SSO 的影响 ----------
+  // 同样的标普全年跌幅下，SSO 一年的涨跌随波动率 σ 的变化：每月 = (1+2d)^21 × e^(−σ²/12) × (1 − 费率/12)
+  let vimpState = null;
+  const vimpSvg = $("vimpChart"), vimpBox = $("vimpBox"), vimpTip = $("vimpTip");
+  function drawVolImpact() {
+    if (!vimpState) return;
+    const { D, sigma, erSSO, erSPY } = vimpState;
+    const xs = []; for (let v = 0; v <= 0.8001; v += 0.02) xs.push(v);
+    const sso = xs.map((v) => Math.pow(projFactors(D, v, erSSO, 2), 12) - 1);
+    const spy = Math.pow(projFactors(D, 0, erSPY, 1), 12) - 1, naive = Math.max(-1, -2 * D);
+    const cur = Math.pow(projFactors(D, sigma, erSSO, 2), 12) - 1, flat = sso[0];
+    $("vimpSub").textContent = T("vimpSub", Math.round(D * 100));
+    $("vimpRead").textContent = T("vimpRead", Math.round(sigma * 100), (cur * 100).toFixed(1), ((cur - flat) * 100).toFixed(1));
+    const W = vimpBox.clientWidth, H = 230, m = { l: 56, r: 150, t: 12, b: 30 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    vimpSvg.setAttribute("viewBox", `0 0 ${W} ${H}`); vimpSvg.setAttribute("height", H);
+    vimpSvg.replaceChildren();
+    const lo = -1, hi = Math.min(0, Math.ceil(Math.max(spy, ...sso) * 10) / 10 + 0.1);
+    const x = (v) => m.l + (v / 0.8) * iw, y = (v) => m.t + ((hi - v) / (hi - lo)) * ih;
+    for (let v = lo; v <= hi + 1e-9; v += 0.2) {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: "var(--grid)" }, vimpSvg);
+      const t = el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, vimpSvg); t.textContent = Math.round(v * 100) + "%";
+    }
+    for (let v = 0; v <= 0.8001; v += 0.1) { const t = el("text", { x: x(v), y: m.t + ih + 20, "text-anchor": "middle" }, vimpSvg); t.textContent = T("vimpX", Math.round(v * 100)); }
+    // 参照线：SPY（不受杠杆损耗影响）与「简单按 2 倍」
+    const hline = (v, color, txt, dash) => {
+      el("line", { x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: color, "stroke-width": 1.5, "stroke-dasharray": dash ? "5 4" : "none" }, vimpSvg);
+      const t = el("text", { x: m.l + iw + 10, y: y(v) + 4 }, vimpSvg); t.textContent = txt;
+    };
+    hline(spy, "var(--series-2)", "SPY " + (spy * 100).toFixed(0) + "%", false);
+    hline(naive, "var(--text-muted)", T("vimpNaive", (naive * 100).toFixed(0)), true);
+    el("path", { d: xs.map((v, i) => (i ? "L" : "M") + x(v).toFixed(1) + "," + y(sso[i]).toFixed(1)).join(""), fill: "none", stroke: "var(--series-1)", "stroke-width": 2.5 }, vimpSvg);
+    const lab = el("text", { x: m.l + iw + 10, y: y(sso[sso.length - 1]) + 4, class: "dlabel" }, vimpSvg); lab.textContent = "SSO " + (sso[sso.length - 1] * 100).toFixed(0) + "%";
+    // 当前设定的波动率
+    el("line", { x1: x(Math.min(sigma, 0.8)), x2: x(Math.min(sigma, 0.8)), y1: m.t, y2: m.t + ih, stroke: "var(--text-secondary)", "stroke-dasharray": "3 3" }, vimpSvg);
+    el("circle", { cx: x(Math.min(sigma, 0.8)), cy: y(cur), r: 6, fill: "var(--surface-1)", stroke: "var(--series-1)", "stroke-width": 3 }, vimpSvg);
+    const hair = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--text-muted)", opacity: 0 }, vimpSvg);
+    const dot = el("circle", { r: 4, fill: "var(--series-1)", stroke: "var(--surface-1)", "stroke-width": 2, opacity: 0 }, vimpSvg);
+    const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, vimpSvg);
+    hit.addEventListener("pointermove", (ev) => {
+      const r = vimpSvg.getBoundingClientRect();
+      const i = Math.max(0, Math.min(xs.length - 1, Math.round((((ev.clientX - r.left) * (W / r.width) - m.l) / iw) * (xs.length - 1))));
+      const xx = x(xs[i]);
+      hair.setAttribute("x1", xx); hair.setAttribute("x2", xx); hair.setAttribute("opacity", 0.6);
+      dot.setAttribute("cx", xx); dot.setAttribute("cy", y(sso[i])); dot.setAttribute("opacity", 1);
+      vimpTip.replaceChildren();
+      const dd = document.createElement("div"); dd.className = "tt-date"; dd.textContent = T("vimpTipHead", Math.round(xs[i] * 100)); vimpTip.appendChild(dd);
+      for (const [nm, col, v, dash] of [["SSO", "var(--series-1)", sso[i], false], ["SPY", "var(--series-2)", spy, false], [T("vimpNaiveName"), "var(--text-muted)", naive, true]]) {
+        const row = document.createElement("div"); row.className = "tt-row";
+        const key = document.createElement("i"); key.style.borderColor = col; if (dash) key.className = "dash";
+        const sp = document.createElement("span"); sp.textContent = nm;
+        const b = document.createElement("b"); b.textContent = (v * 100).toFixed(1) + "%";
+        row.append(key, sp, b); vimpTip.appendChild(row);
+      }
+      vimpTip.style.opacity = 1;
+      const tw = vimpTip.offsetWidth; let left = xx + 14; if (left + tw > W) left = xx - tw - 14;
+      vimpTip.style.left = Math.max(0, left) + "px"; vimpTip.style.top = m.t + 8 + "px";
+    });
+    hit.addEventListener("pointerleave", () => { hair.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); vimpTip.style.opacity = 0; });
   }
 
   // ---------- 估值：标普 500 市盈率 ----------
@@ -2338,7 +2543,7 @@
       const rowsSPY = SERIES.SPY.concat(projectRows(SERIES.SPY, fSPY));
       const buyUntil = $("projBuy").checked ? Infinity : months.length;
       P = {
-        D, sigma, fSSO, fSPY, fIdx: Math.pow(1 - D, 1 / 12), rowsSSO, rowsSPY, buyUntil,
+        D, sigma, fSSO, fSPY, fIdx: Math.pow(1 - D, 1 / 12), rowsSSO, rowsSPY, buyUntil, erSSO, erSPY,
         dates: nextMonths(months[months.length - 1], PROJ_MONTHS),
         sso: simulate(rowsSSO, s, amount, withFee, withDiv, erSSO, dip ? thSSO : null, mult, buyUntil),
         spy: simulate(rowsSPY, s, amount, withFee, withDiv, erSPY, dip ? thSPY : null, mult, buyUntil),
@@ -2402,6 +2607,7 @@
     renderProjection(P, n, sso, spy);
     renderInflation(s, n, amount);
     renderValuation(s);
+    renderHistVol(s);
     document.querySelectorAll(".macro-only").forEach((e) => { e.hidden = !MACRO; });
     // 组合配置沿用同一套设置（起始月、管理费、分红、下跌加倍、测算）
     pfCtx = { s, n, dates, withFee, withDiv, erSSO, erSPY, dip, thSSO, thSPY, mult, P };
@@ -2435,7 +2641,7 @@
   for (const id of ["retInfl", "annPrem", "annPay"]) {
     $(id).addEventListener("input", (e) => { if (e.isTrusted || e.detail === "user") $(id).dataset.user = $(id).value.trim() === "" ? "" : "1"; }, true);
   }
-  window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); if (peState) drawValuation(); if (retState) drawRetirement(); });
+  window.addEventListener("resize", () => { if (state) draw(); if (projState) drawProj(); if (pfState) drawPortfolio(); if (inflState) drawInflation(); if (peState) drawValuation(); if (retState) drawRetirement(); if (volState) drawHistVol(); if (vimpState && !$("projCard").hidden) drawVolImpact(); });
   $("langBtn").addEventListener("click", () => {
     LANG = LANG === "zh" ? "en" : "zh";
     try { localStorage.setItem("dashLang", LANG); } catch (e) {}
