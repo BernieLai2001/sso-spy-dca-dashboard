@@ -264,8 +264,9 @@
       </select>
     </label>
     <div class="ctrl-break"></div>
-    <label class="proj-toggle"><input type="checkbox" id="proj"> <span data-i18n="cProj">测算未来一年下跌</span></label>
-    <label><span data-i18n="cProjDrop">S&amp;P500 一年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
+    <label class="proj-toggle"><input type="checkbox" id="proj"> <span data-i18n="cProj">测算未来下跌</span></label>
+    <label><span data-i18n="cProjMonths">时长</span> <input class="fee" type="number" id="projMonths" value="12" step="1" min="1" max="120"> <span data-i18n="cMonthsUnit">个月</span></label>
+    <label><span data-i18n="cProjDrop">S&amp;P500 1 年跌幅</span> <input class="fee" type="number" id="projDrop" value="30" step="5" min="0" max="99">%</label>
     <label data-i18n-title="cProjVolTip" title="填 S&amp;P500 指数本身的年化波动率。真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌"><span data-i18n="cProjVol">S&amp;P500 年化波动率</span> <input class="fee" type="number" id="projVol" value="0" step="5" min="0" max="150">%
       <span id="projVolSso" style="color:var(--text-secondary);font-size:12px;margin-left:6px" data-i18n-title="projVolSsoTip" title="SSO 每天追踪 2 倍，波动率自动按 S&amp;P500 的 2 倍计算"></span></label>
     <label><input type="checkbox" id="projBuy" checked> <span data-i18n="cProjBuy">测算期间继续定投</span></label>
@@ -371,7 +372,7 @@
 
   <div class="card chart-card proj-card" id="projCard" hidden>
     <div class="chart-top">
-      <h2 id="projTitle" data-i18n="projTitle0">未来一年下跌测算</h2>
+      <h2 id="projTitle" data-i18n="projTitle0">未来下跌测算</h2>
       <div class="legend">
         <span><i class="dash" style="border-color:var(--principal)"></i><span data-i18n="lgSpx">S&amp;P500 指数</span></span>
         <span><i style="border-color:var(--series-2)"></i>SPY</span>
@@ -382,12 +383,12 @@
     <div class="proj-stats" id="projStats"></div>
     <h3 class="proj-sub" data-i18n="projSub">价格累计涨跌（相对当前）</h3>
     <div class="chart-box" id="projBox">
-      <svg id="projChart" role="img" data-i18n-aria="ariaProj" aria-label="未来一年 S&P500、SPY、SSO 价格累计涨跌测算"></svg>
+      <svg id="projChart" role="img" data-i18n-aria="ariaProj" aria-label="未来 S&P500、SPY、SSO 价格累计涨跌测算"></svg>
       <div class="tooltip" id="projTip"></div>
     </div>
     <div class="pf-fr-head"><h3 class="proj-sub" id="vimpSub"></h3><span class="pf-readout" id="vimpRead"></span></div>
     <div class="chart-box" id="vimpBox">
-      <svg id="vimpChart" role="img" data-i18n-aria="vimpAria" aria-label="年化波动率对 SSO 一年跌幅的影响"></svg>
+      <svg id="vimpChart" role="img" data-i18n-aria="vimpAria" aria-label="年化波动率对 SSO 测算期跌幅的影响"></svg>
       <div class="tooltip" id="vimpTip"></div>
     </div>
     <table class="proj-table">
@@ -527,7 +528,7 @@
       themeBtn: "切换深色/浅色",
       cAmount: "每月定投", cStart: "起始月份", cFee: "扣除管理费", cDiv: "添加股息红利（再投资）",
       cDip: "下跌加倍：开盘价较上月开盘跌幅", cBuy: "买入", cTimes: "倍", cLog: "对数坐标",
-      cProj: "测算未来一年下跌", cProjDrop: "S&P500 一年跌幅", cProjVol: "S&P500 年化波动率", projVolSso: (v) => `→ SSO ${v}%（自动 = 2 倍）`, projVolSsoTip: "SSO 每天追踪 2 倍，波动率自动按 S&P500 的 2 倍计算",
+      cProj: "测算未来下跌", cProjMonths: "时长", cMonthsUnit: "个月", cProjDrop: "S&P500 {dur}跌幅", cProjVol: "S&P500 年化波动率", projVolSso: (v) => `→ SSO ${v}%（自动 = 2 倍）`, projVolSsoTip: "SSO 每天追踪 2 倍，波动率自动按 S&P500 的 2 倍计算",
       cProjVolTip: "填 S&P500 指数本身的年化波动率。真实下跌过程中每天都在震荡，2 倍杠杆 ETF 会因此额外损耗；0 表示平滑下跌",
       cProjBuy: "测算期间继续定投",
       kPlan: "计划投入（每月定投 × 期数）", kMonths: "定投期数", kActual: "SSO / SPY 实际投入",
@@ -537,12 +538,12 @@
       rAll: "全部", r10: "近10年", r5: "近5年", r3: "近3年", r1: "近1年",
       rangeHint: "滚轮 / 双指捏合缩放 · 按住拖动平移 · 双击还原",
       ariaChart: "SSO 与 SPY 定投市值曲线（可缩放、拖动）", ariaNav: "全区间缩略图，拖动窗口选择显示范围",
-      projTitle0: "未来一年下跌测算", lgSpx: "S&P500 指数", projSub: "价格累计涨跌（相对当前）",
-      ariaProj: "未来一年 S&P500、SPY、SSO 价格累计涨跌测算",
+      projTitle0: "未来 {dur}下跌测算", lgSpx: "S&P500 指数", projSub: "价格累计涨跌（相对当前）",
+      ariaProj: "未来 {dur} S&P500、SPY、SSO 价格累计涨跌测算",
       thMonth: "月份", thSpxMo: "S&P500 当月", thSpyMo: "SPY 当月", thSsoMo: "SSO 当月",
       thSpyInvMo: "SPY 当月投入", thSpyVal: "SPY 市值", thSsoInvMo: "SSO 当月投入", thSsoVal: "SSO 市值",
-      projNote: "<b>测算方法：</b>把 S&amp;P500 的全年跌幅按指数（几何）路径平均分摊到每个交易日：每日 d = (1−跌幅)^(1/252) − 1，" +
-        "所以每月跌幅相同，都是 (1−跌幅)^(1/12) − 1，而不是简单的「跌幅 ÷ 12」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。" +
+      projNote: "<b>测算方法：</b>把 S&amp;P500 在测算期（{dur}）内的总跌幅按指数（几何）路径平均分摊到每个交易日（每月按 21 个交易日）：每日 d = (1−跌幅)^(1/(21×月数)) − 1，" +
+        "所以每月跌幅相同，都是 (1−跌幅)^(1/月数) − 1，而不是简单的「跌幅 ÷ 月数」。SPY 每天跟踪 1 倍，SSO 每天跟踪 2 倍，按 21 个交易日复利成月度涨跌，再扣除管理费。" +
         "「S&amp;P500 年化波动率」σ 只填指数本身的波动率（平静时期约 10%–15%，真实熊市常见 30%–60%）；SSO 每天追踪 2 倍，它的波动率自动取 2σ。σ 大于 0 时，SSO 每月额外乘以 e^(−σ²/12)，这是 2 倍杠杆在日内震荡中的波动损耗。" +
         "图中的阴影是<b>波动区间（±1σ）</b>：实线是平均路径，真实走势会围绕它上下波动，k 个月后约有 68% 的概率落在 平均路径 × e^(±倍数×σ×√(k/12)) 之间；SSO 的倍数为 2，区间是 SPY 的两倍宽。" +
         "测算期间沿用上方的定投、整数股和下跌加倍规则；不计分红，不计 SSO 的融资成本。这只是假设情景，不是预测。",
@@ -553,7 +554,7 @@
       pfNote: "每月总投入按滑块比例拆成两笔，分别按上方同样的规则定投（开盘价、整数股、价格高于金额时买 1 股、下跌加倍、管理费、分红），各自持有，不做再平衡。" +
         "金额较小时，「至少买 1 股」会让实际投入高于计划。<b>组合最大回撤</b>按时间加权净值计算（扣除每月新投入的影响），反映组合本身最多跌过多少。" +
         "滑块位置代表 SPY 占比（左侧橙色段长度 = SPY 比例，右侧蓝色段 = SSO 比例）。下方两张小图横轴方向与滑块一致，展示 SPY : SSO 从 0 : 100 到 100 : 0（每 5%）的结果，圆环标出当前比例，点击任意点可直接切换到该比例。" +
-        "开启「测算未来一年下跌」时，组合图会接上测算的 12 个月，收益倍数、IRR、最大回撤和两张小图都改为按「历史 + 测算一年」计算（副标题给出当前值作对照）。",
+        "开启「测算未来下跌」时，组合图会接上测算的 {dur}，收益倍数、IRR、最大回撤和两张小图都改为按「历史 + 测算期」计算（副标题给出当前值作对照）。",
       mainNote: "<b>买入规则：</b>每月按月K<b>开盘价</b>买入<b>整数股</b>：股数 = ⌊定投金额 ÷ 开盘价⌋，花不完的零头不投入（例：定投 $100、价格 $28 → 买 3 股，实际投入 $84）；" +
         "若开盘价高于定投金额，则当月买 1 股，实际投入 = 1 股的价格。因此两只 ETF 的「实际投入」各不相同，收益倍数与 IRR 均按实际投入计算。<br>" +
         "<b>下跌加倍：</b>若本月开盘价较上月开盘价下跌 ≥ 设定阈值（默认 SSO 10%、SPY 5%），本月按「定投金额 × 倍数」买入整数股（至少买「倍数」股）；" +
@@ -575,18 +576,18 @@
       curValue: (n) => n + " 当前市值", investedPrincipal: "实际投入本金", sharesCash: "持股数 / 现金余额",
       sharesUnit: (s, c) => s + " 股 / " + c, avgCost: "平均持仓成本价", lastVsCost: "最新收盘价（较成本）",
       pnlTotal: "累计盈亏", multipleFull: "收益倍数（市值/实际投入）", irr: "年化收益（IRR）", etfDD: "ETF 最大回撤",
-      projTitle: (a, b) => `未来一年下跌测算（${a} ~ ${b}）`, spxSet: "S&P500 指数（设定）", fullYear: (p) => "全年 " + p,
+      projTitle: (a, b) => `未来 {dur}下跌测算（${a} ~ ${b}）`, spxSet: "S&P500 指数（设定）", fullYear: (p) => "{dur}合计 " + p,
       monthlyGeo: "每月涨跌（几何平均）", linearMonthly: "若按线性每月", daily: "每日涨跌", simName: (n) => n + "（测算）",
-      monthly: "每月涨跌", nowToYear: "当前市值 → 一年后", newInv: "期间新增投入", holdPnl: "持仓盈亏（不含新投入）",
-      yearVsInv: "一年后 vs 累计投入", boosted: "（加倍）", nowTag: "（当前）", now: "当前", cumChg: " · 累计涨跌", projBandLg: "波动区间（±1σ）", bandRange: "　波动区间", yearBand: "一年后波动区间（±1σ）",
+      monthly: "每月涨跌", nowToYear: "当前市值 → {dur}后", newInv: "期间新增投入", holdPnl: "持仓盈亏（不含新投入）",
+      yearVsInv: "{dur}后 vs 累计投入", boosted: "（加倍）", nowTag: "（当前）", now: "当前", cumChg: " · 累计涨跌", projBandLg: "波动区间（±1σ）", bandRange: "　波动区间", yearBand: "{dur}后波动区间（±1σ）",
       perMonth: (v) => "每月 " + v,
       pfInvested: "实际投入", plan: (v) => "计划 " + v, pfValueNow: "组合当前市值", pfMultiple: "收益倍数",
       pnlShort: (v) => "盈亏 " + v, moneyWeighted: "资金加权", pfDD: "组合最大回撤", twr: "时间加权净值",
       pfInvestedProj: "实际投入（测算后）", nowV: (v) => "当前 " + v, addNew: (v) => " · 新增 " + v,
-      pfYearValue: "测算一年后市值", vsNow: (p) => "较当前 " + p, pfMultProj: "收益倍数（测算后）",
+      pfYearValue: "测算 {dur}后市值", vsNow: (p) => "较当前 " + p, pfMultProj: "收益倍数（测算后）",
       pfIrrProj: "年化收益 IRR（测算后）", pfDDProj: "组合最大回撤（含测算）",
       frIrrTitle: "不同 SPY : SSO 比例的年化收益（IRR）", frDdTitle: "不同 SPY : SSO 比例的组合最大回撤",
-      frSuffixProj: (d) => `（含测算：S&P 一年 −${d}%）`, frSuffixHist: "（历史至今）",
+      frSuffixProj: (d) => `（含测算：S&P {dur} −${d}%）`, frSuffixHist: "（历史至今）",
       stackTotal: "组合 ", stackInv: "投入 ", ttPf: "组合市值", ttSsoPart: "SSO 部分", ttSpyPart: "SPY 部分", ttInv: "累计投入",
       readout: (cur, spy, sso, v) => (cur ? "当前 " : "") + `SPY ${spy}% / SSO ${sso}%：` + v,
       monthsN: (n) => n + " 个月", lnSsoV: "SSO 市值", lnSpyV: "SPY 市值", lnSsoInv: "SSO 实际投入", lnSpyInv: "SPY 实际投入",
@@ -600,7 +601,7 @@
       retHighWarn: (r) => `。⚠ ${r}% 是过去的历史收益，不代表未来，退休规划通常按 4%–6% 估算更稳妥`,
       annPremLbl: "年保费", annYearsLbl: "缴费年限", annYearsUnit: "年", annPayLbl: "退休后领取", annMonthly: "月领", annYearly: "年领",
       retChart1: "每月生活费 vs 每月收入（名义美元）", retChart2: "组合余额（名义美元）", retBalName: "组合余额", ageLbl: (a) => `${a} 岁`,
-      retStart: "退休时的组合市值", retStartNow: "组合配置的当前市值", retStartProj: "下跌测算一年后的市值",
+      retStart: "退休时的组合市值", retStartNow: "组合配置的当前市值", retStartProj: "下跌测算 {dur}后的市值",
       retNeedFirst: "65 岁时每月生活费", retNeedLast: (a, v) => `${a} 岁时涨到每月 ${v}`,
       retLasts: "资金能撑到", retLastsAll: (a) => `${a} 岁以后`, retLastsAge: (a) => `${a} 岁`, retLastsAllSub: "到 100 岁都花不完", retLastsSub: "之后组合余额归零，生活费没有着落",
       retBalEnd: (a) => `${a} 岁时组合余额`, retSpent: (v) => `退休期间共取出 ${v}`,
@@ -610,7 +611,7 @@
       annGapSub: (n, p) => `年金固定不变，生活费却逐年上涨（65 岁 ${n} vs 年金 ${p}/月）`,
       annGapSum: (a) => `到 ${a} 岁的累计缺口`, annBreakEven: (a) => `领回全部保费：${a} 岁`, annNoBreakEven: (a) => `${a} 岁前领不回`,
       retNote: "<b>假设：</b>定投做到今天结束，此时 65 岁退休，按月模拟到 100 岁；每月生活费以今天的美元计，之后每年按通胀率上涨（默认取定投期间 CPI 的年均涨幅）。<b>每月生活费</b>可手动输入（默认 $3,000），或用「美国人均月收入 × 替代率」：人均收入取美国经济分析局（BEA）最新一季的人均个人收入（税前，FRED A792RC0Q052SBEA）÷ 12；替代率默认 40%，即美国社会保障局（SSA）常引用的「Social Security 约替代普通收入者退休前收入的 40%」，不同口径差别较大（如 OECD 统计的美国净替代率约 50%），可自行修改。" +
-        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算一年后的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，使用组合的<b>时间加权年化</b>（开启下跌测算时为测算后的值），调整组合时自动跟着变。这里不用组合面板的「年化收益（IRR）」：IRR 是货币加权的，反映的是定投这笔钱的回报，受投入时点影响；退休时是一大笔钱整体放在市场里增值，应当用资产本身的年复合增长率，也就是时间加权年化。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
+        "<b>用组合配置的市值：</b>起始资金为组合配置面板的市值（开启下跌测算时用测算期末的市值），每月月初取出当月生活费，剩余部分按「退休后年化收益」继续增值：可手动设置（默认 5%），也可选「与组合配置联动」，使用组合的<b>时间加权年化</b>（开启下跌测算时为测算后的值），调整组合时自动跟着变。这里不用组合面板的「年化收益（IRR）」：IRR 是货币加权的，反映的是定投这笔钱的回报，受投入时点影响；退休时是一大笔钱整体放在市场里增值，应当用资产本身的年复合增长率，也就是时间加权年化。实际收益每年都会波动，退休初期遇到大跌对资金寿命的伤害最大。" +
         "<b>年金：</b>年保费默认等于组合每年的投入；缴费年限默认 10 年（国内年金险最常见的缴费方式），在退休前缴清；领取金额默认按 2.5% 的内部收益率、领取到 100 岁估算，请以实际合同为准。年金每期领取的金额固定，不随通胀上涨。" +
         "本模块仅作情景演示，不构成理财建议。",
       volTitle: "历史波动率：SPY 与 SSO", volRefLg: "下跌测算设定（S&P / SSO = 2 倍）", volAria: "SPY 与 SSO 的滚动 12 个月年化波动率",
@@ -620,8 +621,8 @@
       volNote: "<b>算法：</b>用每月的总回报（含分红）计算，年化波动率 = 过去 12 个月月收益率的标准差 × √12。波动率越高，涨跌越剧烈。" +
         "SSO 的波动率大约是 SPY 的 2 倍。用月度数据算出的波动率会比用日度数据算的低一些，因为看不到月内的大起大落，危机时期尤其明显。" +
         "下跌测算里的「年化波动率」指的是标普 500 指数本身的波动率，可以对照图中 SPY 的历史水平来设定：平静时期约 10%–15%，2008、2020 年危机时升到 30%–40% 以上（按日度数据会更高）。",
-      vimpSub: (d) => `S&P500 年化波动率对 SSO 的影响（标普一年 −${d}%）`, vimpAria: "年化波动率对 SSO 一年跌幅的影响",
-      vimpRead: (v, c, l) => `当前 S&P ${v}%（SSO ${v * 2}%）：SSO 一年 ${c}%（比平滑下跌多跌 ${Math.abs(l)} 个百分点）`,
+      vimpSub: (d) => `S&P500 年化波动率对 SSO 的影响（标普 {dur} −${d}%）`, vimpAria: "年化波动率对 SSO 测算期跌幅的影响",
+      vimpRead: (v, c, l) => `当前 S&P ${v}%（SSO ${v * 2}%）：SSO {dur} ${c}%（比平滑下跌多跌 ${Math.abs(l)} 个百分点）`,
       vimpX: (v) => `${v}%`, vimpNaive: (v) => `简单 ×2：${v}%`, vimpNaiveName: "简单按 2 倍", vimpTipHead: (v) => `S&P 波动率 ${v}% · SSO ${v * 2}%`,
       cBase: "金额口径", optNominal: "名义美元", optToday: "今天的美元（扣除通胀）", optStart: "起始月份的美元（扣除通胀）", chartTitleReal: (d) => `持仓市值（${d} 美元，已扣除通胀）`, lgCash: "现金放着不动", lnCash: "现金放着不动（实际价值）",
       frIrrTitleReal: "不同 SPY : SSO 比例的实际年化（扣通胀）",
@@ -663,7 +664,7 @@
       themeBtn: "Dark / Light",
       cAmount: "Monthly amount", cStart: "Start month", cFee: "Deduct expense ratio", cDiv: "Reinvest dividends",
       cDip: "Buy the dip: open vs. last month's open down", cBuy: "Buy", cTimes: "×", cLog: "Log scale",
-      cProj: "Simulate a 1-year decline", cProjDrop: "S&P 500 1-yr drop", cProjVol: "S&P 500 annual volatility", projVolSso: (v) => `→ SSO ${v}% (auto, 2×)`, projVolSsoTip: "SSO tracks 2× daily, so its volatility is set automatically to twice the S&P 500's",
+      cProj: "Simulate a future decline", cProjMonths: "Length", cMonthsUnit: "months", cProjDrop: "S&P 500 drop over {dur}", cProjVol: "S&P 500 annual volatility", projVolSso: (v) => `→ SSO ${v}% (auto, 2×)`, projVolSsoTip: "SSO tracks 2× daily, so its volatility is set automatically to twice the S&P 500's",
       cProjVolTip: "Enter the S&P 500 index's own annual volatility. Real declines swing up and down daily, which costs a 2× leveraged ETF extra; 0 means a smooth decline",
       cProjBuy: "Keep investing during simulation",
       kPlan: "Planned investment (monthly × months)", kMonths: "Months invested", kActual: "SSO / SPY actually invested",
@@ -673,12 +674,12 @@
       rAll: "All", r10: "10Y", r5: "5Y", r3: "3Y", r1: "1Y",
       rangeHint: "Scroll / pinch to zoom · drag to pan · double-click to reset",
       ariaChart: "SSO and SPY DCA value over time (zoomable, draggable)", ariaNav: "Full-range overview; drag the window to choose the visible range",
-      projTitle0: "1-year decline simulation", lgSpx: "S&P 500 index", projSub: "Cumulative price change (vs. now)",
-      ariaProj: "Simulated cumulative price change of S&P 500, SPY and SSO over the next year",
+      projTitle0: "Decline simulation: next {dur}", lgSpx: "S&P 500 index", projSub: "Cumulative price change (vs. now)",
+      ariaProj: "Simulated cumulative price change of S&P 500, SPY and SSO over the next {dur}",
       thMonth: "Month", thSpxMo: "S&P 500 (mo)", thSpyMo: "SPY (mo)", thSsoMo: "SSO (mo)",
       thSpyInvMo: "SPY invested", thSpyVal: "SPY value", thSsoInvMo: "SSO invested", thSsoVal: "SSO value",
-      projNote: "<b>Method:</b> the S&amp;P 500's full-year decline is spread evenly across trading days along a geometric path: daily d = (1−drop)^(1/252) − 1, " +
-        "so every month falls by the same (1−drop)^(1/12) − 1 — not simply drop ÷ 12. SPY tracks 1× daily and SSO 2× daily; each compounds over 21 trading days per month, then the expense ratio is deducted. " +
+      projNote: "<b>Method:</b> the S&amp;P 500's total decline over the simulation period ({dur}) is spread evenly across trading days (21 per month) along a geometric path: daily d = (1−drop)^(1/(21×months)) − 1, " +
+        "so every month falls by the same (1−drop)^(1/months) − 1 — not simply drop ÷ months. SPY tracks 1× daily and SSO 2× daily; each compounds over 21 trading days per month, then the expense ratio is deducted. " +
         "The \"S&amp;P 500 annual volatility\" σ is the index's own volatility (about 10%–15% in calm periods, often 30%–60% in real bear markets); SSO tracks 2× daily, so its volatility is set automatically to 2σ. When σ is above 0, SSO is further multiplied by e^(−σ²/12) each month — the volatility decay of 2× leverage in choppy markets. " +
         "The shading is the <b>volatility range (±1σ)</b>: the solid line is the average path, and real prices swing around it — after k months there is about a 68% chance of landing within average path × e^(±leverage×σ×√(k/12)). SSO's leverage is 2, so its range is twice as wide as SPY's. " +
         "The DCA, whole-share and buy-the-dip rules above still apply; dividends and SSO's financing cost are not included. This is a hypothetical scenario, not a forecast.",
@@ -688,7 +689,7 @@
       pfNote: "Each month's total is split by the slider into two purchases, each following the rules above (open price, whole shares, at least 1 share if the price exceeds the amount, buy the dip, expense ratio, dividends). Both are held separately with no rebalancing. " +
         "With small amounts, the 1-share minimum can push actual investment above plan. <b>Max drawdown</b> uses a time-weighted NAV (removing the effect of new monthly money), showing how far the portfolio itself fell. " +
         "The slider position is the SPY share (orange segment on the left = SPY, blue segment on the right = SSO). The two small charts below use the same direction, showing SPY : SSO from 0 : 100 to 100 : 0 in 5% steps; the ring marks the current mix and clicking a point switches to it. " +
-        "With the 1-year decline simulation on, the chart extends 12 simulated months, and the multiple, IRR, max drawdown and both small charts use history + the simulated year (subtitles show today's values for comparison).",
+        "With the decline simulation on, the chart extends {dur} of simulated months, and the multiple, IRR, max drawdown and both small charts use history + the simulated period (subtitles show today's values for comparison).",
       mainNote: "<b>Buying rule:</b> each month buys <b>whole shares</b> at the monthly bar's <b>open</b>: shares = ⌊amount ÷ open⌋, and leftover cash is not invested (e.g. $100 at $28 → 3 shares, $84 invested). " +
         "If the open is above the amount, 1 share is bought and its price counts as invested. So SSO and SPY end up with different actual investment, and multiples and IRR use actual investment.<br>" +
         "<b>Buy the dip:</b> if this month's open is down ≥ the threshold vs. last month's open (default SSO 10%, SPY 5%), this month buys whole shares worth amount × multiplier (at least that many shares). " +
@@ -709,18 +710,18 @@
       curValue: (n) => n + " current value", investedPrincipal: "Actually invested", sharesCash: "Shares / cash",
       sharesUnit: (s, c) => s + " sh / " + c, avgCost: "Average cost", lastVsCost: "Last close (vs. cost)",
       pnlTotal: "Total gain / loss", multipleFull: "Multiple (value / invested)", irr: "Annualized return (IRR)", etfDD: "ETF max drawdown",
-      projTitle: (a, b) => `1-year decline simulation (${a} – ${b})`, spxSet: "S&P 500 index (input)", fullYear: (p) => "Full year " + p,
+      projTitle: (a, b) => `Decline simulation: next {dur} (${a} – ${b})`, spxSet: "S&P 500 index (input)", fullYear: (p) => "Over {dur}: " + p,
       monthlyGeo: "Monthly change (geometric)", linearMonthly: "If linear, per month", daily: "Daily change", simName: (n) => n + " (simulated)",
-      monthly: "Monthly change", nowToYear: "Value now → in 1 year", newInv: "New money invested", holdPnl: "Holding P&L (excl. new money)",
-      yearVsInv: "In 1 year vs. invested", boosted: " (dip)", nowTag: " (now)", now: "Now", cumChg: " · cumulative change", projBandLg: "Volatility range (±1σ)", bandRange: "  range", yearBand: "1-year range (±1σ)",
+      monthly: "Monthly change", nowToYear: "Value now → in {dur}", newInv: "New money invested", holdPnl: "Holding P&L (excl. new money)",
+      yearVsInv: "In {dur} vs. invested", boosted: " (dip)", nowTag: " (now)", now: "Now", cumChg: " · cumulative change", projBandLg: "Volatility range (±1σ)", bandRange: "  range", yearBand: "Range in {dur} (±1σ)",
       perMonth: (v) => v + " / mo",
       pfInvested: "Actually invested", plan: (v) => "Plan " + v, pfValueNow: "Current value", pfMultiple: "Multiple",
       pnlShort: (v) => "P&L " + v, moneyWeighted: "Money-weighted", pfDD: "Max drawdown", twr: "Time-weighted NAV",
       pfInvestedProj: "Invested (after sim.)", nowV: (v) => "Now " + v, addNew: (v) => " · new " + v,
-      pfYearValue: "Value in 1 year (sim.)", vsNow: (p) => "vs. now " + p, pfMultProj: "Multiple (after sim.)",
+      pfYearValue: "Value in {dur} (sim.)", vsNow: (p) => "vs. now " + p, pfMultProj: "Multiple (after sim.)",
       pfIrrProj: "IRR (after sim.)", pfDDProj: "Max drawdown (incl. sim.)",
       frIrrTitle: "IRR by SPY : SSO mix", frDdTitle: "Max drawdown by SPY : SSO mix",
-      frSuffixProj: (d) => ` (incl. sim.: S&P −${d}% in 1 yr)`, frSuffixHist: " (history to date)",
+      frSuffixProj: (d) => ` (incl. sim.: S&P −${d}% over {dur})`, frSuffixHist: " (history to date)",
       stackTotal: "Total ", stackInv: "Invested ", ttPf: "Portfolio", ttSsoPart: "SSO part", ttSpyPart: "SPY part", ttInv: "Invested",
       readout: (cur, spy, sso, v) => (cur ? "Current " : "") + `SPY ${spy}% / SSO ${sso}%: ` + v,
       monthsN: (n) => n + " months", lnSsoV: "SSO value", lnSpyV: "SPY value", lnSsoInv: "SSO invested", lnSpyInv: "SPY invested",
@@ -744,7 +745,7 @@
       annGapSub: (n, p) => `fixed payout vs rising costs (at 65: ${n} vs ${p}/mo)`,
       annGapSum: (a) => `Total shortfall by ${a}`, annBreakEven: (a) => `premiums paid back at ${a}`, annNoBreakEven: (a) => `not before ${a}`,
       retNote: "<b>Assumptions:</b> the DCA ends today at retirement age 65, simulated monthly to 100; the monthly living cost is in today's dollars and rises each year with inflation (default: average CPI inflation over the DCA period). <b>Living cost</b> is entered manually (default $3,000) or set as US income per capita × a replacement rate: income is the latest quarterly BEA personal income per capita (pre-tax, FRED A792RC0Q052SBEA) ÷ 12; the replacement rate defaults to 40% — the Social Security Administration's often-cited figure that Social Security replaces about 40% of an average earner's pre-retirement income. Definitions vary widely (the OECD puts the US net replacement rate near 50%), so adjust as needed. " +
-        "<b>Live off the portfolio:</b> the starting money is the portfolio value (after the simulated year if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio's <b>time-weighted return</b> (after the simulated year if the decline simulation is on) and follows any change to the portfolio. It does not use the portfolio's IRR: IRR is money-weighted and reflects the DCA's own result, which depends on when money went in; in retirement a lump sum stays invested, so the right rate is the holdings' own compound growth — the time-weighted return. Real returns vary year to year, and a crash early in retirement hurts the most. " +
+        "<b>Live off the portfolio:</b> the starting money is the portfolio value (at the end of the simulated period if the decline simulation is on); each month's cost is withdrawn at the start of the month and the rest grows at the return after retirement — set manually (default 5%) or linked to the portfolio, which uses the portfolio's <b>time-weighted return</b> (at the end of the simulated period if the decline simulation is on) and follows any change to the portfolio. It does not use the portfolio's IRR: IRR is money-weighted and reflects the DCA's own result, which depends on when money went in; in retirement a lump sum stays invested, so the right rate is the holdings' own compound growth — the time-weighted return. Real returns vary year to year, and a crash early in retirement hurts the most. " +
         "<b>Annuity:</b> the premium defaults to the portfolio's yearly investment; paying years default to 10 (the most common term for annuity products in China), paid before retirement; the payout defaults to an estimate at 2.5% IRR paid to 100 — use your contract's figures. Annuity payouts are fixed and do not rise with inflation. " +
         "Scenario illustration only, not financial advice.",
       volTitle: "Historical volatility: SPY and SSO", volRefLg: "Decline simulation setting (S&P / SSO = 2×)", volAria: "Rolling 12-month annualized volatility of SPY and SSO",
@@ -754,8 +755,8 @@
       volNote: "<b>Method:</b> from monthly total returns (incl. dividends), annualized volatility = standard deviation of the last 12 monthly returns × √12. Higher volatility means bigger swings. " +
         "SSO's volatility is roughly twice SPY's. Monthly data understates volatility compared with daily data, since it misses swings within a month — especially in crises. " +
         "The decline simulation's \"annual volatility\" is that of the S&P 500 index itself, so set it against SPY's history here: about 10%–15% in calm periods, rising above 30%–40% in the 2008 and 2020 crises (higher on daily data).",
-      vimpSub: (d) => `Effect of S&P 500 volatility on SSO (S&P −${d}% in 1 year)`, vimpAria: "Effect of annual volatility on SSO's one-year decline",
-      vimpRead: (v, c, l) => `At S&P ${v}% (SSO ${v * 2}%): SSO ${c}% in a year (${Math.abs(l)} pp worse than a smooth decline)`,
+      vimpSub: (d) => `Effect of S&P 500 volatility on SSO (S&P −${d}% over {dur})`, vimpAria: "Effect of annual volatility on SSO's decline over the simulation period",
+      vimpRead: (v, c, l) => `At S&P ${v}% (SSO ${v * 2}%): SSO ${c}% over {dur} (${Math.abs(l)} pp worse than a smooth decline)`,
       vimpX: (v) => `${v}%`, vimpNaive: (v) => `naive ×2: ${v}%`, vimpNaiveName: "Naive 2×", vimpTipHead: (v) => `S&P volatility ${v}% · SSO ${v * 2}%`,
       cBase: "Amounts in", optNominal: "Nominal dollars", optToday: "Today's dollars (inflation-adjusted)", optStart: "Start-month dollars (inflation-adjusted)", chartTitleReal: (d) => `Portfolio value (${d} dollars, inflation-adjusted)`, lgCash: "Cash left idle", lnCash: "Cash left idle (real value)",
       frIrrTitleReal: "Real return (after inflation) by SPY : SSO mix",
@@ -793,9 +794,21 @@
   };
   let LANG = "zh";
   try { const saved = localStorage.getItem("dashLang"); if (saved === "en" || saved === "zh") LANG = saved; } catch (e) {}
+  let PROJ_MONTHS = 12; // 测算时长（月），由控制栏设置
+  const durText = (n) => LANG === "en"
+    ? (n % 12 === 0 ? (n === 12 ? "1 year" : n / 12 + " years") : n === 1 ? "1 month" : n + " months")
+    : (n % 12 === 0 ? n / 12 + " 年" : n + " 个月");
+  const rawT = (key) => ((I18N[LANG] && key in I18N[LANG]) ? I18N[LANG][key] : I18N.zh[key]);
   function T(key, ...args) {
-    const v = (I18N[LANG] && key in I18N[LANG]) ? I18N[LANG][key] : I18N.zh[key];
-    return typeof v === "function" ? v(...args) : v;
+    const v = rawT(key), r = typeof v === "function" ? v(...args) : v;
+    return typeof r === "string" && r.includes("{dur}") ? r.split("{dur}").join(durText(PROJ_MONTHS)) : r;
+  }
+  // 测算时长变化时，只刷新含 {dur} 的固定文案
+  function applyDur() {
+    const has = (k) => { const v = rawT(k); return typeof v === "string" && v.includes("{dur}"); };
+    document.querySelectorAll("[data-i18n]").forEach((e) => { if (has(e.dataset.i18n)) e.textContent = T(e.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-html]").forEach((e) => { if (has(e.dataset.i18nHtml)) e.innerHTML = T(e.dataset.i18nHtml); });
+    document.querySelectorAll("[data-i18n-aria]").forEach((e) => { if (has(e.dataset.i18nAria)) e.setAttribute("aria-label", T(e.dataset.i18nAria)); });
   }
   function applyStatic() {
     document.documentElement.lang = LANG === "en" ? "en" : "zh-CN";
@@ -964,14 +977,13 @@
     return { values, invested: investedArr, shares: sharesArr, flows, boosted, cash, maxDD, avgCost, lastClose, rets, twr };
   }
 
-  // ---------- 未来一年下跌测算 ----------
-  // S&P500 一年跌 D：按指数（几何）路径平均分摊到每个交易日，d = (1−D)^(1/252) − 1，
-  // 每月 21 个交易日，所以指数每月涨跌 = (1+d)^21 − 1 = (1−D)^(1/12) − 1。
+  // ---------- 未来下跌测算（时长 PROJ_MONTHS 个月） ----------
+  // S&P500 在测算期内跌 D：按指数（几何）路径平均分摊到每个交易日，d = (1−D)^(1/(21×月数)) − 1，
+  // 每月 21 个交易日，所以指数每月涨跌 = (1+d)^21 − 1 = (1−D)^(1/月数) − 1。
   // SSO 每日追踪 2 倍：每月 = (1+2d)^21 × e^(−σ²/12)（波动损耗，σ=年化波动率）× (1 − 费率/12)
   // SPY 每日追踪 1 倍：每月 = (1+d)^21 × (1 − 费率/12)。测算期内不计分红、不拆股。
-  const PROJ_MONTHS = 12;
   function projFactors(D, sigma, er, L) {
-    const d = Math.pow(1 - D, 1 / 252) - 1;
+    const d = Math.pow(1 - D, 1 / (21 * PROJ_MONTHS)) - 1;
     const drag = Math.exp(-((L * L - L) / 2) * sigma * sigma / 12);
     return Math.pow(1 + L * d, 21) * drag * (1 - er / 100 / 12);
   }
@@ -1471,24 +1483,24 @@
       }
       b.append(head, v, dl); stats.appendChild(b);
     };
-    const yearIdx = Math.pow(P.fIdx, 12) - 1;
+    const yearIdx = Math.pow(P.fIdx, PROJ_MONTHS) - 1;
     block(T("spxSet"), "var(--principal)", T("fullYear", signPct(yearIdx)), [
       [T("monthlyGeo"), signPct(P.fIdx - 1, 2), "neg"],
-      [T("linearMonthly"), signPct(-P.D / 12, 2), ""],
-      [T("daily"), signPct(Math.pow(1 - P.D, 1 / 252) - 1, 3), "neg"],
+      [T("linearMonthly"), signPct(-P.D / PROJ_MONTHS, 2), ""],
+      [T("daily"), signPct(Math.pow(1 - P.D, 1 / (21 * PROJ_MONTHS)) - 1, 3), "neg"],
     ]);
     const fundBlock = (name, color, f, sim, histSim, L) => {
       const endV = sim.values[sim.values.length - 1], nowV = histSim.values[histSim.values.length - 1];
       const newInv = sim.invested[sim.invested.length - 1] - histSim.invested[histSim.invested.length - 1];
       const holdLoss = endV - nowV - newInv; // 持仓本身的盈亏（扣掉新投入的钱）
       const totInv = sim.invested[sim.invested.length - 1];
-      block(T("simName", name), color, T("fullYear", signPct(Math.pow(f, 12) - 1)), [
+      block(T("simName", name), color, T("fullYear", signPct(Math.pow(f, PROJ_MONTHS) - 1)), [
         [T("monthly"), signPct(f - 1, 2), "neg"],
         [T("nowToYear"), fmtShort(nowV) + " → " + fmtShort(endV), ""],
         [T("newInv"), fmtUSD(newInv), ""],
         [T("holdPnl"), signUSD(holdLoss), holdLoss >= 0 ? "pos" : "neg"],
         [T("yearVsInv"), signUSD(endV - totInv) + " (" + signPct(endV / totInv - 1) + ")", endV >= totInv ? "pos" : "neg"],
-      ].concat(P.sigma > 0 ? [[T("yearBand"), signPct(Math.pow(f, 12) * Math.exp(-L * P.sigma) - 1, 0) + " ~ " + signPct(Math.pow(f, 12) * Math.exp(L * P.sigma) - 1, 0), ""]] : []));
+      ].concat(P.sigma > 0 ? [[T("yearBand"), signPct(Math.pow(f, PROJ_MONTHS) * Math.exp(-L * P.sigma * Math.sqrt(PROJ_MONTHS / 12)) - 1, 0) + " ~ " + signPct(Math.pow(f, PROJ_MONTHS) * Math.exp(L * P.sigma * Math.sqrt(PROJ_MONTHS / 12)) - 1, 0), ""]] : []));
     };
     fundBlock("SPY", "var(--series-2)", P.fSPY, P.spy, spyH, 1);
     fundBlock("SSO", "var(--series-1)", P.fSSO, P.sso, ssoH, 2);
@@ -1542,8 +1554,9 @@
       const t = el("text", { x: m.l - 10, y: y(v) + 4, "text-anchor": "end" }, projSvg);
       t.textContent = Math.round(v * 100) + "%";
     }
+    const ls = Math.max(1, Math.ceil(((n - 1) * 80) / iw));
     labels.forEach((lb, i) => {
-      if (i % 2 && i !== n - 1) return;
+      if (i !== n - 1 && (i % ls || n - 1 - i < ls * 0.6)) return;
       const t = el("text", { x: x(i), y: m.t + ih + 20, "text-anchor": "middle" }, projSvg);
       t.textContent = i === 0 ? T("now") : lb;
     });
@@ -1560,7 +1573,7 @@
         fill: "none", stroke: l.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round",
         "stroke-dasharray": l.dash ? "5 4" : "none" }, projSvg);
     }
-    // 右侧直接标注一年后的累计涨跌
+    // 右侧直接标注测算期末的累计涨跌
     const ends = lines.map((l) => ({ l, yy: y(l.values[n - 1]) })).sort((p, q) => p.yy - q.yy);
     for (let k = 1; k < ends.length; k++) if (ends[k].yy - ends[k - 1].yy < 16) ends[k].yy = ends[k - 1].yy + 16;
     for (const { l, yy } of ends) {
@@ -1785,16 +1798,16 @@
   }
 
   // ---------- 下跌测算：年化波动率对 SSO 的影响 ----------
-  // 同样的标普全年跌幅下，SSO 一年的涨跌随波动率 σ 的变化：每月 = (1+2d)^21 × e^(−σ²/12) × (1 − 费率/12)
+  // 同样的标普跌幅下，SSO 在测算期内的涨跌随波动率 σ 的变化：每月 = (1+2d)^21 × e^(−σ²/12) × (1 − 费率/12)
   let vimpState = null;
   const vimpSvg = $("vimpChart"), vimpBox = $("vimpBox"), vimpTip = $("vimpTip");
   function drawVolImpact() {
     if (!vimpState) return;
     const { D, sigma, erSSO, erSPY } = vimpState;
     const xs = []; for (let v = 0; v <= 0.8001; v += 0.02) xs.push(v);
-    const sso = xs.map((v) => Math.pow(projFactors(D, v, erSSO, 2), 12) - 1);
-    const spy = Math.pow(projFactors(D, 0, erSPY, 1), 12) - 1, naive = Math.max(-1, -2 * D);
-    const cur = Math.pow(projFactors(D, sigma, erSSO, 2), 12) - 1, flat = sso[0];
+    const sso = xs.map((v) => Math.pow(projFactors(D, v, erSSO, 2), PROJ_MONTHS) - 1);
+    const spy = Math.pow(projFactors(D, 0, erSPY, 1), PROJ_MONTHS) - 1, naive = Math.max(-1, -2 * D);
+    const cur = Math.pow(projFactors(D, sigma, erSSO, 2), PROJ_MONTHS) - 1, flat = sso[0];
     $("vimpSub").textContent = T("vimpSub", Math.round(D * 100));
     $("vimpRead").textContent = T("vimpRead", Math.round(sigma * 100), (cur * 100).toFixed(1), ((cur - flat) * 100).toFixed(1));
     const W = vimpBox.clientWidth, H = 230, m = { l: 56, r: 150, t: 12, b: 30 };
@@ -2021,7 +2034,7 @@
       tile(T("pfDD"), fmtDD(hist.maxDD), T("twr"), "neg");
       if (MACRO) pfMacroTiles(hist, macroSeries(c.s, n), null, null);
     } else {
-      // 开启下跌测算：收益倍数、IRR、回撤都按「历史 + 测算一年」计算，副标题给出当前值作对照
+      // 开启下跌测算：收益倍数、IRR、回撤都按「历史 + 测算期」计算，副标题给出当前值作对照
       const L = chart.values.length - 1;
       const Ve = chart.values[L], invE = chart.invested[L], rE = irr(chart.flows, Ve);
       tile(T("pfInvestedProj"), fmtUSD(invE), T("nowV", fmtUSD(inv)) + T("addNew", fmtShort(invE - inv)));
@@ -2049,7 +2062,7 @@
       tile(histSim ? T("pfExcessProj") : T("pfExcess"), pp(ex), subE, ex >= 0 ? "pos" : "neg");
     }
 
-    // 不同 SPY : SSO 比例的结果（每 5% 一个点）；开启测算时按「历史 + 测算一年」计算
+    // 不同 SPY : SSO 比例的结果（每 5% 一个点）；开启测算时按「历史 + 测算期」计算
     const useP = !!c.P;
     const curSim = useP ? chart : hist;
     const frontier = [];
@@ -2076,7 +2089,7 @@
       frontier, wPct,
     };
     drawPortfolio();
-    // 退休模块：起始资金 = 组合当前市值（开启下跌测算时用测算一年后的市值）
+    // 退休模块：起始资金 = 组合当前市值（开启下跌测算时用测算期末的市值）
     // 退休时是一笔钱整体放在市场里增值，应使用时间加权年化（资产本身的年复合增长），而不是定投的货币加权 IRR
     const pfIrrShown = c.P ? chart.twr : hist.twr;
     retCtx = { startV: c.P ? chart.values[chart.values.length - 1] : V, startIsProj: !!c.P, pfIrr: pfIrrShown, annual: total * 12, s: c.s, n };
@@ -2086,7 +2099,7 @@
   function drawPortfolio() {
     // 期数不变（只改比例或金额）时保留当前缩放区间；开启测算时默认看最近 3 年 + 测算年
     const N = pfState.len;
-    pfZoom.setData(pfState.dates, pfState.projStart != null ? { a: Math.max(0, N - 1 - 48), b: N - 1 } : null);
+    pfZoom.setData(pfState.dates, pfState.projStart != null ? { a: Math.max(0, N - 1 - 36 - PROJ_MONTHS), b: N - 1 } : null);
     pfZoom.draw();
     drawFrontier($("pfIrr"), "irr", $("pfIrrRead"), (v) => (isNaN(v) ? "—" : fmtPct(v)));
     drawFrontier($("pfDd"), "dd", $("pfDdRead"), (v) => (v * 100).toFixed(1) + "%");
@@ -2589,9 +2602,11 @@
     const dates = months.slice(s);
     const n = dates.length;
 
-    // 未来一年下跌测算：在历史数据后接 12 个月模拟价格，按同样规则继续模拟
+    // 未来下跌测算：在历史数据后接 PROJ_MONTHS 个月模拟价格，按同样规则继续模拟
     const proj = $("proj").checked;
     let P = null;
+    PROJ_MONTHS = Math.max(1, Math.min(120, Math.round(parseFloat($("projMonths").value) || 12)));
+    applyDur();
     $("projVolSso").hidden = !proj;
     if (proj) {
       const D = Math.min(0.99, Math.max(0, (parseFloat($("projDrop").value) || 0) / 100));
@@ -2602,7 +2617,7 @@
       const rowsSPY = SERIES.SPY.concat(projectRows(SERIES.SPY, fSPY));
       const buyUntil = $("projBuy").checked ? Infinity : months.length;
       P = {
-        D, sigma, fSSO, fSPY, fIdx: Math.pow(1 - D, 1 / 12), rowsSSO, rowsSPY, buyUntil, erSSO, erSPY,
+        D, sigma, fSSO, fSPY, fIdx: Math.pow(1 - D, 1 / PROJ_MONTHS), rowsSSO, rowsSPY, buyUntil, erSSO, erSPY,
         dates: nextMonths(months[months.length - 1], PROJ_MONTHS),
         sso: simulate(rowsSSO, s, amount, withFee, withDiv, erSSO, dip ? thSSO : null, mult, buyUntil),
         spy: simulate(rowsSPY, s, amount, withFee, withDiv, erSPY, dip ? thSPY : null, mult, buyUntil),
@@ -2631,7 +2646,7 @@
     // 参数变化时保留当前缩放区间；期数变了（改起始月份 / 开关测算）则重新设定
     let keepView;
     if (state && state.view && state.dates.length === cn) keepView = state.view;
-    else if (P) keepView = { a: Math.max(0, cn - 1 - 48), b: cn - 1 }; // 开启测算：默认看最近 3 年 + 测算年
+    else if (P) keepView = { a: Math.max(0, cn - 1 - 36 - PROJ_MONTHS), b: cn - 1 }; // 开启测算：默认看最近 3 年 + 测算期
     else keepView = { a: 0, b: cn - 1 };
     state = {
       dates: cDates, useLog: $("log").checked, hover: null, view: keepView,
@@ -2695,7 +2710,7 @@
     });
   }
 
-  for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projDrop", "projVol", "projBuy", "real"]) $(id).addEventListener("input", update);
+  for (const id of ["amount", "start", "fee", "div", "log", "erSSO", "erSPY", "dip", "thSSO", "thSPY", "mult", "proj", "projMonths", "projDrop", "projVol", "projBuy", "real"]) $(id).addEventListener("input", update);
   // 组合配置的控件只重算组合部分，拖动滑块时即时刷新
   for (const id of ["pfTotal", "pfW"]) $(id).addEventListener("input", renderPortfolio);
   // 退休模块的输入只重算退休部分
@@ -2728,7 +2743,7 @@
   // 所有输入保存在浏览器 localStorage；读写失败（隐私模式、禁用存储等）时静默跳过，页面照常用默认值
   const PREF_KEY = "dashPrefs";
   const PREF_IDS = ["amount", "start", "fee", "erSSO", "erSPY", "div", "dip", "thSSO", "thSPY", "mult", "log", "real",
-    "proj", "projDrop", "projVol", "projBuy", "pfTotal", "pfW",
+    "proj", "projMonths", "projDrop", "projVol", "projBuy", "pfTotal", "pfW",
     "retNeedMode", "retNeed", "retRepl", "retInfl", "retRetMode", "retRet", "annPrem", "annYears", "annPay", "annFreq"];
   const PREF_AUTO = ["retInfl", "annPrem", "annPay"];   // 会自动跟随默认值的输入框：同时记住是否被手动改过
   function savePrefs() {
